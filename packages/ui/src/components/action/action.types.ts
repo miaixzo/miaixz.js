@@ -28,6 +28,7 @@ import type {
   HTMLAttributes,
   MouseEvent,
   RefAttributes,
+  ReactNode,
 } from "react";
 
 import type { IconName } from "@miaixz/icons";
@@ -259,6 +260,7 @@ export interface FormActionsSlotProps {
  */
 export interface FormActionsRootAttributes extends HTMLAttributes<HTMLDivElement> {
   readonly "data-fixed"?: string;
+  readonly "data-submit-only"?: string;
 }
 
 /**
@@ -266,7 +268,11 @@ export interface FormActionsRootAttributes extends HTMLAttributes<HTMLDivElement
  */
 export interface FormActionsProps {
   readonly cancel?: FormCancelAction;
-  readonly submit: FormSubmitAction;
+  readonly submit?: FormSubmitAction | undefined;
+  /**
+   * Existing auxiliary command controls rendered before the native submit control.
+   */
+  readonly actions?: ReactNode;
   readonly fixed?: boolean;
   readonly slotProps?: FormActionsSlotProps;
 }

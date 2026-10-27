@@ -392,6 +392,8 @@ function Appearance(props: AppearanceProps) {
       </div>
 
       <Drawer
+        closeOnBackdrop
+        footer={null}
         className="miaixz-appearance-drawer"
         closeLabel={localeRuntime.t("ui.appearance.close")}
         density="standard"

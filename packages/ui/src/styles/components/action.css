@@ -339,8 +339,22 @@
 }
 
 .miaixz-form-actions {
+  flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
+}
+
+.miaixz-form-actions-trailing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--miaixz-space-8);
+  align-items: center;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+.miaixz-form-actions[data-submit-only="true"] {
+  justify-content: flex-end;
 }
 
 .miaixz-form-actions[data-fixed="true"] {

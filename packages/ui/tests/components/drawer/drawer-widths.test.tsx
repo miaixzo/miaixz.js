@@ -146,7 +146,7 @@ describe("Drawer widths", () => {
     const onOpenChange = vi.fn();
     render(
       <MiaixzLocaleProvider i18n={createMiaixzI18n()}>
-        <Drawer open title="Reasons" onOpenChange={onOpenChange}>
+        <Drawer open closeOnEscape closeOnBackdrop title="Reasons" onOpenChange={onOpenChange}>
           Body
         </Drawer>
       </MiaixzLocaleProvider>,

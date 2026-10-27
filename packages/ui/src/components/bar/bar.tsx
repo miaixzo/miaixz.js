@@ -22,7 +22,7 @@
  * Implements the bar UI component.
  */
 
-import { forwardRef, type CSSProperties } from "react";
+import { forwardRef, useState, type CSSProperties } from "react";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
 import { classNames } from "../../shared/class-names.js";
@@ -50,9 +50,14 @@ export const Bar = withMiaixzThemeComponent(
       max,
       className,
       style,
+      onAnimationEnd,
       ...nativeProps
     } = props;
-    if (!active) return null;
+    const [visible, setVisible] = useState(active);
+    if (active && !visible) setVisible(true);
+    if (!active && !visible) return null;
+    const completing = !active;
+    const hidden = decorative || completing;
     const determinate = value !== undefined;
     if (determinate && (!Number.isFinite(max) || max <= 0)) {
       throw new MiaixzUiError({
@@ -74,14 +79,24 @@ export const Bar = withMiaixzThemeComponent(
       <div
         {...nativeProps}
         ref={ref}
-        aria-hidden={decorative || undefined}
-        aria-label={decorative ? undefined : label}
-        aria-valuemin={decorative || !determinate ? undefined : 0}
-        aria-valuemax={decorative || !determinate ? undefined : max}
-        aria-valuenow={decorative || !determinate ? undefined : value}
+        aria-hidden={hidden || undefined}
+        aria-label={hidden ? undefined : label}
+        aria-valuemin={hidden || !determinate ? undefined : 0}
+        aria-valuemax={hidden || !determinate ? undefined : max}
+        aria-valuenow={hidden || !determinate ? undefined : value}
         className={classNames("miaixz-bar", className)}
-        data-state={determinate ? "determinate" : "indeterminate"}
-        role={decorative ? undefined : "progressbar"}
+        data-state={completing ? "complete" : determinate ? "determinate" : "indeterminate"}
+        onAnimationEnd={(event) => {
+          onAnimationEnd?.(event);
+          if (
+            completing &&
+            event.target === event.currentTarget &&
+            event.animationName === "miaixz-bar-complete"
+          ) {
+            setVisible(false);
+          }
+        }}
+        role={hidden ? undefined : "progressbar"}
         style={resolvedStyle}
       >
         <span aria-hidden="true" className="miaixz-bar-fill" />

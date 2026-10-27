@@ -21,6 +21,7 @@ import {
 import {
   ActionBar,
   ActionText,
+  Bar,
   Alert,
   Appearance,
   Avatar,
@@ -60,6 +61,7 @@ import {
   View,
   type LinkRefreshMode,
   Panel,
+  Progress,
   Picker,
   RowActions,
   Rating,
@@ -1150,6 +1152,48 @@ function ResponsiveEditorFixture() {
 }
 
 /**
+ * Exercises both progress components with explicit test controls for actual value changes and completion.
+ * @returns Shared progress motion fixture.
+ */
+function ProgressMotionFixture() {
+  const [value, setValue] = useState<number | undefined>();
+  const [active, setActive] = useState(true);
+  return (
+    <Panel title="进度条动效">
+      {active ? (
+        value === undefined ? (
+          <Bar active label="顶部等待" />
+        ) : (
+          <Bar active label="顶部进度" value={value} max={100} />
+        )
+      ) : (
+        <Bar active={false} />
+      )}
+      <Progress label="等待实际进度" value={value} showValue />
+      <Progress label="实际用量" value={40} showValue />
+      <Cluster>
+        <Button
+          onClick={() => {
+            setActive(true);
+            setValue(25);
+          }}
+        >
+          推进到 25%
+        </Button>
+        <Button
+          onClick={() => {
+            setValue(100);
+            setActive(false);
+          }}
+        >
+          完成加载
+        </Button>
+      </Cluster>
+    </Panel>
+  );
+}
+
+/**
  * Renders public controls and deterministic browser contract fixtures.
  *
  * @returns Theme and locale providers with the selected fixture.
@@ -1199,6 +1243,7 @@ export function BrowserFixture() {
         >
           {parameters.get("loadingIndicators") === "1" ? (
             <main aria-label="加载状态展示">
+              <ProgressMotionFixture />
               <Panel title="加载状态" description="统一图形、尺寸与动画节奏">
                 <Cluster>
                   <Spinner size="small" label="正在加载小尺寸" />

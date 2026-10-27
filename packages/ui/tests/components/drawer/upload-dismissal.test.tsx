@@ -67,6 +67,7 @@ for (const Modal of [Drawer, Dialog])
       expect(onFiles).toHaveBeenCalledWith([file]);
       expect(onOpenChange).not.toHaveBeenCalled();
       fireEvent(dialog, new Event("cancel", { bubbles: true, cancelable: true }));
-      expect(onOpenChange).toHaveBeenCalledWith(false, "escape");
+      if (Modal === Drawer) expect(onOpenChange).not.toHaveBeenCalled();
+      else expect(onOpenChange).toHaveBeenCalledWith(false, "escape");
     });
   });

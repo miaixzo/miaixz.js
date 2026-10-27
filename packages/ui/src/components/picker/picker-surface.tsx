@@ -24,6 +24,7 @@
 
 import { useEffect, useRef, useState, useMemo, useId, type ForwardedRef } from "react";
 import { Button } from "../button/button.js";
+import { FormActions } from "../action/form-actions.js";
 import { Drawer } from "../drawer/drawer.js";
 import { Dialog } from "../dialog/dialog.js";
 import { Popover } from "../popover/popover.js";
@@ -226,44 +227,60 @@ export function PickerSurface<Value extends string>({
       ))}
     </div>
   );
-  const footer = (
-    <div className="miaixz-picker-surface-actions">
-      {props.clearable && !field.required && (
-        <Button disabled={disabled || readOnly} onClick={() => select([])}>
-          {props.clearLabel ?? t("ui.picker.clear")}
-        </Button>
-      )}
-      {commitMode === "confirm" && (
-        <>
-          <Button
-            onClick={() => {
-              setDraft(current);
-              if (presentation !== "inline") setOpen(false);
-            }}
-          >
-            {props.cancelLabel ?? t("ui.action.cancel")}
-          </Button>
-          <Button
-            tone="brand"
-            disabled={
-              disabled ||
-              readOnly ||
-              props.loading ||
-              Boolean(props.errorMessage) ||
-              !ready ||
-              (field.required && selected.length === 0)
-            }
-            onClick={() => {
-              commit(draft);
-              if (presentation !== "inline") setOpen(false);
-            }}
-          >
-            {props.confirmLabel ?? t("ui.picker.confirm")}
-          </Button>
-        </>
-      )}
-    </div>
-  );
+  const clearAction =
+    props.clearable && !field.required ? (
+      <Button disabled={disabled || readOnly} onClick={() => select([])}>
+        {props.clearLabel ?? t("ui.picker.clear")}
+      </Button>
+    ) : null;
+  const confirmAction =
+    commitMode === "confirm" ? (
+      <Button
+        tone="brand"
+        disabled={
+          disabled ||
+          readOnly ||
+          props.loading ||
+          Boolean(props.errorMessage) ||
+          !ready ||
+          (field.required && selected.length === 0)
+        }
+        onClick={() => {
+          commit(draft);
+          if (presentation !== "inline") setOpen(false);
+        }}
+      >
+        {props.confirmLabel ?? t("ui.picker.confirm")}
+      </Button>
+    ) : null;
+  const cancelAction = {
+    id: "picker.cancel",
+    label: props.cancelLabel ?? t("ui.action.cancel"),
+    onAction: () => {
+      setDraft(current);
+      if (presentation !== "inline") setOpen(false);
+    },
+  };
+  const footer =
+    presentation === "drawer" ? (
+      <FormActions
+        cancel={cancelAction}
+        actions={
+          <>
+            {clearAction}
+            {confirmAction}
+          </>
+        }
+      />
+    ) : (
+      <div className="miaixz-picker-surface-actions">
+        {clearAction}
+        {commitMode === "confirm" && (
+          <Button onClick={cancelAction.onAction}>{cancelAction.label}</Button>
+        )}
+        {confirmAction}
+      </div>
+    );
   const body = <MiaixzFieldContext.Provider value={null}>{content}</MiaixzFieldContext.Provider>;
   const children = (
     <>

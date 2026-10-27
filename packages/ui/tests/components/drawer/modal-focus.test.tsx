@@ -29,6 +29,7 @@ interface ExampleProps {
    * Overrides whether the fixture closes from a backdrop click.
    */
   readonly closeOnBackdrop?: boolean;
+  readonly closeOnEscape?: boolean;
 }
 
 /**
@@ -53,7 +54,7 @@ function Provider({ children }: ProviderProps) {
  * @param props.closeOnBackdrop - Whether a backdrop click closes the fixture.
  * @returns One controlled Drawer fixture.
  */
-function Example({ closeOnBackdrop = true }: ExampleProps) {
+function Example({ closeOnBackdrop = false, closeOnEscape = false }: ExampleProps) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -64,6 +65,7 @@ function Example({ closeOnBackdrop = true }: ExampleProps) {
       <Drawer
         closeLabel="关闭"
         closeOnBackdrop={closeOnBackdrop}
+        closeOnEscape={closeOnEscape}
         footer={<button type="button">保存</button>}
         open={open}
         title="详情"
@@ -137,7 +139,7 @@ describe("native modal focus restoration", () => {
   });
 
   it("closes on Escape and backdrop, then restores the current trigger", async () => {
-    render(<Example />, { wrapper: Provider });
+    render(<Example closeOnBackdrop closeOnEscape />, { wrapper: Provider });
     const trigger = screen.getByRole("button", { name: "键盘入口" });
     trigger.focus();
     fireEvent.click(trigger);
@@ -169,19 +171,21 @@ describe("native modal focus restoration", () => {
     fireEvent.click(outerTrigger);
     const outer = screen.getByRole("dialog", { name: "外层" });
     await waitFor(() =>
-      expect(document.activeElement).toBe(within(outer).getByRole("button", { name: "关闭外层" })),
+      expect(document.activeElement).toBe(
+        within(outer).getAllByRole("button", { name: "关闭外层" })[0],
+      ),
     );
     const innerTrigger = within(outer).getByRole("button", { name: "打开内层" });
     innerTrigger.focus();
     fireEvent.click(innerTrigger);
 
     const inner = screen.getByRole("dialog", { name: "内层" });
-    fireEvent(inner, new Event("cancel", { bubbles: true, cancelable: true }));
+    fireEvent.click(inner.querySelector(".miaixz-drawer-close")!);
     await waitFor(() => expect(inner).not.toHaveAttribute("open"));
     expect(outer).toHaveAttribute("open");
     await waitFor(() => expect(document.activeElement).toBe(innerTrigger));
 
-    fireEvent(outer, new Event("cancel", { bubbles: true, cancelable: true }));
+    fireEvent.click(outer.querySelector(".miaixz-drawer-close")!);
     await waitFor(() => expect(outer).not.toHaveAttribute("open"));
     await waitFor(() => expect(document.activeElement).toBe(outerTrigger));
   });

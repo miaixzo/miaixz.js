@@ -40,8 +40,8 @@ import { withMiaixzThemeComponent } from "../../theme/binding.js";
  * @public
  */
 function FormActions(properties: FormActionsProps) {
-  const { cancel, submit, fixed = false, slotProps } = properties;
-  const loading = submit.loading === true;
+  const { cancel, submit, actions, fixed = false, slotProps } = properties;
+  const loading = submit?.loading === true;
   const ownerState: FormActionsOwnerState = { fixed, loading };
   const rootProps = mergeMiaixzSlotProps<
     FormActionsOwnerState,
@@ -51,12 +51,15 @@ function FormActions(properties: FormActionsProps) {
     ownerState,
     defaultProps: { className: "miaixz-form-actions" },
     slotProps: slotProps?.root,
-    internalProps: fixed ? { "data-fixed": "true" } : undefined,
+    internalProps: {
+      ...(fixed ? { "data-fixed": "true" } : {}),
+      ...(cancel === undefined ? { "data-submit-only": "true" } : {}),
+    },
   });
   const cancelIcon =
     cancel?.icon === undefined ? undefined : <Icon name={cancel.icon} size="control" />;
   const submitIcon =
-    submit.icon === undefined ? undefined : <Icon name={submit.icon} size="control" />;
+    submit?.icon === undefined ? undefined : <Icon name={submit.icon} size="control" />;
 
   return (
     <div {...rootProps}>
@@ -74,18 +77,25 @@ function FormActions(properties: FormActionsProps) {
           {cancel.label}
         </Button>
       )}
-      <Button
-        {...submit.buttonProps}
-        {...(submit.disabled === undefined ? {} : { disabled: submit.disabled })}
-        {...(submit.loading === undefined ? {} : { loading: submit.loading })}
-        {...(slotProps?.submit === undefined ? {} : { slotProps: slotProps.submit })}
-        {...(submitIcon === undefined ? {} : { startIcon: submitIcon })}
-        tone={submit.tone ?? "brand"}
-        type="submit"
-        variant="solid"
-      >
-        {submit.label}
-      </Button>
+      {(actions != null || submit !== undefined) && (
+        <div className="miaixz-form-actions-trailing">
+          {actions}
+          {submit !== undefined && (
+            <Button
+              {...submit.buttonProps}
+              {...(submit.disabled === undefined ? {} : { disabled: submit.disabled })}
+              {...(submit.loading === undefined ? {} : { loading: submit.loading })}
+              {...(slotProps?.submit === undefined ? {} : { slotProps: slotProps.submit })}
+              {...(submitIcon === undefined ? {} : { startIcon: submitIcon })}
+              tone={submit.tone ?? "brand"}
+              type="submit"
+              variant="solid"
+            >
+              {submit.label}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

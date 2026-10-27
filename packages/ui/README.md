@@ -102,6 +102,50 @@ actual container width; sidebar editors need sufficient space for both columns.
 The Appearance panel uses **360px**, while the two-column user editor uses
 **1000px**. Other drawers retain their existing sizes until explicitly configured.
 
+## Drawer dismissal and footer actions
+
+Drawers stay open on backdrop clicks, Escape, blur and pointer leave by default.
+`closeOnBackdrop` and `closeOnEscape` are explicit opt-ins. Data-viewing drawers
+should enable `closeOnBackdrop`; mixed view/edit surfaces enable it only in their
+view mode. Appearance opts into backdrop dismissal because its settings apply
+immediately. Pointer leave alone does not dismiss either surface. `closeDisabled` keeps
+both built-in close controls visible but disabled during a pending operation;
+programmatic `open` changes remain controlled by the application. Nested dialogs
+and native file-picker cancellation do not dismiss their parent drawer.
+
+Without a supplied `footer`, Drawer renders a localized close action on the left.
+A supplied footer replaces that default; `footer={null}` omits the footer entirely.
+Appearance uses this exception and keeps its header close control.
+Use the existing `FormActions` for custom
+footers: `cancel` stays left, optional `actions` renders auxiliary commands on the
+right, and optional `submit` remains the final native form submission control.
+A submit-only footer stays right; close-only footers need no fake submit action.
+Keep validation and request failures in the open drawer with the current draft.
+
+```tsx
+<Drawer
+  open={open}
+  title="Edit record"
+  closeDisabled={saving}
+  onOpenChange={setOpen}
+  footer={
+    <FormActions
+      cancel={{ id: "cancel", label: "Cancel", disabled: saving, onAction: close }}
+      actions={
+        <Button type="button" onClick={preview}>
+          Preview
+        </Button>
+      }
+      submit={{ id: "save", label: "Save", loading: saving, buttonProps: { form: formId } }}
+    />
+  }
+>
+  <form id={formId} onSubmit={save}>
+    {children}
+  </form>
+</Drawer>
+```
+
 ## Installation
 
 ```bash
