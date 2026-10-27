@@ -164,6 +164,7 @@ describe("view foundations", () => {
       </View>,
     );
     expect(heading).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create" })).not.toBeInTheDocument();
     expect(navigation).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Second" })).toHaveAttribute("aria-current", "page");
     view.rerender(renderDestination("Second", secondAction));
@@ -175,6 +176,67 @@ describe("view foundations", () => {
     expect(firstAction).toHaveBeenCalledTimes(1);
     expect(secondAction).toHaveBeenCalledTimes(1);
     expect(frame.querySelector(".miaixz-view")).toBeNull();
+  });
+
+  it("keeps the registered selection when the current URL is a canonical route alias", () => {
+    render(
+      <View preserveFrame currentHref="/legacy" aria-label="Host" title={null}>
+        <View
+          inheritFrame
+          aria-label="Module"
+          title="Module"
+          mode="navigation"
+          navigationLabel="Sections"
+          items={[
+            {
+              id: "canonical",
+              href: "/canonical",
+              label: "Canonical",
+              textValue: "Canonical",
+              current: "page",
+            },
+            { id: "other", href: "/other", label: "Other", textValue: "Other" },
+          ]}
+        >
+          Content
+        </View>
+      </View>,
+    );
+    expect(screen.getByRole("link", { name: "Canonical" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Other" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("does not let an outgoing registration clear a newer frame's actions", () => {
+    const renderRoutes = (outgoing: boolean) => (
+      <View aria-label="Host" preserveFrame title={null}>
+        {outgoing ? (
+          <View
+            key="outgoing"
+            inheritFrame
+            aria-label="Module"
+            title="Old"
+            actions={<button>Old action</button>}
+          >
+            Old
+          </View>
+        ) : null}
+        <View
+          key="incoming"
+          inheritFrame
+          aria-label="Module"
+          title="New"
+          actions={<button>New action</button>}
+        >
+          New
+        </View>
+      </View>
+    );
+    const view = render(renderRoutes(true));
+    const heading = screen.getByRole("heading", { name: "New" });
+    view.rerender(renderRoutes(false));
+    expect(screen.getByRole("heading", { name: "New" })).toBe(heading);
+    expect(screen.getByRole("button", { name: "New action" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Old action" })).not.toBeInTheDocument();
   });
 
   it("updates inherited frame actions after local content state changes", () => {

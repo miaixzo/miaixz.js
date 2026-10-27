@@ -227,4 +227,4 @@ void invalidOwnerState;
 /**
  * Forces the exact theme-registry comparison to satisfy the true constraint.
  */
-type _RegistryIsExact = RegistryIsExact;
+export type RegistryExactAssertion = RegistryIsExact;

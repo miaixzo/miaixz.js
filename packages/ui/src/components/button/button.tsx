@@ -38,7 +38,6 @@ import type {
   ButtonProps,
   ButtonRootAttributes,
   ButtonSlot,
-  ButtonSlotProps,
 } from "./button.types.js";
 import { useButtonGroup } from "./button-group-context.js";
 

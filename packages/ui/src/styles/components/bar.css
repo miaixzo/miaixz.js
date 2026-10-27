@@ -19,10 +19,8 @@
 */
 
 /**
- * Defines page-level progress geometry and completion after the shared fill transition.
+ * Defines page-level progress geometry, fill motion and completion feedback.
  */
-
-@import url("../progress-motion.css");
 
 .miaixz-bar {
   --miaixz-bar-progress: 0;
@@ -36,8 +34,21 @@
 }
 
 .miaixz-bar-fill {
+  display: block;
   width: calc(100% * var(--miaixz-bar-progress));
+  height: 100%;
   background: var(--miaixz-color-brand);
+  transform-origin: left center;
+  transition: width var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing);
+  animation: miaixz-bar-enter var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing)
+    both;
+}
+
+.miaixz-bar[data-state="indeterminate"] .miaixz-bar-fill {
+  width: 12%;
+  animation:
+    miaixz-bar-enter var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing) both,
+    miaixz-bar-wait 1.2s ease-in-out infinite;
 }
 
 .miaixz-bar[data-state="complete"] {
@@ -47,6 +58,27 @@
 
 .miaixz-bar[data-state="complete"] .miaixz-bar-fill {
   width: 100%;
+}
+
+@keyframes miaixz-bar-enter {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes miaixz-bar-wait {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes miaixz-bar-complete {
@@ -60,6 +92,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .miaixz-bar[data-state] .miaixz-bar-fill {
+    transition: none;
+    animation: none;
+  }
+
   .miaixz-bar[data-state="complete"] {
     animation-duration: 1ms;
     animation-delay: 0ms;

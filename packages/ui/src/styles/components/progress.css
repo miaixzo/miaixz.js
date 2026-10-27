@@ -22,8 +22,6 @@
  * Defines the progress visual styles.
  */
 
-@import url("../progress-motion.css");
-
 [data-miaixz-theme] {
   --miaixz-progress-track-height: var(--miaixz-space-8);
 }
@@ -55,9 +53,22 @@
 .miaixz-progress-indicator {
   --miaixz-progress-value: 0%;
 
+  display: block;
   width: var(--miaixz-progress-value);
+  height: 100%;
   background: var(--miaixz-progress-tone-fill);
   border-radius: inherit;
+  transform-origin: left center;
+  transition: width var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing);
+  animation: miaixz-progress-enter var(--miaixz-motion-state-duration)
+    var(--miaixz-motion-state-easing) both;
+}
+
+.miaixz-progress[data-state="indeterminate"] .miaixz-progress-indicator {
+  width: 12%;
+  animation:
+    miaixz-progress-enter var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing) both,
+    miaixz-progress-wait 1.2s ease-in-out infinite;
 }
 
 .miaixz-progress[data-tone="neutral"] {
@@ -128,4 +139,32 @@
   line-height: var(--miaixz-text-caption-line-height);
   color: var(--miaixz-color-text-secondary);
   text-align: end;
+}
+
+@keyframes miaixz-progress-enter {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes miaixz-progress-wait {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .miaixz-progress[data-state] .miaixz-progress-indicator {
+    transition: none;
+    animation: none;
+  }
 }

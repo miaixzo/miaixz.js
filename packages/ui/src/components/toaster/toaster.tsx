@@ -35,7 +35,6 @@ import {
 import { createPortal } from "react-dom";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
-import { useMiaixzLocale } from "../../i18n/i18n.js";
 import { useMiaixzPortalTarget } from "../../shared/overlay/portal-target.js";
 import { useMiaixzManualPopover } from "../../shared/overlay/top-layer.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";

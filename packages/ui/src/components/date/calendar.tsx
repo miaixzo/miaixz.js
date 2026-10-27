@@ -33,7 +33,6 @@ import {
   addCalendarMonths,
   addCalendarYears,
   createCalendarMonth,
-  formatIsoDate,
   isIsoDateInRange,
   parseIsoDate,
 } from "./date-model.js";

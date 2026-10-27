@@ -114,7 +114,7 @@
   padding-inline: var(--miaixz-tabs-tab-padding-inline);
   font-family: var(--miaixz-font-family-sans);
   font-size: var(--miaixz-text-body-size);
-  font-weight: var(--miaixz-font-weight-regular);
+  font-weight: var(--miaixz-font-weight-medium);
   line-height: var(--miaixz-text-body-line-height);
   color: var(--miaixz-color-text-secondary);
   white-space: nowrap;
@@ -139,7 +139,6 @@
 }
 
 .miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {
-  font-weight: var(--miaixz-font-weight-medium);
   color: var(--miaixz-color-brand);
   box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-brand);
 }

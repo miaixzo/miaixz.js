@@ -22,7 +22,15 @@
  * Implements the view UI component.
  */
 
-import { createContext, forwardRef, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  forwardRef,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { useMiaixzLayoutEffect } from "../../shared/use-client-layout-effect.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
@@ -175,7 +183,12 @@ function resolveSlot<Props extends object>(
   return typeof slot === "function" ? slot(ownerState) : slot;
 }
 
-const ViewFrameContext = createContext<((props: ViewProps) => void) | null>(null);
+interface ViewFrameRegistration {
+  readonly update: (owner: object, props: ViewProps) => void;
+  readonly release: (owner: object) => void;
+}
+
+const ViewFrameContext = createContext<ViewFrameRegistration | null>(null);
 
 /**
  * Retains the frame DOM while authorized route content replaces its own view.
@@ -185,8 +198,27 @@ const PersistentView = forwardRef<HTMLElement, ViewProps>(function PersistentVie
   ref,
 ) {
   const [frame, setFrame] = useState(props);
+  const owner = useRef<object | null>(null);
+  const [registration] = useState<ViewFrameRegistration>(() => ({
+    update: (nextOwner, nextFrame) => {
+      owner.current = nextOwner;
+      setFrame(nextFrame);
+    },
+    release: (previousOwner) => {
+      /**
+       * An outgoing route must never remove a newer route's actions.
+       */
+      if (owner.current !== previousOwner) return;
+      owner.current = null;
+      setFrame((current) =>
+        current.actions === undefined ? current : { ...current, actions: undefined },
+      );
+    },
+  }));
   const contentFrame = (
-    frame.mode === "navigation" && currentHref
+    frame.mode === "navigation" &&
+    currentHref &&
+    frame.items.some((item) => item.href === currentHref)
       ? {
           ...frame,
           items: frame.items.map((item) => ({
@@ -197,7 +229,7 @@ const PersistentView = forwardRef<HTMLElement, ViewProps>(function PersistentVie
       : frame
   ) as ViewProps & { readonly mode?: "content" | "navigation" };
   return (
-    <ViewFrameContext.Provider value={setFrame}>
+    <ViewFrameContext.Provider value={registration}>
       <ViewBase {...contentFrame} ref={ref}>
         {props.children}
       </ViewBase>
@@ -210,9 +242,12 @@ const PersistentView = forwardRef<HTMLElement, ViewProps>(function PersistentVie
  */
 const InheritedView = forwardRef<HTMLElement, ViewProps>(function InheritedView(props, ref) {
   const register = useContext(ViewFrameContext);
+  const owner = useRef({});
+  const release = useCallback(() => register?.release(owner.current), [register]);
   useMiaixzLayoutEffect(() => {
-    if (register) register(props);
+    register?.update(owner.current, props);
   });
+  useMiaixzLayoutEffect(() => release, [release]);
   if (!register) return <ViewBase {...props} ref={ref} />;
   return <ViewFrameContext.Provider value={null}>{props.children}</ViewFrameContext.Provider>;
 });

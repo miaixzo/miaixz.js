@@ -26,7 +26,6 @@ import { forwardRef, type CSSProperties } from "react";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
 import { useMiaixzLocale } from "../../i18n/i18n.js";
-import { classNames } from "../../shared/class-names.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
 import type { ColumnsOwnerState, ColumnsProps } from "./columns.types.js";
 import { withMiaixzThemeComponent } from "../../theme/binding.js";

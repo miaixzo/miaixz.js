@@ -30,16 +30,8 @@
   --miaixz-skeleton-button-width: 6rem;
   --miaixz-skeleton-last-line-width: 64%;
   --miaixz-skeleton-duration: 1200ms;
-  --miaixz-skeleton-background: color-mix(
-    in srgb,
-    var(--miaixz-color-text-primary) 7%,
-    var(--miaixz-color-surface)
-  );
-  --miaixz-skeleton-highlight: color-mix(
-    in srgb,
-    var(--miaixz-color-text-primary) 3%,
-    var(--miaixz-color-surface)
-  );
+  --miaixz-skeleton-background: var(--miaixz-color-surface-active);
+  --miaixz-skeleton-highlight: var(--miaixz-color-surface-hover);
 }
 
 .miaixz-skeleton {
