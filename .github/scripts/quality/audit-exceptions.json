@@ -1,24 +1,4 @@
 {
   "schemaVersion": 1,
-  "exceptions": [
-    {
-      "id": "GHSA-vfj7-8cjw-p6xm",
-      "scope": "development-only",
-      "severity": "high",
-      "rootPackage": "braces",
-      "packages": [
-        "braces",
-        "fast-glob",
-        "globby",
-        "micromatch",
-        "stylelint",
-        "stylelint-config-recess-order",
-        "stylelint-config-recommended",
-        "stylelint-config-standard",
-        "stylelint-order"
-      ],
-      "graphs": ["miaixz.js"],
-      "expiresOn": "2026-11-10"
-    }
-  ]
+  "exceptions": []
 }
