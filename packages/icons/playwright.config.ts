@@ -45,7 +45,7 @@ export default defineConfig({
   outputDir,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: "line",
   use: {

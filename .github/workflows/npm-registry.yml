@@ -18,6 +18,7 @@ env:
   RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -25,28 +26,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  quality:
-    name: Validate Tagged Source
+  resolve:
+    name: Resolve Validated Main Artifact
     if: ${{ github.repository == 'miaixzo/miaixz.js' }}
-    uses: ./.github/workflows/build-project.yml
-    with:
-      target-ref: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
-      artifact-key: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
-
-  publish:
-    name: Publish Validated Tarballs
-    needs: quality
-    if: ${{ needs.quality.result == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    environment:
-      name: release
-      url: https://www.npmjs.com/search?q=%40miaixz
     outputs:
-      version: ${{ steps.release.outputs.version }}
+      artifact-name: ${{ steps.validation.outputs.artifact-name }}
+      commit: ${{ steps.release.outputs.commit }}
       is-prerelease: ${{ steps.release.outputs.is-prerelease }}
+      run-id: ${{ steps.validation.outputs.run-id }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Check Out Existing Tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,11 +43,10 @@ jobs:
           fetch-depth: 0
           ref: ${{ env.RELEASE_TAG }}
 
-      - name: Set Up Node.js and npm
+      - name: Set Up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: ${{ env.NPM_REGISTRY }}
           package-manager-cache: false
 
       - name: Verify Existing Tag and Metadata
@@ -83,20 +71,90 @@ jobs:
             exit 1
           fi
           npm run release:verify
+          npm run check:clean
           if [[ "$release_version" == *-* ]]; then
             is_prerelease=true
           else
             is_prerelease=false
           fi
+          echo "commit=$tag_commit" >> "$GITHUB_OUTPUT"
           echo "version=$release_version" >> "$GITHUB_OUTPUT"
           echo "is-prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
-          npm run check:clean
+
+      - name: Resolve Successful Main Validation
+        id: validation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_COMMIT: ${{ steps.release.outputs.commit }}
+        run: |
+          set -euo pipefail
+          run_id="$(
+            gh api --method GET \
+              "repos/${GITHUB_REPOSITORY}/actions/workflows/build-project.yml/runs" \
+              -f branch=main \
+              -f event=push \
+              -f status=success \
+              -f head_sha="$TAG_COMMIT" \
+              -f per_page=100 \
+              --jq '.workflow_runs | map(select(.head_sha == "'"$TAG_COMMIT"'" and .head_branch == "main" and .event == "push" and .conclusion == "success")) | first | .id // empty'
+          )"
+          if [ -z "$run_id" ]; then
+            echo "::error::No successful main Build Project run exists for ${TAG_COMMIT}"
+            exit 1
+          fi
+          artifact_name="packages-${TAG_COMMIT}"
+          artifact_id="$(
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" \
+              --jq '.artifacts | map(select(.name == "'"$artifact_name"'" and .expired == false)) | first | .id // empty'
+          )"
+          if [ -z "$artifact_id" ]; then
+            echo "::error::Validated artifact '${artifact_name}' is unavailable in run ${run_id}"
+            exit 1
+          fi
+          echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish Validated Tarballs
+    needs: resolve
+    if: ${{ needs.resolve.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    environment:
+      name: release
+      url: https://www.npmjs.com/search?q=%40miaixz
+    outputs:
+      version: ${{ needs.resolve.outputs.version }}
+      is-prerelease: ${{ needs.resolve.outputs.is-prerelease }}
+    steps:
+      - name: Check Out Existing Tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Set Up Node.js and npm
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: ${{ env.NPM_REGISTRY }}
+          package-manager-cache: false
 
       - name: Download Validated Tarballs
         uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
-          name: packages-${{ env.RELEASE_TAG }}
+          name: ${{ needs.resolve.outputs.artifact-name }}
           path: ${{ runner.temp }}/packages
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve.outputs.run-id }}
+
+      - name: Verify Validated Tarball Digests
+        working-directory: ${{ runner.temp }}/packages
+        run: sha256sum --check SHA256SUMS
 
       - name: Publish All Packages to npm
         uses: ./.github/actions/npm-registry
