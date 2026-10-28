@@ -98,9 +98,43 @@ for (const path of [
 }
 const manifests = loadVersionedPackageManifests(repository.root);
 const versionedManifestPaths = new Set(manifests.map(({ manifestPath }) => manifestPath));
+const canonicalRepositoryUrl = "https://github.com/miaixzo/miaixz.js";
+
+/**
+ * Normalizes an npm repository declaration for provenance comparison.
+ *
+ * @param {unknown} repositoryField - package.json repository declaration.
+ * @returns {string} Comparable HTTPS repository URL.
+ */
+function normalizeRepositoryUrl(repositoryField) {
+  const url =
+    typeof repositoryField === "string"
+      ? repositoryField
+      : typeof repositoryField?.url === "string"
+        ? repositoryField.url
+        : "";
+  return url.replace(/^git\+/u, "").replace(/\.git$/u, "");
+}
 
 if (repository.rootManifest.name !== "miaixz.js") {
   throw new Error("The root package must be named 'miaixz.js'.");
+}
+for (const { manifest, path } of [
+  { manifest: repository.rootManifest, path: "package.json" },
+  ...repository.publicWorkspaces.map(({ directory, manifest }) => ({
+    manifest,
+    path: `${directory}/package.json`,
+  })),
+]) {
+  if (normalizeRepositoryUrl(manifest.repository) !== canonicalRepositoryUrl) {
+    throw new Error(`${path} repository must be '${canonicalRepositoryUrl}'.`);
+  }
+  if (manifest.homepage !== `${canonicalRepositoryUrl}#readme`) {
+    throw new Error(`${path} homepage must use the canonical repository.`);
+  }
+  if (manifest.bugs?.url !== `${canonicalRepositoryUrl}/issues`) {
+    throw new Error(`${path} issue tracker must use the canonical repository.`);
+  }
 }
 for (const { manifest, relativePath } of manifests) {
   if (manifest.version !== version) {

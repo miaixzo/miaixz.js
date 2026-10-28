@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/ui",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Miaixz design tokens, themes, styles, and UI components.",
   "type": "module",
   "engines": {
@@ -9,14 +9,14 @@
   },
   "license": "Apache-2.0",
   "author": "The Miaixz Team",
-  "homepage": "https://github.com/818000/miaixz.js#readme",
+  "homepage": "https://github.com/miaixzo/miaixz.js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/818000/miaixz.js.git",
+    "url": "git+https://github.com/miaixzo/miaixz.js.git",
     "directory": "packages/ui"
   },
   "bugs": {
-    "url": "https://github.com/818000/miaixz.js/issues"
+    "url": "https://github.com/miaixzo/miaixz.js/issues"
   },
   "keywords": [
     "miaixz",
@@ -876,8 +876,8 @@
     "check": "npm run typecheck && npm run lint && npm run audit:css && npm run test:coverage && npm run format:check"
   },
   "peerDependencies": {
-    "@miaixz/icons": ">=0.8.1 <0.9.0",
-    "@miaixz/sdk": ">=0.8.1 <0.9.0",
+    "@miaixz/icons": ">=0.8.2 <0.9.0",
+    "@miaixz/sdk": ">=0.8.2 <0.9.0",
     "react": ">=18.3 <20",
     "react-dom": ">=18.3 <20"
   },
@@ -888,8 +888,8 @@
     "@babel/core": "8.0.1",
     "@babel/eslint-parser": "8.0.1",
     "@eslint/js": "10.0.1",
-    "@miaixz/icons": "0.8.1",
-    "@miaixz/sdk": "0.8.1",
+    "@miaixz/icons": "0.8.2",
+    "@miaixz/sdk": "0.8.2",
     "@playwright/test": "1.62.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

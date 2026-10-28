@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/icons",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Miaixz variable-font icons, React component, and accessibility primitives.",
   "type": "module",
   "engines": {
@@ -9,14 +9,14 @@
   },
   "license": "Apache-2.0",
   "author": "The Miaixz Team",
-  "homepage": "https://github.com/818000/miaixz.js#readme",
+  "homepage": "https://github.com/miaixzo/miaixz.js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/818000/miaixz.js.git",
+    "url": "git+https://github.com/miaixzo/miaixz.js.git",
     "directory": "packages/icons"
   },
   "bugs": {
-    "url": "https://github.com/818000/miaixz.js/issues"
+    "url": "https://github.com/miaixzo/miaixz.js/issues"
   },
   "keywords": [
     "miaixz",
