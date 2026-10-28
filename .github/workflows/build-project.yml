@@ -196,6 +196,13 @@ jobs:
           cache: npm
           cache-dependency-path: "**/package-lock.json"
 
+      - name: Install Isolated Refinement Font Tools
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/refinement-python"
+          "${RUNNER_TEMP}/refinement-python/bin/python" -m pip install \
+            --disable-pip-version-check "fonttools==${FONTTOOLS_VERSION}"
+          echo "${RUNNER_TEMP}/refinement-python/bin" >> "${GITHUB_PATH}"
+
       - name: Install Dependencies
         run: npm ci --package-lock=true --ignore-scripts --legacy-peer-deps
 
@@ -213,6 +220,9 @@ jobs:
           BROWSER: ${{ matrix.browser }}
         run: |
           set -euo pipefail
+          MIAIXZ_REFINEMENT_BROWSER="$BROWSER" npm exec --workspace @miaixz/icons -- vitest run \
+            tests/assets/fonts/refinement.test.ts \
+            --testNamePattern="checks analytic native shapes at the production origin"
           npm exec --workspace @miaixz/icons -- playwright test --project="$BROWSER"
           if [ "$BROWSER" = "chromium" ]; then
             npm exec --workspace @miaixz/ui -- playwright test \

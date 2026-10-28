@@ -149,19 +149,26 @@ describe("G0 toolchain activation", () => {
     expect(manifest).toMatchObject({ name: "@miaixz/icons", version: release });
   });
 
-  it("keeps visual validation automatic, read-only, and free of Git writes", async () => {
-    const workflow = await readFile(
+  it("keeps the deep visual audit manual while browser contracts remain automatic", async () => {
+    const deepAuditWorkflow = await readFile(
       resolve(repositoryRoot, ".github/workflows/icon-visual.yml"),
       "utf8",
     );
-    expect(workflow).not.toMatch(/workflow_dispatch/u);
-    expect(workflow).not.toMatch(/contents:\s*write/u);
-    expect(workflow).not.toMatch(/git\s+(?:commit|push|tag)/u);
-    expect(workflow).toContain("push:");
-    expect(workflow).toContain("pull_request:");
-    expect(workflow).not.toContain("upload-artifact");
-    expect(workflow).not.toContain("icons:release:evidence");
-    expect(workflow).not.toContain("--mode compare");
+    const buildWorkflow = await readFile(
+      resolve(repositoryRoot, ".github/workflows/build-project.yml"),
+      "utf8",
+    );
+    expect(deepAuditWorkflow).toMatch(/workflow_dispatch/u);
+    expect(deepAuditWorkflow).not.toMatch(/(?:^|\n)\s+(?:push|pull_request):/u);
+    expect(deepAuditWorkflow).not.toMatch(/contents:\s*write/u);
+    expect(deepAuditWorkflow).not.toMatch(/git\s+(?:commit|push|tag)/u);
+    expect(deepAuditWorkflow).not.toContain("upload-artifact");
+    expect(deepAuditWorkflow).not.toContain("icons:release:evidence");
+    expect(deepAuditWorkflow).not.toContain("--mode compare");
+    expect(buildWorkflow).toContain("Browser Contracts (${{ matrix.browser }})");
+    expect(buildWorkflow).toContain(
+      'npm exec --workspace @miaixz/icons -- playwright test --project="$BROWSER"',
+    );
   });
 
   it("does not persist unit execution results or coverage reports", async () => {
