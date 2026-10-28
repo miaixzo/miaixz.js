@@ -1,5 +1,7 @@
 # @miaixz/sdk
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 `@miaixz/sdk` is an ESM-only npm package. It does not provide a CommonJS `require` entry point, so consumers must use standard ESM `import` statements.
 
 This is the official Miaixz browser SDK. It gives independently deployed frontend services, such as Home, Spaces, and Settings, a shared API protocol and common session, runtime context, configuration, grants, events, files, appearance, and internationalization capabilities.
@@ -497,13 +499,13 @@ npm ci --package-lock=true --ignore-scripts --legacy-peer-deps
 npm run check
 ```
 
-Run `npm run check:package` from the repository root to validate both packed packages.
+Run `npm run check:package` from the repository root to validate all packed public packages.
 
-Publishing is coordinated by the repository release workflow. Both npm packages must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
+Publishing is coordinated by the repository release workflow. All public npm packages must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
 
 ## Security
 
-See the repository [security policy](../SECURITY.md) for vulnerability reporting instructions and supported release information.
+See the repository [security policy](../../SECURITY.md) for vulnerability reporting instructions and supported release information.
 
 ## License
 

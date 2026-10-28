@@ -1,5 +1,7 @@
 # @miaixz/view
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 `@miaixz/view` is a self-hosted React file viewer with automatic format detection. It does not use PDF.js, ONLYOFFICE, remote conversion services, CDN scripts, or third-party runtime parsers.
 
 ## Install
@@ -13,6 +15,19 @@ Import the icon and viewer styles once, then pass a `File`, `Blob`, URL, `ArrayB
 ```tsx compile
 import "@miaixz/icons/styles.css";
 import "@miaixz/view/styles.css";
+import { FileView } from "@miaixz/view";
+
+export function Preview({ file }: { file: File }) {
+  return <FileView source={file} />;
+}
+```
+
+Applications that already use `@miaixz/sdk` and `@miaixz/ui` can connect the viewer to their shared locale and appearance state. Those two packages are optional integrations and are not required by the standalone viewer:
+
+```tsx compile
+import "@miaixz/icons/styles.css";
+import "@miaixz/ui/styles.css";
+import "@miaixz/view/styles.css";
 import { createMiaixzAppearanceManager } from "@miaixz/sdk/appearance";
 import { createMiaixzI18n } from "@miaixz/sdk/i18n";
 import { MiaixzLocaleProvider, Theme } from "@miaixz/ui";
@@ -21,7 +36,7 @@ import { FileView } from "@miaixz/view";
 const appearance = createMiaixzAppearanceManager({ appId: "file-preview" });
 const i18n = createMiaixzI18n({ locale: "en-US", fallbackLocale: "en-US" });
 
-export function Preview({ file }: { file: File }) {
+export function IntegratedPreview({ file }: { file: File }) {
   return (
     <MiaixzLocaleProvider i18n={i18n}>
       <Theme appearance={appearance}>

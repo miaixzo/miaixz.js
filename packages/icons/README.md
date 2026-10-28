@@ -1,39 +1,41 @@
 # @miaixz/icons
 
-Miaixz 的独立 Web 图标系统，包含原创可变字体图标、React `Icon`、语义尺寸、连续 FILL/opsz 动画和无障碍行为。发布版本统一由仓库根目录的 `VERSION` 文件定义。
+[English](./README.md) | [简体中文](./README_CN.md)
 
-## 安装
+Miaixz's standalone icon system for the web. It provides an original variable icon font, a React `Icon` component, semantic sizes, continuous FILL/opsz animation, and accessible behavior. The repository root `VERSION` file is the single source of truth for released versions.
+
+## Installation
 
 ```bash
 npm install @miaixz/icons react react-dom
 ```
 
-在应用入口显式加载一次样式：
+Import the stylesheet once at the application entry point:
 
 ```tsx
 import "@miaixz/icons/styles.css";
 import { Icon } from "@miaixz/icons";
 
 export function Example() {
-  return <Icon label="搜索" name="search" size="navigation" />;
+  return <Icon label="Search" name="search" size="navigation" />;
 }
 ```
 
-未提供 `label` 的图标默认为装饰性内容并设置 `aria-hidden`；表达独立含义时必须提供非空 `label`。
+An icon without a `label` is decorative and receives `aria-hidden`. Provide a non-empty `label` whenever an icon conveys meaning by itself.
 
-## 字体加载
+## Font loading
 
-`miaixz-icons.woff2` 是唯一字体文件，覆盖当前源中的全部 canonical 名称；CSS 字符范围从实际码点集合派生，不按分类拆分字体或增加请求。
+`miaixz-icons.woff2` is the only font file and contains every canonical icon name in the current source. Its CSS unicode ranges are derived from the real code-point set; the font is not split by category and does not create extra requests.
 
-首屏使用图标时可以预载完整字体：
+Preload the complete font when icons are needed during the first render:
 
 ```html
 <link rel="preload" href="/assets/miaixz-icons.woff2" as="font" type="font/woff2" crossorigin />
 ```
 
-打包器可以通过 `@miaixz/icons/font.woff2` 取得唯一稳定资源入口。跨源部署必须返回 `Access-Control-Allow-Origin`，字体建议返回 `Cache-Control: public, max-age=31536000, immutable`。
+Bundlers can resolve the stable asset entry `@miaixz/icons/font.woff2`. Cross-origin deployments must return `Access-Control-Allow-Origin`; the recommended cache header is `Cache-Control: public, max-age=31536000, immutable`.
 
-运行时预热加载完整字体，所有并发请求共享同一个 Promise：
+To warm the font at runtime, call `preloadIconFont`. Concurrent calls share one Promise:
 
 ```ts
 import { preloadIconFont } from "@miaixz/icons";
@@ -51,36 +53,36 @@ const name: IconName = "rocket";
 <Icon fill={0.5} motion="auto" name={name} size={24} />;
 ```
 
-- `variant="outline" | "filled"` 分别映射 FILL 0 与 1。
-- `fill` 接受 0–1 连续值，并以 180ms 过渡。
-- `size` 接受 `indicator`、`inline`、`control`、`navigation`、`feature`、`display` 或正数；数值同时驱动 12–40 的 opsz。
-- `motion="none"` 与系统 `prefers-reduced-motion: reduce` 都会关闭过渡。
-- 源目录标记 `rtl="mirror"` 的名称仅在实际 RTL 上下文翻转内层字形；LTR 与非镜像名称不翻转，根节点布局不变。
-- `name` 只能使用当前映射中的 canonical 名称；`parseIconName` 会对未知名称抛出 `TypeError`。
+- `variant="outline" | "filled"` maps to FILL 0 and 1 respectively.
+- `fill` accepts a continuous value from 0 to 1 and transitions over 180 ms.
+- `size` accepts `indicator`, `inline`, `control`, `navigation`, `feature`, `display`, or a positive number. Numeric sizes also drive opsz from 12 to 40.
+- `motion="none"` and `prefers-reduced-motion: reduce` both disable transitions.
+- Names marked with `rtl="mirror"` in the source catalog mirror only their inner glyph in a real RTL context. LTR and non-mirroring names remain unchanged, as does the root layout.
+- `name` accepts canonical names only. `parseIconName` throws a `TypeError` for an unknown name.
 
-根入口只提供 `Icon`、`isIconName`、`parseIconName`、`preloadIconFont`，以及 `IconProps`、`IconMotion`、`IconName`、`IconSize` 类型。普通消费直接使用受 `IconName` 约束的字符串。
+The root entry exports only `Icon`, `isIconName`, `parseIconName`, `preloadIconFont`, and the `IconProps`, `IconMotion`, `IconName`, and `IconSize` types. Normal consumers use strings constrained by `IconName`.
 
-完整目录通过独立入口加载，不进入轻量根入口：
+Load the complete catalog from its separate entry; it is not included in the lightweight root entry:
 
 ```ts
 import { ICON_CATALOG, type IconCatalogEntry, type IconCategory } from "@miaixz/icons/catalog";
 ```
 
-目录每项只含 `name` 和 `category`，数组及条目均冻结。不要导入 `src`、`dist` 私有路径或直接书写 PUA 字符。
+Each catalog entry contains only `name` and `category`. The array and its entries are frozen. Do not import private `src` or `dist` paths or write PUA characters directly.
 
-## 第三方图标
+## Third-party icons
 
-`@miaixz/icons` 不封装、不转发第三方图标库。需要第三方图标时，应用应直接安装并按其官方 API 使用；第三方许可证、升级节奏和包体积由应用独立管理，不会影响本包的发布与字体资产。
+`@miaixz/icons` does not wrap or re-export third-party icon libraries. Applications that need third-party icons should install and use those libraries through their official APIs. Their licenses, upgrade cadence, and bundle size remain the application's responsibility and do not affect this package or its font assets.
 
 ```bash
 npm install lucide-react
 ```
 
-## 故障策略与浏览器范围
+## Failure behavior and browser support
 
-字体加载失败时显示固定尺寸的安全占位，不会泄漏 PUA/tofu。完整字体使用一个全局加载 Promise，同一页面最多触发一次字体请求。
+When the font cannot load, the component renders a fixed-size safe placeholder instead of exposing a PUA/tofu glyph. One global loading Promise ensures that a page requests the complete font at most once.
 
-支持 React 18.3–19，以及当前锁定 Playwright 版本对应的 Chromium、Firefox 和 WebKit。SSR 不访问 Font Loading API；Hydration 保持同一个 `span` 根节点和固定尺寸占位。
+The package supports React 18.3–19 and the Chromium, Firefox, and WebKit versions covered by the locked Playwright release. Server rendering does not access the Font Loading API. Hydration keeps the same `span` root and fixed-size placeholder.
 
 ## Public entries
 
@@ -91,22 +93,22 @@ npm install lucide-react
 | `./styles.css` | CSS        |
 | `./font.woff2` | Asset      |
 
-## 源维护
+## Source maintenance
 
-业务源唯一来自 `src/assets/icons.json`、`icons/*.json`、`design.json` 和统一 Schema；字体源唯一来自 Designspace 声明的六套 UFO。`src/values/` 下的 icons/metadata/design 模块由生成器维护，不作为输入，也不保留旧 autogen 目录或转发层。
+The authoritative product sources are `src/assets/icons.json`, `icons/*.json`, `design.json`, and the shared schema. The authoritative font sources are the six UFO masters declared by the Designspace. Generated icon, metadata, and design modules under `src/values/` are outputs, never inputs; no legacy autogen directory or forwarding layer is retained.
 
-首次 npm 发布前，名称集合变更后按 ASCII 名称顺序从 U+F0000 全量重算码点，并同步六母版 Unicode/order，不承诺旧未发布映射兼容。首次发布后已有名称和码点不重排，新增名称只占用下一个合法码点；达到 U+FFFFD 后拒绝新增。
+Before the first npm release, a name-set change recomputes code points from U+F0000 in ASCII name order and synchronizes Unicode/order across all six masters; unpublished mappings are not compatibility commitments. After the first release, existing names and code points never move. New names receive the next valid code point, and additions are rejected after U+FFFFD.
 
-现有图标精修遵循 [精修方案](../../docs/icon-refinement-plan.md) 和 [逐文件任务](../../docs/TODO.md)。本轮不重算名称和码点，不导入外部图形，不增加逐图 CSS 补偿；功能全部完成后才进行最终统一验收。
+Refinement of existing icons does not recompute names or code points, import external artwork, or add per-icon CSS compensation. Final unified validation happens only after the functional work is complete.
 
-精修直接处理六母版源并逐图核实，不保留精修状态、审计和验收记录；扫描不能替代语义、风格及创作来源核实。
+Refinement edits the six masters directly and verifies every icon. Scans do not replace semantic, stylistic, or provenance review.
 
-全部GLIF、plist和Designspace源文件在XML声明之后放置唯一完整的Miaixz/Apache 2.0版权注释，使用用户指定的波浪线格式；模板由字体读取工具统一维护。WOFF2不插入文本注释，实际name表保留版权、完整许可正文和许可URL（name ID 0/13/14）。源与成品检查均拒绝缺失或冲突声明；声明不代替图形的真实创作依据。
+Every GLIF, plist, and Designspace source contains exactly one complete Miaixz/Apache 2.0 copyright comment after the XML declaration. The font reader owns the shared template. WOFF2 files do not contain text comments; their name table retains copyright, the full license text, and the license URL (name IDs 0/13/14). Source and artifact checks reject missing or conflicting declarations. A declaration does not replace real artwork provenance.
 
-Outline 的 compact/standard/display 主笔画分别为 82±6、70±4、62±4 字体单位；standard 普通框圆角为 40，其他光学母版按线宽比例处理。尺寸依据安全边界、最长边与光学校核，不强制每个图标同宽同高。filled 保留正确负空间和语义特征，不套用空心笔画门槛。
+Outline compact/standard/display masters use primary strokes of 82±6, 70±4, and 62±4 font units. Standard frame corners use radius 40; other optical masters scale with stroke width. Sizing follows safe bounds, longest-edge measurements, and optical review rather than forcing equal width and height. Filled icons preserve semantic features and negative space instead of applying outline stroke thresholds.
 
-实际显示对照同时设置 CSS 字号和 opsz 为 12/16/20/24/32/40，FILL 取 0/0.25/0.5/0.75/1。独立源 SVG 对照当前唯一 WOFF2，覆盖 Chromium、Firefox、WebKit 与 DPR 1/2；全部名称 LTR 加镜像名称 RTL，共 336780 对，不跨浏览器比较截图。固定黑色前景/白色采样背景，在内存中验证不透明灰度后精确还原 alpha 覆盖率；不保存截图、不降低既定阈值。
+Render comparisons set CSS size and opsz to 12/16/20/24/32/40 and FILL to 0/0.25/0.5/0.75/1. Independent source SVGs are compared with the single current WOFF2 across Chromium, Firefox, and WebKit at DPR 1 and 2, covering every LTR name plus mirrored RTL names. Screenshots are not compared across browsers. Validation reconstructs alpha coverage from opaque grayscale samples in memory and does not save screenshots or lower established thresholds.
 
-`refinement:scan` 只读扫描并输出终端结果。`icons:visual:check` 执行当前源/字体几何及完整内存显示对照；不读取基线、不保存报告、截图或差异图。单元覆盖率只输出文本，浏览器检查关闭持久化记录。任何失败必须保留真实退出码。
+`refinement:scan` is read-only and writes results to the terminal. `icons:visual:check` validates current source/font geometry and performs the complete in-memory render comparison; it reads no baseline and saves no report, screenshot, or diff image. Unit coverage is text-only, browser checks disable persistent artifacts, and every failure preserves its real exit code.
 
-版本只从根目录 `VERSION` 读取；源 JSON 不保存独立版本字段。发布包必需元数据与字体内嵌版本由 VERSION 派生，并校验一致性。包内通过后才进行本地测试安装，真实业务检查通过后才完成交付。
+Versions are read only from the root `VERSION`; source JSON contains no independent version field. Required package metadata and the embedded font version are derived from `VERSION` and checked for consistency. Local test installation happens only after package checks pass, and delivery completes only after real application validation succeeds.
