@@ -1,5 +1,7 @@
 # @miaixz/ui
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 ## Theme ownership and local delivery
 
 Theme definitions, types, generated CSS and runtime logic live together in `src/theme/`.
@@ -612,15 +614,15 @@ npm ci --package-lock=true --ignore-scripts --legacy-peer-deps
 npm run check
 ```
 
-Run `npm run check:package` from the repository root to validate both packed packages.
+Run `npm run check:package` from the repository root to validate all packed public packages.
 
 The package builds independently with npm and does not rely on implicit tools outside the repository.
 
-Publishing is coordinated by the repository release workflow. `@miaixz/ui` and `@miaixz/sdk` must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
+Publishing is coordinated by the repository release workflow. All public npm packages must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
 
 ## Security and notices
 
-- See the repository [security policy](../SECURITY.md) for vulnerability reporting instructions and supported release information.
+- See the repository [security policy](../../SECURITY.md) for vulnerability reporting instructions and supported release information.
 - See [NOTICE](./NOTICE) for package attribution notices.
 
 ## License

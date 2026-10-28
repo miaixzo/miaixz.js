@@ -1,5 +1,7 @@
 # miaixz.js
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 > Build with intelligence. Create without limits.
 
 `miaixz.js` is the public JavaScript and TypeScript monorepo maintained by Miaixz. It contains the browser SDK, independent icon system, React design system, and file preview components used by independently deployed Miaixz frontend services.
@@ -45,7 +47,7 @@ npm install @miaixz/icons react react-dom
 Install the design system and its peers:
 
 ```bash
-npm install @miaixz/ui @miaixz/sdk react react-dom
+npm install @miaixz/ui @miaixz/icons @miaixz/sdk react react-dom
 ```
 
 Install file previews independently:
