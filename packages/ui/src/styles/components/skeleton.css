@@ -30,6 +30,8 @@
   --miaixz-skeleton-button-width: 6rem;
   --miaixz-skeleton-last-line-width: 64%;
   --miaixz-skeleton-duration: 1200ms;
+  --miaixz-skeleton-background: var(--miaixz-color-surface-active);
+  --miaixz-skeleton-highlight: var(--miaixz-color-surface-hover);
 }
 
 .miaixz-skeleton {
@@ -39,7 +41,7 @@
   color: transparent;
   pointer-events: none;
   user-select: none;
-  background: var(--miaixz-color-surface-secondary);
+  background: var(--miaixz-skeleton-background);
   border-radius: var(--miaixz-radius-4);
 }
 
@@ -49,7 +51,7 @@
   inset-inline-start: 0;
   inline-size: 40%;
   content: "";
-  background: var(--miaixz-color-surface-hover);
+  background: var(--miaixz-skeleton-highlight);
   transform: translateX(-100%);
   animation: miaixz-skeleton-shimmer var(--miaixz-skeleton-duration) infinite
     var(--miaixz-easing-standard);

@@ -38,7 +38,9 @@
 .miaixz-notice {
   display: inline-flex;
   gap: var(--miaixz-space-8);
-  align-items: flex-start;
+  align-items: center;
+  min-inline-size: 0;
+  padding: var(--miaixz-space-4) var(--miaixz-space-12);
   font-size: var(--miaixz-text-caption-size);
   line-height: var(--miaixz-text-caption-line-height);
   color: var(--miaixz-color-text-secondary);
@@ -49,12 +51,23 @@
   flex: none;
   width: var(--miaixz-icon-size-inline);
   height: var(--miaixz-icon-size-inline);
-  margin-block-start: var(--miaixz-space-2);
 }
 
 .miaixz-notice-icon > .miaixz-icon {
   width: var(--miaixz-icon-size-inline);
   height: var(--miaixz-icon-size-inline);
+}
+
+.miaixz-notice-content {
+  min-inline-size: 0;
+}
+
+.miaixz-notice-content > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--miaixz-space-2) var(--miaixz-space-4);
+  align-items: center;
+  overflow-wrap: anywhere;
 }
 
 .miaixz-notice-info {

@@ -62,6 +62,49 @@ import { renderWithLocale } from "../test-utils.helper.js";
 afterEach(cleanup);
 
 describe("catalog presentation components", () => {
+  it("finishes real loading before removing the visual and can restart during completion", () => {
+    const onAnimationEnd = vi.fn();
+    const animationEnd = "AnimationEvent" in window ? "animationend" : "webkitAnimationEnd";
+    const { container, rerender } = renderWithLocale(<Bar active={false} />);
+    expect(container.querySelector(".miaixz-bar")).toBeNull();
+
+    rerender(<Bar active label="Loading" />);
+    const bar = screen.getByRole("progressbar", { name: "Loading" });
+    expect(bar).toHaveAttribute("data-state", "indeterminate");
+    rerender(<Bar active={false} onAnimationEnd={onAnimationEnd} />);
+    expect(container.querySelector(".miaixz-bar")).toBe(bar);
+    expect(bar).toHaveAttribute("data-state", "complete");
+    expect(bar).toHaveAttribute("aria-hidden", "true");
+    expect(screen.queryByRole("progressbar")).toBeNull();
+
+    fireEvent(
+      bar.firstElementChild!,
+      Object.assign(new Event(animationEnd, { bubbles: true }), {
+        animationName: "miaixz-bar-complete",
+      }),
+    );
+    expect(container.querySelector(".miaixz-bar")).toBe(bar);
+    rerender(<Bar active label="Retrying" />);
+    fireEvent(
+      bar,
+      Object.assign(new Event(animationEnd, { bubbles: true }), {
+        animationName: "miaixz-bar-complete",
+      }),
+    );
+    expect(screen.getByRole("progressbar", { name: "Retrying" })).toBe(bar);
+
+    rerender(<Bar active={false} onAnimationEnd={onAnimationEnd} />);
+    fireEvent(
+      bar,
+      Object.assign(new Event(animationEnd, { bubbles: true }), {
+        animationName: "miaixz-bar-complete",
+      }),
+    );
+    expect(onAnimationEnd).toHaveBeenCalledTimes(2);
+    expect(onAnimationEnd.mock.calls.at(-1)?.[0].animationName).toBe("miaixz-bar-complete");
+    expect(container.querySelector(".miaixz-bar")).toBeNull();
+  });
+
   it("renders status, loading, empty, and brand variants with canonical state", () => {
     const { container } = renderWithLocale(
       <Stack gap="medium">

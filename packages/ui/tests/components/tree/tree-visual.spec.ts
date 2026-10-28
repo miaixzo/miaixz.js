@@ -34,7 +34,7 @@ test("nested dense Tree reduces the gap between hierarchy controls", async ({ pa
     tree
       .getByRole("treeitem", { name: "Tree level 1", exact: true })
       .locator(":scope > .miaixz-tree-row > .miaixz-tree-expander"),
-  ).toHaveCSS("width", "24px");
+  ).toHaveCSS("width", "14px");
   await expect(
     tree
       .getByRole("treeitem", { name: "Tree level 1", exact: true })
@@ -141,3 +141,28 @@ test("asynchronous Tree exposes loading and error states", async ({ page }, test
     contentType: "image/png",
   });
 });
+
+for (const direction of ["ltr", "rtl"]) {
+  test(`nested Tree uses one character per level in ${direction}`, async ({ page }) => {
+    await page.setViewportSize({ width: 480, height: 800 });
+    await page.goto(
+      `/tests/?treeFixture=1&treeView=nested&treeDepth=10&treeWidth=320&treeDirection=${direction}`,
+    );
+    const tree = page.getByTestId("tree-contract");
+    const font = await tree.evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+    let previous: number | undefined;
+    for (let level = 1; level <= 10; level++) {
+      const label = tree
+        .getByRole("treeitem", { name: `Tree level ${level}`, exact: true })
+        .locator(":scope > .miaixz-tree-row .miaixz-tree-label");
+      const box = await label.boundingBox();
+      expect(box).not.toBeNull();
+      const start = direction === "rtl" ? box!.x + box!.width : box!.x;
+      if (previous !== undefined)
+        expect(Math.abs(Math.abs(start - previous) - font)).toBeLessThan(1);
+      previous = start;
+    }
+    const iconBox = await tree.locator(".miaixz-tree-expander .miaixz-icon").first().boundingBox();
+    expect(iconBox!.width).toBeLessThan(font);
+  });
+}

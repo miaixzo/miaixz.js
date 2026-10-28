@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/view",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Composable image, PDF, and Office preview components for Miaixz applications.",
   "type": "module",
   "engines": {
@@ -9,14 +9,14 @@
   },
   "license": "Apache-2.0",
   "author": "The Miaixz Team",
-  "homepage": "https://github.com/818000/miaixz.js#readme",
+  "homepage": "https://github.com/miaixzo/miaixz.js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/818000/miaixz.js.git",
+    "url": "git+https://github.com/miaixzo/miaixz.js.git",
     "directory": "packages/view"
   },
   "bugs": {
-    "url": "https://github.com/818000/miaixz.js/issues"
+    "url": "https://github.com/miaixzo/miaixz.js/issues"
   },
   "keywords": [
     "miaixz",
@@ -86,7 +86,7 @@
     "check": "npm run audit:runtime-deps && npm run typecheck && npm run lint && npm run test:coverage && npm run format:check && npm run check:package"
   },
   "peerDependencies": {
-    "@miaixz/icons": ">=0.8.1 <0.9.0",
+    "@miaixz/icons": ">=0.8.2 <0.9.0",
     "react": ">=18.3 <20",
     "react-dom": ">=18.3 <20"
   },
@@ -96,7 +96,7 @@
     "@babel/core": "8.0.1",
     "@babel/eslint-parser": "8.0.1",
     "@eslint/js": "10.0.1",
-    "@miaixz/icons": "0.8.1",
+    "@miaixz/icons": "0.8.2",
     "@playwright/test": "1.62.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -105,7 +105,7 @@
     "@types/node": "26.4.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "4.1.12",
     "eslint": "10.9.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jsdoc": "62.7.0",
@@ -121,8 +121,8 @@
     "stylelint-config-standard": "40.0.0",
     "stylelint-order": "8.1.1",
     "typescript": "7.0.2",
-    "vite": "8.2.2",
-    "vitest": "4.1.11"
+    "vite": "8.3.5",
+    "vitest": "4.1.12"
   },
   "publishConfig": {
     "access": "public",

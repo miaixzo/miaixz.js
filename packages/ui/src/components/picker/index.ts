@@ -26,6 +26,12 @@ export { Picker } from "./picker.js";
 export type {
   MiaixzPickerOwnProps,
   PickerProps,
+  PickerSingleProps,
+  PickerConfiguredMultipleProps,
+  PickerContentState,
+  PickerMultipleContentState,
+  PickerSurfaceProps,
+  LegacyPickerProps,
   PickerRenderValueState,
   PickerSlotProps,
   PickerValueState,

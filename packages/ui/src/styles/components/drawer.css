@@ -267,8 +267,13 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
     var(--miaixz-motion-interaction-easing);
 }
 
-.miaixz-drawer-close:is(:hover, :focus-visible) {
+.miaixz-drawer-close:is(:hover, :focus-visible):not(:disabled) {
   color: var(--miaixz-color-brand);
+}
+
+.miaixz-drawer-close:disabled {
+  color: var(--miaixz-color-text-disabled);
+  cursor: not-allowed;
 }
 
 .miaixz-drawer-close:focus-visible {
@@ -289,7 +294,7 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
   flex: none;
   gap: var(--miaixz-control-gap);
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding-block: var(--miaixz-drawer-footer-padding-block);
   padding-bottom: calc(var(--miaixz-drawer-footer-padding-block) + var(--miaixz-safe-area-bottom));
   border-top: var(--miaixz-border-width-default) solid var(--miaixz-color-border);

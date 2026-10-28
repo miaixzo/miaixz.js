@@ -186,7 +186,7 @@ function DatagridImplementation<Row>(
     emptyState,
     pagination,
     caption,
-    surface = "plain",
+    gutter = "inset",
     captionVisibility = "visible",
     layout = "auto",
     rowHeight,
@@ -265,7 +265,7 @@ function DatagridImplementation<Row>(
       ref={reference}
       aria-busy={loading || undefined}
       data-state={state}
-      data-surface={surface}
+      data-gutter={gutter}
       data-layout={layout}
       data-body-layout={bodyLayout}
       data-caption-visibility={captionVisibility}

@@ -107,7 +107,7 @@ type ActiveBarProps = BarNativeProps &
  */
 type InactiveBarProps = BarNativeProps & {
   /**
-   * Removes the fixed page-level loading bar.
+   * Finishes a previously active bar with an exit animation; an initially inactive bar stays hidden.
    */
   readonly active: false;
   /**

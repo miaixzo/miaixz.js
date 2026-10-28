@@ -107,6 +107,7 @@ describe("Select closed contract", () => {
     await user.click(trigger);
     const listbox = screen.getByRole("listbox", { name: "Environment" });
     expect(listbox).toHaveClass("listbox-slot");
+    expect(listbox).toHaveAttribute("data-invalid", "true");
     expect(screen.getByRole("group", { name: "Greek" })).toHaveClass("group-slot");
     expect(screen.getByText("Greek")).toHaveClass("group-label-slot");
     const gamma = screen.getByRole("option", { name: "Gamma" });

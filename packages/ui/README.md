@@ -102,6 +102,50 @@ actual container width; sidebar editors need sufficient space for both columns.
 The Appearance panel uses **360px**, while the two-column user editor uses
 **1000px**. Other drawers retain their existing sizes until explicitly configured.
 
+## Drawer dismissal and footer actions
+
+Drawers stay open on backdrop clicks, Escape, blur and pointer leave by default.
+`closeOnBackdrop` and `closeOnEscape` are explicit opt-ins. Data-viewing drawers
+should enable `closeOnBackdrop`; mixed view/edit surfaces enable it only in their
+view mode. Appearance opts into backdrop dismissal because its settings apply
+immediately. Pointer leave alone does not dismiss either surface. `closeDisabled` keeps
+both built-in close controls visible but disabled during a pending operation;
+programmatic `open` changes remain controlled by the application. Nested dialogs
+and native file-picker cancellation do not dismiss their parent drawer.
+
+Without a supplied `footer`, Drawer renders a localized close action on the left.
+A supplied footer replaces that default; `footer={null}` omits the footer entirely.
+Appearance uses this exception and keeps its header close control.
+Use the existing `FormActions` for custom
+footers: `cancel` stays left, optional `actions` renders auxiliary commands on the
+right, and optional `submit` remains the final native form submission control.
+A submit-only footer stays right; close-only footers need no fake submit action.
+Keep validation and request failures in the open drawer with the current draft.
+
+```tsx
+<Drawer
+  open={open}
+  title="Edit record"
+  closeDisabled={saving}
+  onOpenChange={setOpen}
+  footer={
+    <FormActions
+      cancel={{ id: "cancel", label: "Cancel", disabled: saving, onAction: close }}
+      actions={
+        <Button type="button" onClick={preview}>
+          Preview
+        </Button>
+      }
+      submit={{ id: "save", label: "Save", loading: saving, buttonProps: { form: formId } }}
+    />
+  }
+>
+  <form id={formId} onSubmit={save}>
+    {children}
+  </form>
+</Drawer>
+```
+
 ## Installation
 
 ```bash
@@ -623,6 +667,8 @@ Use `Cluster wrap={false}` to keep related inline content, such as an avatar and
 on the same row. `DatagridColumn.overflow="ellipsis"` opts a column into single-line truncation;
 wrapping remains the default. Supply a native `title` on cell content when the full value should
 be available on hover, and use explicit column widths when narrow viewports require table scrolling.
+`TableContainer` and `Datagrid` use `gutter="inset"` by default for readable list spacing. Use
+`gutter="flush"` for dense trees, matrices, and other tables that must reach their container edges.
 
 Embedded views can call `useMiaixzLocale().loadNamespace(namespace, locale)` before opening to load
 their own messages through the existing SDK runtime. This does not create a second translator or
@@ -703,3 +749,38 @@ The component and styles are also available from `@miaixz/ui/exception` and `@mi
 Use `slotProps.background` to supply a custom decorative background through `children`, `className` or native styles. This slot is hidden from assistive technology and ignores pointer events. Full-viewport background remains the responsibility of the outer `Entry`; the exception surface can also be embedded in a smaller region. `Theme.components.Exception` supports the same public defaults, owner-state variants and slot classes as other UI components.
 
 The four original inline SVG office stories reuse neutral figures and ordinary work actions. Clothing reads `--miaixz-color-brand`, accent fills read `--miaixz-color-brand-soft`, and outlines/paper follow neutral theme colors. No raster recoloring, fixed green clothing, remote images or Logo resolution is needed. The illustrations have no visible text, flags, badges, political slogans or geographical boundaries. Custom illustrations and background content are supplied explicitly by the caller and should follow the same neutral-content review.
+
+### Configured Picker surfaces
+
+Existing `Picker` calls without `selectionMode` retain their searchable multiple-selection
+contract, option-array values, asynchronous option loading and chip rendering.
+Explicit `selectionMode="single"` uses `MiaixzOption | null`; explicit `"multiple"` uses
+`readonly MiaixzOption[]`. Both accept static `options` or `renderContent` for custom content.
+`renderContent` receives the staged value, `onValueChange`, `disabled` and `readOnly`.
+Custom content owns its search, paging, asynchronous requests and keyboard semantics;
+`loading`, `errorMessage` and `onRetry` provide shared status feedback.
+
+`presentation` accepts `popover` (default), `drawer`, `dialog`, or `inline`. These reuse
+existing public containers; they do not change Select, Combobox or date/time contracts.
+`commitMode="immediate"` is the default. With `"confirm"`, only confirmation updates the
+public value and native form value; cancellation or dismissal discards the staged selection.
+`clearable` exposes clearing only for optional fields. Controlled values without a change
+callback remain read-only. Custom content unmounts when closed and mounts after the open
+surface has an opportunity to paint. Keep expensive work inside that content, not in the
+caller before opening the Picker. The default option renderer uses native radios or checkboxes.
+
+```tsx
+<Picker
+  selectionMode="single"
+  presentation="drawer"
+  commitMode="confirm"
+  drawerWidth={800}
+  label="Choose resource"
+  value={selected}
+  onValueChange={setSelected}
+  renderValue={(option) => option?.label ?? "Choose resource"}
+  renderContent={(state) => (
+    <ResourceCatalog selected={state.value} onSelect={state.onValueChange} />
+  )}
+/>
+```

@@ -392,7 +392,7 @@
 
 .miaixz-navigation-rail-overflow-trigger[aria-current="page"] {
   font-weight: var(--miaixz-font-weight-medium);
-  background: var(--miaixz-surface-role-selected-background);
+  background: linear-gradient(270deg, var(--miaixz-color-navigation-selected), transparent);
 }
 
 .miaixz-navigation-rail-frame[data-variant="brand"]
@@ -417,7 +417,7 @@
   .miaixz-navigation-item[aria-current="page"] {
   font-weight: var(--miaixz-font-weight-medium);
   color: var(--miaixz-color-text-primary);
-  background: var(--miaixz-surface-role-selected-background);
+  background: linear-gradient(270deg, var(--miaixz-color-navigation-selected), transparent);
   background-repeat: no-repeat;
   background-position: left top;
   background-size: var(--miaixz-layout-sidebar-compact-width) 100%;
@@ -504,8 +504,11 @@
 }
 
 .miaixz-navigation-rail-frame[data-variant="brand"]:dir(rtl)
-  .miaixz-navigation-item[aria-current="page"] {
-  background: var(--miaixz-surface-role-selected-background);
+  .miaixz-navigation[data-orientation="vertical"]
+  .miaixz-navigation-item[aria-current="page"],
+.miaixz-navigation-rail-frame[data-variant="brand"]:dir(rtl)
+  .miaixz-navigation-rail-overflow-trigger[aria-current="page"] {
+  background-image: linear-gradient(90deg, var(--miaixz-color-navigation-selected), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -33,11 +33,24 @@ import type {
 import type { MiaixzSlotProps } from "../../shared/slots.js";
 
 /**
+ * Controls whether table content is inset from or flush with its container edges.
+ *
+ * @public
+ */
+export type TableGutter = "inset" | "flush";
+
+/**
  * Configures the responsive table framing container.
  *
  * @public
  */
 export interface TableContainerProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Controls the table's inline spacing within its container.
+   *
+   * @defaultValue `"inset"`
+   */
+  gutter?: TableGutter;
   /**
    * Removes the outer frame without disabling table scrolling.
    *

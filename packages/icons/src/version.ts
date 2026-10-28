@@ -21,4 +21,4 @@
 /**
  * Generated from root VERSION; do not edit. Identifies the current project release.
  */
-export const VERSION = "0.8.1" as const;
+export const VERSION = "0.8.2" as const;

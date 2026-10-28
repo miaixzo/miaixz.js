@@ -69,7 +69,8 @@ import type {
   MiaixzOptionSource,
 } from "../combobox/combobox.types.js";
 import { emptyPickerValue, validatePickerValue } from "./picker-model.js";
-import type { PickerProps } from "./picker.types.js";
+import { PickerSurface } from "./picker-surface.js";
+import type { LegacyPickerProps, PickerProps } from "./picker.types.js";
 import { renderDefaultValues } from "./picker-view.js";
 import { withMiaixzThemeComponent } from "../../theme/binding.js";
 
@@ -82,7 +83,7 @@ import { withMiaixzThemeComponent } from "../../theme/binding.js";
  * @returns A searchable multiple-selection picker.
  */
 function PickerImplementation<Value extends string = string>(
-  props: PickerProps<Value>,
+  props: LegacyPickerProps<Value>,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const {
@@ -496,13 +497,40 @@ function PickerImplementation<Value extends string = string>(
 }
 
 /**
+ * Dispatches legacy and explicitly configured selection contracts without changing their hooks.
+ * @param props - Public picker contract.
+ * @param ref - Field root reference.
+ * @returns The configured picker implementation.
+ */
+const LegacyPicker = forwardRef(PickerImplementation) as <Value extends string = string>(
+  props: LegacyPickerProps<Value> & RefAttributes<HTMLDivElement>,
+) => ReactElement;
+
+/**
+ * Chooses the explicit or legacy picker implementation.
+ * @param props - Public picker configuration.
+ * @param ref - Forwarded field root.
+ * @returns The selected implementation.
+ */
+function PickerDispatch<Value extends string = string>(
+  props: PickerProps<Value>,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
+  return props.selectionMode === "single" || props.selectionMode === "multiple" ? (
+    <PickerSurface {...props} rootRef={ref} />
+  ) : (
+    <LegacyPicker {...props} ref={ref} />
+  );
+}
+
+/**
  * Renders a searchable multiple-value WAI-ARIA picker.
  *
  * @public
  */
 export const Picker = withMiaixzThemeComponent(
   "Picker",
-  forwardRef(PickerImplementation) as <Value extends string = string>(
+  forwardRef(PickerDispatch) as <Value extends string = string>(
     props: PickerProps<Value> & RefAttributes<HTMLDivElement>,
   ) => ReactElement,
 );

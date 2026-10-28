@@ -418,7 +418,10 @@ export function TreeRenderer<Value>(props: TreeRendererProps<Value>) {
                 <Spinner label="" aria-hidden="true" size="small" />
               </span>
             ) : expandable ? (
-              <Icon name={viewRecord.disclosed ? "chevron-down" : "chevron-right"} size="control" />
+              <Icon
+                name={viewRecord.disclosed ? "chevron-down" : "chevron-right"}
+                size="indicator"
+              />
             ) : null}
           </span>
           {node.leading === undefined ? null : (

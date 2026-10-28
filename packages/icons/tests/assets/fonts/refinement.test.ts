@@ -29,6 +29,15 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 import { chromium, firefox, webkit } from "@playwright/test";
 const repositoryRoot = resolve(process.cwd(), "../..");
+const refinementBrowsers = { chromium, firefox, webkit } as const;
+const requestedRefinementBrowser = process.env.MIAIXZ_REFINEMENT_BROWSER;
+if (requestedRefinementBrowser && !(requestedRefinementBrowser in refinementBrowsers)) {
+  throw new Error(`Unsupported refinement browser: ${requestedRefinementBrowser}`);
+}
+const selectedRefinementBrowsers = Object.entries(refinementBrowsers).filter(
+  ([browserName]) => !requestedRefinementBrowser || browserName === requestedRefinementBrowser,
+);
+const runsBrowserRefinement = !process.env.CI || Boolean(requestedRefinementBrowser);
 
 /**
  * Imports a guarded implementation without running its CLI.
@@ -10333,6 +10342,7 @@ describe("refinement contract fixtures", () => {
   });
 
   it("checks analytic native shapes at the production origin in all three engines and both DPRs", async () => {
+    if (!runsBrowserRefinement) return;
     const reference = await nativeReferenceFont();
     for (const error of reference.curveErrors)
       expect(error).toBeLessThanOrEqual(designRules.visual.comparison.compiledOutlineUnits);
@@ -10398,11 +10408,7 @@ describe("refinement contract fixtures", () => {
         },
       ],
     ];
-    for (const [browserName, browserType] of Object.entries({
-      chromium,
-      firefox,
-      webkit,
-    })) {
+    for (const [browserName, browserType] of selectedRefinementBrowsers) {
       const browser = await browserType.launch(visual.coverageLaunchOptions(browserName));
       try {
         for (const dpr of [1, 2]) {

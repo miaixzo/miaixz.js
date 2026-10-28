@@ -483,7 +483,7 @@ const context = await bridge.getContext();
 bridge.dispose();
 ```
 
-Modules must not obtain context through shared globals or direct access to the host DOM. See the [repository examples](https://github.com/818000/miaixz.js/tree/main/packages/sdk/tests/examples) for complete compilable examples.
+Modules must not obtain context through shared globals or direct access to the host DOM. See the [repository examples](https://github.com/miaixzo/miaixz.js/tree/main/packages/sdk/tests/examples) for complete compilable examples.
 
 PostMessage Hosts apply request, subscription, payload, catalog, and adapter-response limits by
 default. Existing initialization code does not need to change. A Host with a measured need for a

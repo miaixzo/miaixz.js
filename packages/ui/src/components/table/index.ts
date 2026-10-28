@@ -35,6 +35,7 @@ export {
 } from "./table.js";
 export type {
   TableProps,
+  TableGutter,
   TableRowHeight,
   TableOwnerState,
   TableRootAttributes,

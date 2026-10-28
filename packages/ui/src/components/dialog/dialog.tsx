@@ -22,14 +22,7 @@
  * Implements the dialog UI component.
  */
 
-import {
-  createElement,
-  forwardRef,
-  useId,
-  useRef,
-  type DialogHTMLAttributes,
-  type MouseEvent,
-} from "react";
+import { createElement, forwardRef, useId, useRef, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { FocusScope } from "../../accessibility/focus-scope.js";

@@ -1,6 +1,6 @@
 {
   "name": "miaixz.js",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "packageManager": "npm@10.9.3",
   "description": "Build with intelligence. Create without limits.",
@@ -63,12 +63,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/818000/miaixz.js.git"
+    "url": "git+https://github.com/miaixzo/miaixz.js.git"
   },
   "bugs": {
-    "url": "https://github.com/818000/miaixz.js/issues"
+    "url": "https://github.com/miaixzo/miaixz.js/issues"
   },
-  "homepage": "https://github.com/818000/miaixz.js#readme",
+  "homepage": "https://github.com/miaixzo/miaixz.js#readme",
   "license": "Apache-2.0",
   "author": "The Miaixz Team",
   "devDependencies": {

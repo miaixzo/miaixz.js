@@ -80,6 +80,8 @@ import type {
   TimePickerProps,
   ToastProps,
   DonutProps,
+  TableContainerProps,
+  TableGutter,
   TableProps,
   ToolbarProps,
   TreeProps,
@@ -545,10 +547,12 @@ void table.dividerStyle;
 void table.presentation;
 
 const customTableRowHeight: NonNullable<TableProps["rowHeight"]> = 51;
+const insetTableGutter: TableGutter = "inset";
+const flushTableContainer: TableContainerProps = { gutter: "flush" };
 
 const customDatagridRowHeight: NonNullable<DatagridProps<unknown>["rowHeight"]> = "51px";
 /**
- * @ts-expect-error Datagrid uses surface, not a visual variant recipe. */
+ * @ts-expect-error Datagrid has no visual variant recipe. */
 void datagrid.variant;
 /**
  * @ts-expect-error Datagrid table appearance is global; density cannot be customized. */
@@ -557,9 +561,18 @@ void datagrid.density;
  * @ts-expect-error Datagrid has no second row-density input. */
 void datagrid.rowSize;
 /**
- * @ts-expect-error Datagrid does not normalize the old default surface. */
-const invalidDatagridSurface: NonNullable<DatagridProps<unknown>["surface"]> = "default";
-void [invalidDatagridSurface, customTableRowHeight, customDatagridRowHeight];
+ * @ts-expect-error Datagrid surface was replaced by the layout-specific gutter. */
+void datagrid.surface;
+/**
+ * @ts-expect-error Datagrid gutters use the shared inset or flush vocabulary. */
+const invalidDatagridGutter: NonNullable<DatagridProps<unknown>["gutter"]> = "plain";
+void [
+  invalidDatagridGutter,
+  insetTableGutter,
+  flushTableContainer,
+  customTableRowHeight,
+  customDatagridRowHeight,
+];
 
 declare const stepsContract: StepsProps;
 /**

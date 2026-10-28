@@ -60,7 +60,7 @@ export function GuideShell({ children }: GuideShellProps) {
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
         <span>一个应用，四个模块指南。</span>
-        <a href="https://github.com/818000/miaixz.js">GitHub</a>
+        <a href="https://github.com/miaixzo/miaixz.js">GitHub</a>
       </footer>
       <Appearance scope="entry" draggable={false} />
     </div>

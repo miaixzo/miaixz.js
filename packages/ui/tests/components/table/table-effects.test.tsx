@@ -7,11 +7,25 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Table, TableBody, TableCell, TableRow } from "../../../src/components/table/index.js";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+} from "../../../src/components/table/index.js";
 
 afterEach(cleanup);
 
 describe("table row effects", () => {
+  it("uses inset gutters by default and supports flush content", () => {
+    const { rerender } = render(<TableContainer data-testid="container" />);
+    expect(screen.getByTestId("container")).toHaveAttribute("data-gutter", "inset");
+
+    rerender(<TableContainer data-testid="container" gutter="flush" />);
+    expect(screen.getByTestId("container")).toHaveAttribute("data-gutter", "flush");
+  });
+
   it("exposes one global table appearance and preserves selected-row state", () => {
     render(
       <Table aria-label="Records">
@@ -83,6 +97,7 @@ describe("table row effects", () => {
     expect(css).toContain(selectedHoverRule);
     expect(css).toContain(".miaixz-table > :is(thead, tbody, tfoot) > tr");
     expect(css).toContain("height: var(--miaixz-table-row-height)");
+    expect(css).toContain("--miaixz-table-gutter-inline: var(--miaixz-density-panel-padding)");
     expect(css).toContain("[data-miaixz-theme] table :where(*)");
     expect(css).toContain("font-weight: var(--miaixz-font-weight-regular) !important");
     expect(css).toContain("[data-miaixz-theme] table :is(th, td)");
@@ -96,6 +111,10 @@ describe("table row effects", () => {
       "border-block-end: var(--miaixz-border-width-default) dashed var(--miaixz-color-border)",
     );
     expect(css).toContain("[data-miaixz-theme] table > tbody > tr:last-child > :is(th, td)");
+    expect(css).toMatch(
+      /\.miaixz-table-actions\s*\{[^}]*background-color:\s*var\(--miaixz-surface-role-panel-background\)/u,
+    );
+    expect(css.indexOf(selectedRule)).toBeGreaterThan(css.indexOf(".miaixz-table-actions"));
     expect(css.indexOf(selectedHoverRule)).toBeGreaterThan(css.indexOf(selectedRule));
     expect(css).not.toContain("block-size: 48px");
     expect(css).not.toContain("height: 42px");

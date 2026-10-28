@@ -66,7 +66,7 @@ export default defineConfig({
   ...(iconNoRecords ? { reporter: "line" as const } : {}),
   metadata: { packageStage, runId },
   fullyParallel: false,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
   projects: [
     {

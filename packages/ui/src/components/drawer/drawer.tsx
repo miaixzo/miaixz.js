@@ -138,6 +138,8 @@ function getDrawerNativeProps(props: DrawerProps): Partial<DrawerRootAttributes>
     closeLabel: _closeLabel,
     showClose: _showClose,
     closeOnBackdrop: _closeOnBackdrop,
+    closeOnEscape: _closeOnEscape,
+    closeDisabled: _closeDisabled,
     slots: _slots,
     slotProps: _slotProps,
     placement: _placement,
@@ -180,7 +182,9 @@ export const Drawer = withMiaixzThemeComponent(
       headingLevel = 2,
       closeLabel,
       showClose = true,
-      closeOnBackdrop = true,
+      closeOnBackdrop = false,
+      closeOnEscape = false,
+      closeDisabled = false,
       slots,
       slotProps,
     } = props;
@@ -290,7 +294,9 @@ export const Drawer = withMiaixzThemeComponent(
      * @param reason - User action responsible for the requested state change.
      * @returns No return value.
      */
-    const requestClose = (reason: DrawerCloseReason): void => onOpenChange(false, reason);
+    const requestClose = (reason: DrawerCloseReason): void => {
+      if (!closeDisabled) onOpenChange(false, reason);
+    };
     const geometry: CSSProperties & Record<`--${string}`, string | number> = {};
     if (typeof width === "number") geometry["--miaixz-drawer-width"] = `${width}px`;
     if (positioned && frame !== null) {
@@ -336,7 +342,7 @@ export const Drawer = withMiaixzThemeComponent(
         ...(positioned ? { "data-positioned": true } : {}),
         onCancel: (event) => {
           event.preventDefault();
-          requestClose("escape");
+          if (closeOnEscape) requestClose("escape");
         },
         onClose: () => {
           if (props.open) requestClose("nativeClose");
@@ -430,9 +436,10 @@ export const Drawer = withMiaixzThemeComponent(
                     internalProps: {
                       type: "button",
                       "aria-label": resolvedCloseLabel,
+                      disabled: closeDisabled,
                       onClick: () => requestClose("closeButton"),
                     },
-                    ownedProps: ["type", "aria-label"],
+                    ownedProps: ["type", "aria-label", "disabled"],
                   })}
                 >
                   <Icon name="close" size="control" />
@@ -448,7 +455,7 @@ export const Drawer = withMiaixzThemeComponent(
             >
               {children}
             </div>
-            {footer !== undefined && (
+            {footer !== null && (
               <footer
                 {...mergeMiaixzSlotProps({
                   ownerState,
@@ -456,7 +463,29 @@ export const Drawer = withMiaixzThemeComponent(
                   slotProps: slotProps?.footer,
                 })}
               >
-                {footer}
+                {footer ?? (
+                  <div className="miaixz-form-actions" data-submit-only="true">
+                    <div className="miaixz-form-actions-trailing">
+                      <button
+                        className="miaixz-interactive miaixz-control miaixz-button miaixz-control-medium"
+                        data-miaixz-ripple="true"
+                        data-size="medium"
+                        data-tone="neutral"
+                        data-variant="outlined"
+                        disabled={closeDisabled}
+                        onClick={() => requestClose("closeButton")}
+                        type="button"
+                      >
+                        <span className="miaixz-button-content">
+                          <span className="miaixz-button-icon miaixz-button-start-icon">
+                            <Icon name="close" size="control" />
+                          </span>
+                          <span className="miaixz-button-label">{resolvedCloseLabel}</span>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </footer>
             )}
           </div>

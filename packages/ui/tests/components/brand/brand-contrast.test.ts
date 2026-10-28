@@ -84,7 +84,7 @@ describe("brand foreground semantics", () => {
       "tabs",
       '.miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {',
     );
-    expect(navigation).toContain("color: var(--miaixz-color-brand-strong);");
+    expect(navigation).toContain("color: var(--miaixz-color-brand);");
     expect(navigation).toContain("0 var(--miaixz-color-brand);");
     expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
       "color: var(--miaixz-color-text-inverse);",

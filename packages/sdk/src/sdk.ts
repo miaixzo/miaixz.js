@@ -668,6 +668,7 @@ export function createMiaixzSdk(options: MiaixzSdkOptions): MiaixzSdk {
   const files = createMiaixzFileClient(primary.client);
   const services = new Map<string, MiaixzApiFacadeController>();
   let grants = createMiaixzGrantSet(options.grants ?? { allowed: [] });
+  let grantsRevision = 0;
   let preparedUpdate:
     | {
         /**
@@ -750,6 +751,7 @@ export function createMiaixzSdk(options: MiaixzSdkOptions): MiaixzSdk {
     setGrants(snapshot) {
       if (destroyed) throw new MiaixzSdkError({ code: "SDK_DESTROYED" });
       grants = createMiaixzGrantSet(snapshot);
+      events.emit("grants:changed", Object.freeze({ revision: ++grantsRevision }));
     },
     /**
      * Returns a stable client for an exact configured service key.

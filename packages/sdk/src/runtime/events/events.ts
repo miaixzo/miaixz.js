@@ -246,6 +246,11 @@ function isMiaixzConfigEvent(payload: unknown): payload is MiaixzSdkConfig {
 }
 
 const miaixzBuiltinEventValidators: Readonly<Record<string, MiaixzEventValidator>> = Object.freeze({
+  "grants:changed": (payload) =>
+    isPlainEventObject(payload) &&
+    Object.keys(payload).length === 1 &&
+    Number.isSafeInteger(payload.revision) &&
+    Number(payload.revision) > 0,
   "session:changed": isMiaixzSessionStatusEvent,
   "context:changed": isMiaixzContextEvent,
   "appearance:changed": isMiaixzAppearanceEvent,

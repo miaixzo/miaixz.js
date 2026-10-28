@@ -2,17 +2,17 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "@miaixz/icons-0.8.1",
-  "documentNamespace": "https://miaixz.org/spdx/icons/0.8.1",
+  "name": "@miaixz/icons-0.8.2",
+  "documentNamespace": "https://miaixz.org/spdx/icons/0.8.2",
   "creationInfo": {
     "created": "2026-09-26T00:00:00Z",
-    "creators": ["Tool: miaixz-icons-build-0.8.1"]
+    "creators": ["Tool: miaixz-icons-build-0.8.2"]
   },
   "packages": [
     {
       "name": "@miaixz/icons",
       "SPDXID": "SPDXRef-Package",
-      "versionInfo": "0.8.1",
+      "versionInfo": "0.8.2",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "Apache-2.0",

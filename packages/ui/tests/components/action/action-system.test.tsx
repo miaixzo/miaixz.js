@@ -334,6 +334,45 @@ describe("ActionBar", () => {
 });
 
 describe("FormActions", () => {
+  it("supports close-only footers and keeps auxiliary commands before native submission", () => {
+    const close = vi.fn(),
+      auxiliary = vi.fn(),
+      submit = vi.fn((event) => event.preventDefault());
+    const { rerender } = renderAction(
+      <FormActions cancel={{ id: "close", label: "Close", onAction: close }} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    rerender(
+      <MiaixzLocaleProvider
+        i18n={createMiaixzI18n({ locale: "zh-CN", messages: miaixzUiMessages })}
+      >
+        <form onSubmit={submit}>
+          <FormActions
+            cancel={{ id: "close", label: "Close", onAction: close }}
+            actions={
+              <button type="button" onClick={auxiliary}>
+                Preview
+              </button>
+            }
+            submit={{ id: "save", label: "Save" }}
+          />
+        </form>
+      </MiaixzLocaleProvider>,
+    );
+    expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "Close",
+      "Preview",
+      "Save",
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(auxiliary).toHaveBeenCalledTimes(1);
+    expect(submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+
   it("uses native cancel and submit semantics without a second dirty state", () => {
     const { rerender } = renderAction(
       <form>

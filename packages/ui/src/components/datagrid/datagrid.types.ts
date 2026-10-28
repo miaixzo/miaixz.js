@@ -23,7 +23,7 @@
  */
 
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
-import type { TableRowHeight } from "../table/table.types.js";
+import type { TableGutter, TableRowHeight } from "../table/table.types.js";
 
 /**
  * Datagrid sort directions permitted by the component contract.
@@ -101,7 +101,12 @@ export interface MiaixzDatagridBaseProps<Row> {
   readonly emptyState?: ReactNode;
   readonly pagination?: ReactNode;
   readonly caption: string;
-  readonly surface?: "plain" | "inset";
+  /**
+   * Controls whether table content is inset from or flush with its container edges.
+   *
+   * @defaultValue `"inset"`
+   */
+  readonly gutter?: TableGutter;
   /**
    * Overrides the active Theme's table-row height for this datagrid.
    */

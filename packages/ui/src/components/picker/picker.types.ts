@@ -89,10 +89,104 @@ export interface MiaixzPickerOwnProps<Value extends string = string> extends Omi
 /**
  * Configures a searchable multiple-selection picker.
  */
-export type PickerProps<Value extends string = string> = MiaixzOptionSource<Value> &
+export type LegacyPickerProps<Value extends string = string> = MiaixzOptionSource<Value> &
   PickerValueState<Value> &
   MiaixzComboboxInputState &
   Omit<
     MiaixzPickerOwnProps<Value>,
     keyof MiaixzOptionSource<Value> | keyof MiaixzComboboxInputState
   >;
+
+/**
+ * State passed to custom single-selection content.
+ */
+export interface PickerContentState<Value extends string = string> {
+  readonly value: MiaixzOption<Value> | null;
+  readonly onValueChange: (value: MiaixzOption<Value> | null) => void;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
+}
+
+/**
+ * State passed to custom multiple-selection content.
+ */
+export interface PickerMultipleContentState<Value extends string = string> {
+  readonly value: readonly MiaixzOption<Value>[];
+  readonly onValueChange: (value: readonly MiaixzOption<Value>[]) => void;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
+}
+
+/**
+ * Container and field configuration shared by explicitly configured pickers.
+ */
+export interface PickerSurfaceProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "defaultValue" | "onChange" | "children"
+> {
+  readonly label: ReactNode;
+  readonly placeholder?: string;
+  readonly name?: string;
+  readonly form?: string;
+  readonly disabled?: boolean;
+  readonly readOnly?: boolean;
+  readonly invalid?: boolean;
+  readonly required?: boolean;
+  readonly size?: "small" | "medium" | "large";
+  readonly presentation?: "popover" | "drawer" | "dialog" | "inline";
+  readonly commitMode?: "immediate" | "confirm";
+  readonly clearable?: boolean;
+  readonly open?: boolean;
+  readonly defaultOpen?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
+  readonly drawerWidth?: import("../drawer/drawer.types.js").DrawerWidth;
+  readonly placement?: import("../popover/popover.types.js").PopoverOwnerState["placement"];
+  readonly loading?: boolean;
+  readonly loadingMessage?: ReactNode;
+  readonly errorMessage?: ReactNode;
+  readonly onRetry?: () => void;
+  readonly confirmLabel?: string;
+  readonly cancelLabel?: string;
+  readonly clearLabel?: string;
+}
+
+/**
+ * Single-value picker contract, independent of the selected content or container.
+ */
+export type PickerSingleProps<Value extends string = string> = PickerSurfaceProps & {
+  readonly selectionMode: "single";
+  readonly options?: readonly MiaixzOption<Value>[];
+  readonly renderContent?: (state: PickerContentState<Value>) => ReactNode;
+  readonly renderValue?: (value: MiaixzOption<Value> | null) => ReactNode;
+} & (
+    | {
+        readonly value: MiaixzOption<Value> | null;
+        readonly defaultValue?: never;
+        readonly onValueChange?: (value: MiaixzOption<Value> | null) => void;
+      }
+    | {
+        readonly value?: never;
+        readonly defaultValue?: MiaixzOption<Value> | null;
+        readonly onValueChange?: (value: MiaixzOption<Value> | null) => void;
+      }
+  );
+
+/**
+ * Explicit multiple-selection contract with custom content and container support.
+ */
+export type PickerConfiguredMultipleProps<Value extends string = string> = PickerSurfaceProps &
+  PickerValueState<Value> & {
+    readonly selectionMode: "multiple";
+    readonly options?: readonly MiaixzOption<Value>[];
+    readonly selectionLimit?: number;
+    readonly renderContent?: (state: PickerMultipleContentState<Value>) => ReactNode;
+    readonly renderValue?: (value: readonly MiaixzOption<Value>[]) => ReactNode;
+  };
+
+/**
+ * Backward-compatible picker contracts selected by the explicit selectionMode discriminator.
+ */
+export type PickerProps<Value extends string = string> =
+  | (LegacyPickerProps<Value> & { readonly selectionMode?: never })
+  | PickerSingleProps<Value>
+  | PickerConfiguredMultipleProps<Value>;

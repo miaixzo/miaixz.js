@@ -393,6 +393,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     internalRef: surfaceRef,
     internalProps: {
       id: listboxId,
+      ...(effectiveInvalid ? { "data-invalid": true } : {}),
       role: "listbox",
       popover: "manual",
       ...(props["aria-label"] === undefined ? {} : { "aria-label": props["aria-label"] }),

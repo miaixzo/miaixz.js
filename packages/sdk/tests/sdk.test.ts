@@ -170,3 +170,21 @@ describe("createMiaixzSdk", () => {
     );
   });
 });
+
+describe("grant snapshot invalidation", () => {
+  it("notifies subscribers after replacement and never includes permission data", () => {
+    const sdk = createMiaixzSdk({ appId: "grant-events", config: initialConfig });
+    const seen: unknown[] = [];
+    const off = sdk.events.on("grants:changed", (event) => {
+      seen.push(event);
+      expect(sdk.grants.can("stores.update")).toBe(event.revision === 1);
+    });
+    sdk.setGrants({ allowed: ["stores.update"] });
+    sdk.setGrants({ allowed: [] });
+    expect(seen).toEqual([{ revision: 1 }, { revision: 2 }]);
+    expect(() => sdk.setGrants({ allowed: [null] } as never)).toThrow();
+    expect(seen).toHaveLength(2);
+    off();
+    sdk.destroy();
+  });
+});

@@ -126,7 +126,18 @@ interface DrawerSharedProps {
   readonly headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   readonly closeLabel?: string;
   readonly showClose?: boolean;
+  /**
+   * Allows backdrop dismissal when explicitly enabled. Defaults to false.
+   */
   readonly closeOnBackdrop?: boolean;
+  /**
+   * Allows Escape dismissal when explicitly enabled. Defaults to false.
+   */
+  readonly closeOnEscape?: boolean;
+  /**
+   * Disables user close requests while an operation is pending.
+   */
+  readonly closeDisabled?: boolean;
   readonly slots?: DrawerSlots;
   readonly slotProps?: DrawerSlotProps;
 }

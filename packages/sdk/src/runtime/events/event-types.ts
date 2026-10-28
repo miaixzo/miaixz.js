@@ -66,6 +66,10 @@ export interface MiaixzLocaleChangedEvent {
  */
 export interface MiaixzSdkEventMap {
   /**
+   * Invalidates local permission views without broadcasting grants or credentials.
+   */
+  readonly "grants:changed": Readonly<{ revision: number }>;
+  /**
    * Contains a non-sensitive session invalidation signal.
    */
   readonly "session:changed": Readonly<MiaixzSessionStatusEvent>;

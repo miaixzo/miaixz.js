@@ -27,6 +27,7 @@
   --miaixz-table-cell-padding-inline: var(--miaixz-density-table-cell-padding-inline);
   --miaixz-table-cell-padding-block: var(--miaixz-density-table-cell-padding-block);
   --miaixz-table-action-width: var(--miaixz-control-height-small);
+  --miaixz-table-gutter-inline: var(--miaixz-density-panel-padding);
   --miaixz-table-min-inline-size: calc(var(--miaixz-layout-card-min-width) * 2);
   --miaixz-table-row-hover-background: var(--miaixz-surface-role-selected-background);
   --miaixz-table-row-selected-background: var(--miaixz-surface-role-selected-background);
@@ -43,6 +44,10 @@
   background: var(--miaixz-surface-role-panel-background);
   border: var(--miaixz-border-width-default) solid var(--miaixz-surface-role-panel-border);
   border-radius: var(--miaixz-radius-panel);
+}
+
+.miaixz-table-container[data-gutter="inset"] {
+  padding-inline: var(--miaixz-table-gutter-inline);
 }
 
 .miaixz-table {
@@ -87,7 +92,7 @@
 .miaixz-table-head,
 .miaixz-table > thead {
   color: var(--miaixz-color-text-secondary);
-  background: transparent;
+  background: var(--miaixz-surface-role-panel-background);
 }
 
 .miaixz-table > :is(thead, tbody, tfoot) > tr,
@@ -130,6 +135,7 @@
   width: var(--miaixz-table-action-width);
   text-align: end;
   white-space: nowrap;
+  background-color: var(--miaixz-surface-role-panel-background);
 }
 
 .miaixz-table-sort {
@@ -147,6 +153,10 @@
 .miaixz-table-sort[aria-sort="ascending"],
 .miaixz-table-sort[aria-sort="descending"] {
   color: var(--miaixz-color-text-primary);
+}
+
+.miaixz-table > thead > tr > :is(th, td) {
+  background: var(--miaixz-surface-role-panel-background);
 }
 
 .miaixz-table[data-sticky-header] .miaixz-table-head {

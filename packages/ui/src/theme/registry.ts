@@ -212,6 +212,7 @@ import type {
   TableHeaderOwnerState,
   TableHeaderProps,
   TableHeadProps,
+  TableGutter,
   TableOwnerState,
   TableProps,
   TableRowProps,
@@ -430,7 +431,11 @@ export interface MiaixzThemeComponentRegistry {
   >;
   readonly TableContainer: MiaixzThemeEntry<
     TableContainerProps,
-    { readonly frame: "default" | "plain"; readonly surface: "default" | "transparent" }
+    {
+      readonly frame: "default" | "plain";
+      readonly gutter: TableGutter;
+      readonly surface: "default" | "transparent";
+    }
   >;
   readonly TableFooter: MiaixzThemeEntry<TableFooterProps, MiaixzEmptyOwnerState>;
   readonly TableCaption: MiaixzThemeEntry<TableCaptionProps, MiaixzEmptyOwnerState>;
@@ -438,8 +443,7 @@ export interface MiaixzThemeComponentRegistry {
     DatagridProps<unknown>,
     {
       readonly state: "loading" | "error" | "empty" | "ready";
-      readonly surface: "plain" | "inset";
-      readonly density: "compact" | "standard" | "comfortable";
+      readonly gutter: TableGutter;
       readonly rowHeight: TableProps["rowHeight"];
       readonly layout: "auto" | "fixed";
       readonly bodyLayout: "content" | "fill";

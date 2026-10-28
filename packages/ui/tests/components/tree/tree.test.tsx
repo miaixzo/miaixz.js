@@ -347,9 +347,10 @@ describe("Tree", () => {
     await waitFor(() =>
       expect(onDeleteRequest).toHaveBeenCalledWith(expect.objectContaining({ id: "audit" })),
     );
+    await waitFor(() => expect(audit).not.toHaveAttribute("aria-busy", "true"));
 
     fireEvent.click(screen.getByRole("button", { name: "新建子项于 平台" }));
-    const create = screen.getByRole("textbox", { name: "新子项名称" });
+    const create = await screen.findByRole("textbox", { name: "新子项名称" });
     fireEvent.change(create, { target: { value: "   " } });
     fireEvent.keyDown(create, { key: "Enter" });
     expect(onCreateRequest).not.toHaveBeenCalled();

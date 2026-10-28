@@ -19,7 +19,7 @@
 */
 
 /**
- * Defines the bar visual styles.
+ * Defines page-level progress geometry, fill motion and completion feedback.
  */
 
 .miaixz-bar {
@@ -35,50 +35,71 @@
 
 .miaixz-bar-fill {
   display: block;
-  width: 100%;
+  width: calc(100% * var(--miaixz-bar-progress));
   height: 100%;
   background: var(--miaixz-color-brand);
-  transform: scaleX(var(--miaixz-bar-progress));
   transform-origin: left center;
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+  transition: width var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing);
+  animation: miaixz-bar-enter var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing)
+    both;
 }
 
 .miaixz-bar[data-state="indeterminate"] .miaixz-bar-fill {
-  animation: miaixz-bar-progress 3.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  width: 12%;
+  animation:
+    miaixz-bar-enter var(--miaixz-motion-state-duration) var(--miaixz-motion-state-easing) both,
+    miaixz-bar-wait 1.2s ease-in-out infinite;
 }
 
-@keyframes miaixz-bar-progress {
-  0% {
-    transform: scaleX(0.02);
+.miaixz-bar[data-state="complete"] {
+  animation: miaixz-bar-complete var(--miaixz-motion-state-duration) ease-out
+    var(--miaixz-motion-state-duration) both;
+}
+
+.miaixz-bar[data-state="complete"] .miaixz-bar-fill {
+  width: 100%;
+}
+
+@keyframes miaixz-bar-enter {
+  from {
+    transform: scaleX(0);
   }
 
-  22% {
-    transform: scaleX(0.2);
+  to {
+    transform: scaleX(1);
   }
+}
 
-  58% {
-    transform: scaleX(0.58);
-  }
-
-  82% {
-    transform: scaleX(0.8);
-  }
-
+@keyframes miaixz-bar-wait {
+  0%,
   100% {
-    transform: scaleX(0.94);
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes miaixz-bar-complete {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .miaixz-bar,
-  .miaixz-bar-fill {
+  .miaixz-bar[data-state] .miaixz-bar-fill {
     transition: none;
+    animation: none;
   }
 
-  .miaixz-bar[data-state="indeterminate"] .miaixz-bar-fill {
-    transform: scaleX(0.72);
-    animation: none;
+  .miaixz-bar[data-state="complete"] {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
   }
 }
 

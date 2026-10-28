@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/examples",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -13,7 +13,7 @@
     "@miaixz/sdk": "file:../packages/sdk",
     "@miaixz/ui": "file:../packages/ui",
     "@miaixz/view": "file:../packages/view",
-    "next": "16.4.0",
+    "next": "16.4.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

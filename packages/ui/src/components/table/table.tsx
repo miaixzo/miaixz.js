@@ -71,7 +71,14 @@ function resolveTableRowHeight(value: TableRowHeight): string {
 export const TableContainer = withMiaixzThemeComponent(
   "TableContainer",
   forwardRef<HTMLDivElement, TableContainerProps>(function TableContainer(
-    { className, frame = "default", surface = "default", minimumWidth = "default", ...props },
+    {
+      className,
+      frame = "default",
+      gutter = "inset",
+      surface = "default",
+      minimumWidth = "default",
+      ...props
+    },
     ref,
   ) {
     return (
@@ -84,6 +91,7 @@ export const TableContainer = withMiaixzThemeComponent(
           surface === "transparent" && "miaixz-table-container-transparent",
           className,
         )}
+        data-gutter={gutter}
         data-minimum-width={minimumWidth}
       />
     );

@@ -149,18 +149,37 @@ describe("Datagrid", () => {
         layout="fixed"
         rowHeight={51}
         rows={[{ id: "a", name: "Alpha" }]}
-        surface="inset"
+        gutter="flush"
       />,
     );
 
     const table = screen.getByRole("table", { name: "数据列表" });
     expect(table).toBeVisible();
-    expect(table.closest(".miaixz-datagrid")).toHaveAttribute("data-body-layout", "fill");
-    expect(table.closest(".miaixz-datagrid")).not.toHaveAttribute("data-density");
+    const datagrid = table.closest(".miaixz-datagrid");
+    expect(datagrid).toHaveAttribute("data-body-layout", "fill");
+    expect(datagrid).toHaveAttribute("data-gutter", "flush");
+    expect(datagrid).not.toHaveAttribute("data-surface");
+    expect(datagrid).not.toHaveAttribute("data-density");
     expect(table).not.toHaveAttribute("data-density");
     expect(table).toHaveStyle({ "--miaixz-table-row-height": "51px" });
     expect(screen.getByRole("cell", { name: "Alpha" })).toBeVisible();
     expect(screen.getByRole("columnheader", { name: /名称/u })).toHaveStyle({ width: "80%" });
+  });
+
+  it("uses inset gutters by default", () => {
+    renderWithLocale(
+      <Datagrid
+        caption="默认间距"
+        columns={columns}
+        getRowId={(row) => row.id}
+        rows={[{ id: "a", name: "Alpha" }]}
+      />,
+    );
+
+    expect(screen.getByRole("table").closest(".miaixz-datagrid")).toHaveAttribute(
+      "data-gutter",
+      "inset",
+    );
   });
 
   it("cycles server-owned sorting without introducing grid semantics", () => {

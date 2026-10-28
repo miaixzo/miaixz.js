@@ -21,6 +21,7 @@ import {
 import {
   ActionBar,
   ActionText,
+  Bar,
   Alert,
   Appearance,
   Avatar,
@@ -56,9 +57,11 @@ import {
   MiaixzLocaleProvider,
   MiaixzLinkProvider,
   Navigation,
+  NavigationRail,
   View,
   type LinkRefreshMode,
   Panel,
+  Progress,
   Picker,
   RowActions,
   Rating,
@@ -273,7 +276,7 @@ function ActionShowcase() {
         description="危险操作固定收进更多菜单"
         title="03 表格行"
       >
-        <TableContainer>
+        <TableContainer gutter="flush">
           <Table>
             <TableCaption>操作密度基线</TableCaption>
             <TableHeader>
@@ -848,6 +851,48 @@ function FieldGeometryFixture() {
  * Pointer and keyboard states are exercised through the native editors.
  * @returns Interactive control state reference.
  */
+function PickerEnhancementFixture() {
+  const [value, setValue] = useState<
+    import("../src/components/combobox/combobox.types.js").MiaixzOption | null
+  >(null);
+  const presentation = parameters.get("pickerSurface") as
+    "popover" | "drawer" | "dialog" | "inline";
+  const size = (parameters.get("pickerSize") ?? "medium") as "small" | "medium" | "large";
+  return (
+    <main>
+      <Input aria-label="Reference input" size={size} />
+      <Picker
+        size={size}
+        selectionMode="single"
+        presentation={presentation}
+        commitMode="confirm"
+        label="Choose resource"
+        name="resource"
+        value={value}
+        onValueChange={setValue}
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        renderContent={(state) => (
+          <div data-testid="picker-custom-content">
+            <Button
+              onClick={() =>
+                state.onValueChange({ value: "alpha", label: "Alpha", textValue: "Alpha" })
+              }
+            >
+              Pick Alpha
+            </Button>
+          </div>
+        )}
+      />
+      <output data-testid="committed-value">{value?.value ?? "empty"}</output>
+    </main>
+  );
+}
+
+/**
+ * Renders the existing control-state fixture.
+ * @returns The control reference.
+ */
 function ControlStateFixture() {
   const [mode, setMode] = useState("normal");
   const [log, setLog] = useState("");
@@ -1107,6 +1152,48 @@ function ResponsiveEditorFixture() {
 }
 
 /**
+ * Exercises both progress components with explicit test controls for actual value changes and completion.
+ * @returns Shared progress motion fixture.
+ */
+function ProgressMotionFixture() {
+  const [value, setValue] = useState<number | undefined>();
+  const [active, setActive] = useState(true);
+  return (
+    <Panel title="进度条动效">
+      {active ? (
+        value === undefined ? (
+          <Bar active label="顶部等待" />
+        ) : (
+          <Bar active label="顶部进度" value={value} max={100} />
+        )
+      ) : (
+        <Bar active={false} />
+      )}
+      <Progress label="等待实际进度" value={value} showValue />
+      <Progress label="实际用量" value={40} showValue />
+      <Cluster>
+        <Button
+          onClick={() => {
+            setActive(true);
+            setValue(25);
+          }}
+        >
+          推进到 25%
+        </Button>
+        <Button
+          onClick={() => {
+            setValue(100);
+            setActive(false);
+          }}
+        >
+          完成加载
+        </Button>
+      </Cluster>
+    </Panel>
+  );
+}
+
+/**
  * Renders public controls and deterministic browser contract fixtures.
  *
  * @returns Theme and locale providers with the selected fixture.
@@ -1129,6 +1216,7 @@ export function BrowserFixture() {
   const accessibilityFixture = parameters.get("a11y") as AccessibilityFixtureName | null;
 
   if (
+    parameters.has("railGradient") ||
     parameters.has("navigationRefresh") ||
     parameters.get("controlStates") === "1" ||
     parameters.get("fieldGeometry") === "1" ||
@@ -1155,6 +1243,7 @@ export function BrowserFixture() {
         >
           {parameters.get("loadingIndicators") === "1" ? (
             <main aria-label="加载状态展示">
+              <ProgressMotionFixture />
               <Panel title="加载状态" description="统一图形、尺寸与动画节奏">
                 <Cluster>
                   <Spinner size="small" label="正在加载小尺寸" />
@@ -1178,6 +1267,40 @@ export function BrowserFixture() {
                 loadingLabel="正在读取配置"
               />
             </main>
+          ) : parameters.has("railGradient") ? (
+            <NavigationRail
+              brand="Brand"
+              toggle={<button type="button">Toggle</button>}
+              variant="brand"
+              expanded={parameters.get("expanded") === "1"}
+              dir={parameters.get("direction") === "rtl" ? "rtl" : "ltr"}
+              style={{ height: 600 }}
+              groups={[
+                {
+                  id: "main",
+                  label: "Main",
+                  items: [
+                    {
+                      id: "selected",
+                      label: "Selected menu",
+                      textValue: "Selected menu",
+                      href: "#selected",
+                      current: "page",
+                      icon: "blocks",
+                      overflow: "never",
+                    },
+                    {
+                      id: "ordinary",
+                      label: "Ordinary menu",
+                      textValue: "Ordinary menu",
+                      href: "#ordinary",
+                      icon: "settings",
+                      overflow: "never",
+                    },
+                  ],
+                },
+              ]}
+            />
           ) : parameters.has("navigationRefresh") ? (
             <NavigationRefreshFixture />
           ) : parameters.get("editorResponsive") === "1" ? (
@@ -1185,7 +1308,11 @@ export function BrowserFixture() {
           ) : parameters.get("fieldGeometry") === "1" ? (
             <FieldGeometryFixture />
           ) : parameters.get("controlStates") === "1" ? (
-            <ControlStateFixture />
+            parameters.has("pickerSurface") ? (
+              <PickerEnhancementFixture />
+            ) : (
+              <ControlStateFixture />
+            )
           ) : (
             <FormLabelFixture />
           )}
@@ -1421,7 +1548,7 @@ export function BrowserFixture() {
             </EditorLayout>
 
             <TableContainer id="tables">
-              <Table>
+              <Table stickyHeader={parameters.has("stickyTable")}>
                 <TableCaption>固定成员数据</TableCaption>
                 <TableHeader>
                   <TableRow>
@@ -1434,6 +1561,13 @@ export function BrowserFixture() {
                     <TableCell>Kimi</TableCell>
                     <TableCell>启用</TableCell>
                   </TableRow>
+                  {parameters.has("stickyTable") &&
+                    Array.from({ length: 30 }, (_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>Member {index + 1}</TableCell>
+                        <TableCell>启用</TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -1442,6 +1576,7 @@ export function BrowserFixture() {
               <Button onClick={() => setDrawer("outer")}>打开长内容抽屉</Button>
               <Drawer
                 boundary={parameters.has("drawerWidth") ? undefined : boundary}
+                closeOnEscape
                 description="边界、长内容与嵌套场景"
                 footer={<Button onClick={() => setDrawer("closed")}>完成</Button>}
                 onOpenChange={(open) => setDrawer(open ? "outer" : "closed")}
@@ -1467,6 +1602,7 @@ export function BrowserFixture() {
                   <p key={index}>长内容行 {index + 1}：用于固定抽屉滚动和容器几何。</p>
                 ))}
                 <Drawer
+                  closeOnEscape
                   onOpenChange={(open) => setDrawer(open ? "nested" : "outer")}
                   open={drawer === "nested"}
                   title="内层抽屉"
