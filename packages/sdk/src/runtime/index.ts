@@ -40,4 +40,3 @@ export type {
   MiaixzPostMessageHostLimits,
   MiaixzPostMessageHostOptions,
 } from "./contracts/index.js";
-

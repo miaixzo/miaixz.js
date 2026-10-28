@@ -41,7 +41,6 @@ import { useMiaixzPortalTarget } from "../../shared/overlay/portal-target.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
 import { useMiaixzLayoutEffect } from "../../shared/use-client-layout-effect.js";
 import { Icon } from "@miaixz/icons";
-import { FormActions } from "../action/form-actions.js";
 import type {
   DrawerCloseReason,
   DrawerOwnerState,
@@ -465,15 +464,27 @@ export const Drawer = withMiaixzThemeComponent(
                 })}
               >
                 {footer ?? (
-                  <FormActions
-                    cancel={{
-                      id: "close",
-                      label: resolvedCloseLabel,
-                      icon: "close",
-                      disabled: closeDisabled,
-                      onAction: () => requestClose("closeButton"),
-                    }}
-                  />
+                  <div className="miaixz-form-actions" data-submit-only="true">
+                    <div className="miaixz-form-actions-trailing">
+                      <button
+                        className="miaixz-interactive miaixz-control miaixz-button miaixz-control-medium"
+                        data-miaixz-ripple="true"
+                        data-size="medium"
+                        data-tone="neutral"
+                        data-variant="outlined"
+                        disabled={closeDisabled}
+                        onClick={() => requestClose("closeButton")}
+                        type="button"
+                      >
+                        <span className="miaixz-button-content">
+                          <span className="miaixz-button-icon miaixz-button-start-icon">
+                            <Icon name="close" size="control" />
+                          </span>
+                          <span className="miaixz-button-label">{resolvedCloseLabel}</span>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </footer>
             )}

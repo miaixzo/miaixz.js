@@ -24,7 +24,6 @@
 
 import { useEffect, useRef, useState, useMemo, useId, type ForwardedRef } from "react";
 import { Button } from "../button/button.js";
-import { FormActions } from "../action/form-actions.js";
 import { Drawer } from "../drawer/drawer.js";
 import { Dialog } from "../dialog/dialog.js";
 import { Popover } from "../popover/popover.js";
@@ -263,15 +262,15 @@ export function PickerSurface<Value extends string>({
   };
   const footer =
     presentation === "drawer" ? (
-      <FormActions
-        cancel={cancelAction}
-        actions={
-          <>
-            {clearAction}
-            {confirmAction}
-          </>
-        }
-      />
+      <div className="miaixz-form-actions">
+        <Button id={cancelAction.id} onClick={cancelAction.onAction}>
+          {cancelAction.label}
+        </Button>
+        <div className="miaixz-form-actions-trailing">
+          {clearAction}
+          {confirmAction}
+        </div>
+      </div>
     ) : (
       <div className="miaixz-picker-surface-actions">
         {clearAction}
