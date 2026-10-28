@@ -1576,6 +1576,7 @@ export function BrowserFixture() {
               <Button onClick={() => setDrawer("outer")}>打开长内容抽屉</Button>
               <Drawer
                 boundary={parameters.has("drawerWidth") ? undefined : boundary}
+                closeOnEscape
                 description="边界、长内容与嵌套场景"
                 footer={<Button onClick={() => setDrawer("closed")}>完成</Button>}
                 onOpenChange={(open) => setDrawer(open ? "outer" : "closed")}
@@ -1601,6 +1602,7 @@ export function BrowserFixture() {
                   <p key={index}>长内容行 {index + 1}：用于固定抽屉滚动和容器几何。</p>
                 ))}
                 <Drawer
+                  closeOnEscape
                   onOpenChange={(open) => setDrawer(open ? "nested" : "outer")}
                   open={drawer === "nested"}
                   title="内层抽屉"
