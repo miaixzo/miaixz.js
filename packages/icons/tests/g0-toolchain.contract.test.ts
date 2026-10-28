@@ -110,7 +110,7 @@ describe("G0 toolchain activation", () => {
       "utf8",
     );
     for (const declaration of [
-      'PYTHON_VERSION: "3.13.12"',
+      'PYTHON_VERSION: "3.13.18"',
       'FONTMAKE_VERSION: "3.12.1"',
       'FONTTOOLS_VERSION: "4.66.0"',
       'UFO2FT_VERSION: "3.9.0"',

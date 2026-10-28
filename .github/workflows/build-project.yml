@@ -29,7 +29,7 @@ env:
   FONTBAKERY_VERSION: "1.1.0"
   FONTMAKE_VERSION: "3.12.1"
   FONTTOOLS_VERSION: "4.66.0"
-  PYTHON_VERSION: "3.13.12"
+  PYTHON_VERSION: "3.13.18"
   TARGET_REF: ${{ inputs['target-ref'] || github.ref }}
   UFO2FT_VERSION: "3.9.0"
 
