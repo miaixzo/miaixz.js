@@ -157,7 +157,7 @@ export interface MiaixzRequestOptions<
   readonly responseType?: MiaixzResponseType;
 
   /**
-   * JSON responses use the Miaixz errcode/errmsg/data envelope by default.
+   * JSON responses use the Miaixz code/desc/data envelope by default.
    */
   readonly envelope?: MiaixzEnvelopeMode;
 

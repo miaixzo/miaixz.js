@@ -84,15 +84,15 @@ JSON API 默认使用统一响应结构：
 
 ```json
 {
-  "errcode": "0",
-  "errmsg": "success",
+  "code": "0",
+  "desc": "success",
   "data": {}
 }
 ```
 
-- `errcode === "0"`：请求成功，SDK 自动返回内部 `data`。
-- `errcode !== "0"`：即使 HTTP 状态为 `200`，也会抛出 `MiaixzApiError`。
-- JSON 缺少 `errcode`、`errmsg` 或 `data`：抛出代码为 `API_ENVELOPE_INVALID` 的错误。
+- `code === "0"`：请求成功，SDK 自动返回内部 `data`。
+- `code !== "0"`：即使 HTTP 状态为 `200`，也会抛出 `MiaixzApiError`。
+- JSON 缺少 `code`、`desc` 或 `data`：抛出代码为 `API_ENVELOPE_INVALID` 的错误。
 - 文本、Blob、ArrayBuffer 和空响应不要求使用此结构。
 
 ```ts
@@ -142,7 +142,7 @@ await sdk.ready;
 console.log(sdk.i18n.t("portal.title"));
 ```
 
-项目消息优先于 SDK 内置消息。缺失消息先回退到 `fallbackLocale`，仍不存在时返回消息键。业务错误可以使用 `api.error.<errcode>` 作为翻译键。
+项目消息优先于 SDK 内置消息。缺失消息先回退到 `fallbackLocale`，仍不存在时返回消息键。业务错误可以使用 `api.error.<code>` 作为翻译键。
 
 ## 外观、主题和密度
 

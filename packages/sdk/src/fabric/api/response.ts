@@ -72,7 +72,7 @@ export type MiaixzResponseInterceptor = (
 ) => MiaixzHttpResponse<unknown> | Promise<MiaixzHttpResponse<unknown>>;
 
 /**
- * Validates the standard `{ errcode, errmsg, data }` response shape.
+ * Validates the standard `{ code, desc, data }` response shape.
  *
  * @param value - Parsed response body.
  * @returns Whether the body is a Miaixz API envelope.
@@ -83,10 +83,10 @@ export function isMiaixzApiEnvelope<T = unknown>(value: unknown): value is Miaix
   return (
     typeof value === "object" &&
     value !== null &&
-    "errcode" in value &&
-    typeof record.errcode === "string" &&
-    "errmsg" in value &&
-    typeof record.errmsg === "string" &&
+    "code" in value &&
+    typeof record.code === "string" &&
+    "desc" in value &&
+    typeof record.desc === "string" &&
     "data" in value
   );
 }
@@ -102,9 +102,9 @@ export function isMiaixzApiSuccess(value: {
   /**
    * Business result code returned by the API.
    */
-  errcode: string;
+  code: string;
 }): boolean {
-  return value.errcode === "0";
+  return value.code === "0";
 }
 /**
  * Returns an envelope's `data` value and leaves non-envelope values unchanged.

@@ -39,13 +39,13 @@ const mockFetch: typeof fetch = async (input, init) => {
   const path = new URL(String(input)).pathname;
   if (path === "/fail") {
     return Response.json(
-      { errcode: "DEMO_FAILURE", errmsg: "The local mock rejected this request.", data: null },
+      { code: "DEMO_FAILURE", desc: "The local mock rejected this request.", data: null },
       { status: 503 },
     );
   }
   return Response.json({
-    errcode: "0",
-    errmsg: "ok",
+    code: "0",
+    desc: "ok",
     data: {
       id: "local-response",
       path,

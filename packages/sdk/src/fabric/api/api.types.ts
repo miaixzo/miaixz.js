@@ -93,12 +93,12 @@ export interface MiaixzApiEnvelope<T> {
   /**
    * Result code, where zero represents a successful response.
    */
-  readonly errcode: string;
+  readonly code: string;
 
   /**
    * Human-readable result message supplied by the API.
    */
-  readonly errmsg: string;
+  readonly desc: string;
 
   /**
    * Payload returned by the API.

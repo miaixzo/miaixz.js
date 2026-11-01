@@ -117,15 +117,15 @@ All JSON APIs use the following response envelope by default:
 
 ```json
 {
-  "errcode": "0",
-  "errmsg": "success",
+  "code": "0",
+  "desc": "success",
   "data": {}
 }
 ```
 
-- `errcode === "0"`: the request succeeded, and the SDK returns the inner `data` value automatically.
-- `errcode !== "0"`: the SDK throws `MiaixzApiError`, even when the HTTP status is `200`.
-- A JSON response without `errcode`, `errmsg`, or `data`: the SDK throws an error with code `API_ENVELOPE_INVALID`.
+- `code === "0"`: the request succeeded, and the SDK returns the inner `data` value automatically.
+- `code !== "0"`: the SDK throws `MiaixzApiError`, even when the HTTP status is `200`.
+- A JSON response without `code`, `desc`, or `data`: the SDK throws an error with code `API_ENVELOPE_INVALID`.
 - Text, Blob, ArrayBuffer, and empty responses do not require this envelope.
 
 ```ts
@@ -214,7 +214,7 @@ await sdk.i18n.changeLocale("fr-FR");
 
 Statically imported catalogs can also be passed through `messages` during initialization. Project messages take precedence over built-in SDK messages. Missing messages fall back to `fallbackLocale`; if no fallback is available, the message key is returned.
 
-Backend business errors can use `api.error.<errcode>` as a project message key, for example `api.error.SPACE_FORBIDDEN`. The SDK uses the project translation when the key exists and otherwise falls back to the `errmsg` returned by the API.
+Backend business errors can use `api.error.<code>` as a project message key, for example `api.error.SPACE_FORBIDDEN`. The SDK uses the project translation when the key exists and otherwise falls back to the `desc` returned by the API.
 
 ## Appearance, themes, and density
 

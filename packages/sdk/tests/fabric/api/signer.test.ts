@@ -145,13 +145,10 @@ test("gateway adapter signs one snapshot and omits browser credentials", async (
     baseUrl: "https://dev.example.com/router/rest",
     fetch: async (input, init) => {
       captured = { input: String(input), init: init ?? {} };
-      return new Response(
-        JSON.stringify({ errcode: "0", errmsg: "ok", data: { accepted: true } }),
-        {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ code: "0", desc: "ok", data: { accepted: true } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
     },
   });
   const gateway = new RestGatewayClient({ api, now: () => Number(timestamp) });
@@ -183,9 +180,9 @@ test("gateway adapter reports the HTTP and business session-expiration signals",
     fetch: async () => {
       calls += 1;
       if (calls === 1) {
-        return Response.json({ errcode: "100160", errmsg: "expired" });
+        return Response.json({ code: "100160", desc: "expired" });
       }
-      return Response.json({ errcode: "100160", errmsg: "unauthorized" }, { status: 401 });
+      return Response.json({ code: "100160", desc: "unauthorized" }, { status: 401 });
     },
   });
   const gateway = new RestGatewayClient({
@@ -210,7 +207,7 @@ test("gateway adapter reports the HTTP and business session-expiration signals",
 test("gateway adapter preserves a data-less legacy business error", async () => {
   const api = createApiClient({
     baseUrl: "https://dev.example.com/router/rest",
-    fetch: async () => Response.json({ errcode: "100100", errmsg: "Invalid username or password" }),
+    fetch: async () => Response.json({ code: "100100", desc: "Invalid username or password" }),
   });
   const gateway = new RestGatewayClient({ api, now: () => Number(timestamp) });
 
@@ -230,7 +227,7 @@ test("gateway adapter sends V1 API keys through X-API-Key", async () => {
     baseUrl: "https://dev.example.com/router/rest",
     fetch: async (_input, init) => {
       headers = new Headers(init?.headers);
-      return Response.json({ errcode: "0", errmsg: "ok", data: true });
+      return Response.json({ code: "0", desc: "ok", data: true });
     },
   });
   const gateway = new RestGatewayClient({ api, now: () => Number(timestamp) });
@@ -361,7 +358,7 @@ test("signer rejects invalid credential modes and bounds", async () => {
 test("gateway rejects unsafe adapter inputs before dispatch", async () => {
   const api = createApiClient({
     baseUrl: "https://api.test",
-    fetch: async () => Response.json({ errcode: "0", errmsg: "ok", data: true }),
+    fetch: async () => Response.json({ code: "0", desc: "ok", data: true }),
   });
   const invalidClocks = [Number.NaN, -1, 1.5];
   for (const now of invalidClocks) {

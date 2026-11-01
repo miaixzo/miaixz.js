@@ -299,7 +299,7 @@ export async function executeMiaixzApiRequest<
       }
       if (effectiveEnvelopeMode !== "none" && failureEnvelope !== undefined) {
         const businessRequestId = getRequestId(rawResponse.headers);
-        const businessCode = failureEnvelope.errcode;
+        const businessCode = failureEnvelope.code;
         throw new MiaixzApiError({
           status: rawResponse.status,
           method,
@@ -307,8 +307,8 @@ export async function executeMiaixzApiRequest<
           code: businessCode,
           ...(businessRequestId === undefined ? {} : { requestId: businessRequestId }),
           retryable: false,
-          ...(typeof failureEnvelope.errmsg === "string"
-            ? { serverMessage: failureEnvelope.errmsg }
+          ...(typeof failureEnvelope.desc === "string"
+            ? { serverMessage: failureEnvelope.desc }
             : {}),
         });
       }

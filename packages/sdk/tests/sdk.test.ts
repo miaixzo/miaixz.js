@@ -51,7 +51,7 @@ function createRecordingFetch(requests: string[]): typeof fetch {
         headers: { "content-type": "application/octet-stream" },
       });
     }
-    return Response.json({ errcode: "0", errmsg: "ok", data: { url } });
+    return Response.json({ code: "0", desc: "ok", data: { url } });
   };
 }
 

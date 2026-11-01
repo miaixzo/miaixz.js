@@ -109,12 +109,12 @@ export interface MiaixzApiFailureEnvelope {
   /**
    * Machine-readable business failure code.
    */
-  readonly errcode: string;
+  readonly code: string;
 
   /**
    * Human-readable business failure message.
    */
-  readonly errmsg: string;
+  readonly desc: string;
 }
 
 /**
@@ -131,9 +131,9 @@ export function isMiaixzApiFailureEnvelope(
 ): value is Readonly<MiaixzApiFailureEnvelope> {
   return (
     isRecord(value) &&
-    typeof value.errcode === "string" &&
-    value.errcode !== "0" &&
-    typeof value.errmsg === "string"
+    typeof value.code === "string" &&
+    value.code !== "0" &&
+    typeof value.desc === "string"
   );
 }
 
@@ -147,8 +147,8 @@ export function isMiaixzApiFailureEnvelope(
 export function extractProblem(body: unknown, response: Response): MiaixzProblemDetails {
   if (isMiaixzApiFailureEnvelope(body)) {
     return {
-      code: body.errcode,
-      serverMessage: body.errmsg,
+      code: body.code,
+      serverMessage: body.desc,
     };
   }
   if (isMiaixzApiEnvelope(body)) return { code: `HTTP_${response.status}` };

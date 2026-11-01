@@ -286,22 +286,22 @@ describe("API response and retry helpers", () => {
   });
 
   it("recognizes envelopes and extracts stable problem details", () => {
-    expect(isMiaixzApiEnvelope({ errcode: "0", errmsg: "ok", data: 1 })).toBe(true);
-    expect(isMiaixzApiEnvelope({ errcode: "1", errmsg: "bad", data: null })).toBe(true);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: "ok", data: 1 })).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: "ok" })).toBe(false);
+    expect(isMiaixzApiEnvelope({ code: "0", desc: "ok", data: 1 })).toBe(true);
+    expect(isMiaixzApiEnvelope({ code: "1", desc: "bad", data: null })).toBe(true);
+    expect(isMiaixzApiEnvelope({ code: 0, desc: "ok", data: 1 })).toBe(false);
+    expect(isMiaixzApiEnvelope({ code: 0, desc: "ok" })).toBe(false);
     expect(isMiaixzApiEnvelope(null)).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: true, errmsg: "ok", data: 1 })).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: 1, data: 1 })).toBe(false);
-    expect(isMiaixzApiFailureEnvelope({ errcode: "E_ONE", errmsg: "bad" })).toBe(true);
-    expect(isMiaixzApiFailureEnvelope({ errcode: 0, errmsg: "bad" })).toBe(false);
+    expect(isMiaixzApiEnvelope({ code: true, desc: "ok", data: 1 })).toBe(false);
+    expect(isMiaixzApiEnvelope({ code: 0, desc: 1, data: 1 })).toBe(false);
+    expect(isMiaixzApiFailureEnvelope({ code: "E_ONE", desc: "bad" })).toBe(true);
+    expect(isMiaixzApiFailureEnvelope({ code: 0, desc: "bad" })).toBe(false);
 
     const response = new Response(null, { status: 400 });
-    expect(extractProblem({ errcode: "8", errmsg: "business" }, response)).toEqual({
+    expect(extractProblem({ code: "8", desc: "business" }, response)).toEqual({
       code: "8",
       serverMessage: "business",
     });
-    expect(extractProblem({ errcode: "0", errmsg: "ok", data: null }, response)).toEqual({
+    expect(extractProblem({ code: "0", desc: "ok", data: null }, response)).toEqual({
       code: "HTTP_400",
     });
     expect(
@@ -600,7 +600,7 @@ describe("API client execution", () => {
       fetch: async (input, init) => {
         calls.push({ url: String(input), init: init ?? {} });
         return Response.json(
-          { errcode: "0", errmsg: "ok", data: { answer: 42 } },
+          { code: "0", desc: "ok", data: { answer: 42 } },
           { headers: { "x-request-id": "response-id" } },
         );
       },
@@ -650,7 +650,7 @@ describe("API client execution", () => {
       contextHeadersProvider: () => ({ "x-miaixz-locale": "provider-locale", "x-extra": "extra" }),
       fetch: async (_input, init) => {
         captured.push(new Headers(init?.headers));
-        return Response.json({ errcode: "0", errmsg: "ok", data: true });
+        return Response.json({ code: "0", desc: "ok", data: true });
       },
     });
     await client.get("/one");
@@ -673,7 +673,7 @@ describe("API client execution", () => {
           { status: 503, headers: { "retry-after": "0" } },
         ),
       )
-      .mockResolvedValueOnce(Response.json({ errcode: "0", errmsg: "ok", data: "done" }));
+      .mockResolvedValueOnce(Response.json({ code: "0", desc: "ok", data: "done" }));
     const pending = createApiClient({
       baseUrl: "https://api.test",
       fetch: httpFetch,
@@ -686,7 +686,7 @@ describe("API client execution", () => {
     const networkFetch = vi
       .fn<typeof fetch>()
       .mockRejectedValueOnce(new TypeError("offline"))
-      .mockResolvedValueOnce(Response.json({ errcode: "0", errmsg: "ok", data: "online" }));
+      .mockResolvedValueOnce(Response.json({ code: "0", desc: "ok", data: "online" }));
     const networkPending = createApiClient({
       baseUrl: "https://api.test",
       fetch: networkFetch,
@@ -697,7 +697,7 @@ describe("API client execution", () => {
 
     const business = createApiClient({
       baseUrl: "https://api.test",
-      fetch: async () => Response.json({ errcode: "DENIED", errmsg: "no" }),
+      fetch: async () => Response.json({ code: "DENIED", desc: "no" }),
     });
     await expect(business.get("/business")).rejects.toMatchObject({
       code: "DENIED",
@@ -732,7 +732,7 @@ describe("API client execution", () => {
     const crossOrigin = createApiClient({
       baseUrl: "https://api.test",
       requestInterceptors: [(request) => ({ ...request, url: "https://evil.test/steal" })],
-      fetch: async () => Response.json({ errcode: "0", errmsg: "ok", data: null }),
+      fetch: async () => Response.json({ code: "0", desc: "ok", data: null }),
     });
     await expect(crossOrigin.get("/safe")).rejects.toMatchObject({
       code: "API_REQUEST_ORIGIN_INVALID",
@@ -767,10 +767,10 @@ describe("API client execution", () => {
   });
 
   it("recognizes success codes and unwraps only valid envelopes", () => {
-    expect(isMiaixzApiSuccess({ errcode: 0 } as never)).toBe(false);
-    expect(isMiaixzApiSuccess({ errcode: "0" })).toBe(true);
-    expect(isMiaixzApiSuccess({ errcode: "1" })).toBe(false);
-    expect(unwrapMiaixzData({ errcode: "0", errmsg: "ok", data: "value" })).toBe("value");
+    expect(isMiaixzApiSuccess({ code: 0 } as never)).toBe(false);
+    expect(isMiaixzApiSuccess({ code: "0" })).toBe(true);
+    expect(isMiaixzApiSuccess({ code: "1" })).toBe(false);
+    expect(unwrapMiaixzData({ code: "0", desc: "ok", data: "value" })).toBe("value");
     expect(unwrapMiaixzData("plain")).toBe("plain");
   });
 });
