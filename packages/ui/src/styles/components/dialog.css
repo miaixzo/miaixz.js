@@ -155,7 +155,7 @@ dialog.miaixz-dialog[open]::backdrop {
   flex: none;
   gap: var(--miaixz-control-gap);
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   border-top: var(--miaixz-border-width-default) solid var(--miaixz-color-border);
 }
 

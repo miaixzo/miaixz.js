@@ -39,6 +39,13 @@ import { MoreActions } from "./more-actions.js";
 import { withMiaixzThemeComponent } from "../../theme/binding.js";
 
 /**
+ * Internal attributes used to reserve measured space for auxiliary footer actions.
+ */
+type ActionBarRootAttributes = HTMLAttributes<HTMLDivElement> & {
+  readonly "data-has-actions"?: "true" | "false";
+};
+
+/**
  * Properties accepted by the Primary Action renderer.
  */
 interface PrimaryActionProps {
@@ -144,11 +151,12 @@ function ActionBar(properties: ActionBarProps) {
   };
   const rootProps = useMergedSlotProps<
     ActionBarOwnerState,
-    HTMLAttributes<HTMLDivElement>,
+    ActionBarRootAttributes,
     HTMLDivElement
   >({
     ownerState,
     defaultProps: { className: "miaixz-action-bar" },
+    internalProps: { "data-has-actions": actions.length > 0 ? "true" : "false" },
     slotProps: slotProps?.root,
     internalRef: (element) => {
       rootRef.current = element;

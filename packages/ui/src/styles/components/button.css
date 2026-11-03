@@ -327,6 +327,13 @@ button.miaixz-button.miaixz-icon-button[data-appearance="glyph"][data-variant="p
   justify-content: center;
 }
 
+/**
+ * Align labeled font glyphs optically without altering standalone icons or indicators.
+ */
+.miaixz-button-icon > .miaixz-icon:not([data-size="indicator"]) {
+  translate: 0 -0.5px;
+}
+
 .miaixz-button-loading-indicator,
 .miaixz-icon-button-loading-indicator {
   position: absolute;

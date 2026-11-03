@@ -93,15 +93,23 @@
 .miaixz-toolbar-directory .miaixz-toolbar-filters,
 .miaixz-toolbar-directory .miaixz-toolbar-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--miaixz-space-8);
   align-items: center;
   min-width: 0;
+  max-width: 100%;
   margin-inline-start: auto;
 }
 
 .miaixz-toolbar-directory .miaixz-toolbar-filters > * {
-  flex: none;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.miaixz-toolbar-directory .miaixz-toolbar-filters > :is(.miaixz-select, .miaixz-combobox) {
+  flex: 0 1 150px;
   width: 150px;
+  min-width: 0;
 }
 
 @container (width <= 1200px) {
@@ -117,8 +125,35 @@
   .miaixz-toolbar-directory .miaixz-toolbar-filters {
     flex: 1 1 100%;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     width: 100%;
+    margin-inline-start: 0;
+  }
+}
+
+@container (width <= 720px) {
+  .miaixz-toolbar-directory {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--miaixz-space-12);
+  }
+
+  .miaixz-toolbar-directory
+    :is(.miaixz-toolbar-search, .miaixz-toolbar-filters, .miaixz-toolbar-actions) {
+    flex-basis: auto;
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  .miaixz-toolbar-directory .miaixz-toolbar-filters > :is(.miaixz-select, .miaixz-combobox) {
+    flex: 1 1 150px;
+    width: auto;
+  }
+}
+
+@container (width <= 480px) {
+  .miaixz-toolbar-directory .miaixz-toolbar-filters > :is(.miaixz-select, .miaixz-combobox) {
+    flex-basis: 100%;
   }
 }
 
@@ -194,11 +229,6 @@
 
   .miaixz-toolbar-directory .miaixz-toolbar-filters {
     flex-wrap: wrap;
-  }
-
-  .miaixz-toolbar-directory .miaixz-toolbar-filters > * {
-    flex: 1 1 0;
-    width: auto;
   }
 
   .miaixz-toolbar-grid {

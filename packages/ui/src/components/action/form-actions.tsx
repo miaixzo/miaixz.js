@@ -57,7 +57,9 @@ function FormActions(properties: FormActionsProps) {
     },
   });
   const cancelIcon =
-    cancel?.icon === undefined ? undefined : <Icon name={cancel.icon} size="control" />;
+    cancel?.icon === undefined ? undefined : (
+      <Icon className="miaixz-form-actions-cancel-icon" name={cancel.icon} size="control" />
+    );
   const submitIcon =
     submit?.icon === undefined ? undefined : <Icon name={submit.icon} size="control" />;
 
