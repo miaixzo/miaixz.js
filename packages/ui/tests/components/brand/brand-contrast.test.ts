@@ -71,6 +71,7 @@ describe("brand foreground semantics", () => {
           "brand-soft-hover",
         ] as const) {
           expect(contrast(colors["brand-strong"], colors[background])).toBeGreaterThanOrEqual(4.5);
+          expect(contrast(colors["text-primary"], colors[background])).toBeGreaterThanOrEqual(4.5);
         }
       });
     }
@@ -84,10 +85,16 @@ describe("brand foreground semantics", () => {
       "tabs",
       '.miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {',
     );
-    expect(navigation).toContain("color: var(--miaixz-color-brand);");
+    expect(navigation).toContain("color: var(--miaixz-color-text-primary);");
     expect(navigation).toContain("0 var(--miaixz-color-brand);");
+    expect(
+      rule("tabs", '.miaixz-tab:where(:hover:not(:disabled, [aria-disabled="true"])) {'),
+    ).toContain("color: var(--miaixz-color-text-primary);");
+    expect(rule("tabs", ".miaixz-tab:focus-visible {")).toContain(
+      "color: var(--miaixz-color-text-primary);",
+    );
     expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
-      "color: var(--miaixz-color-text-inverse);",
+      "color: var(--miaixz-color-on-brand);",
     );
     expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
       "background: var(--miaixz-color-brand);",

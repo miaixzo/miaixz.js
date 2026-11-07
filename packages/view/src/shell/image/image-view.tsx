@@ -26,7 +26,8 @@ import { forwardRef, useEffect, useState } from "react";
 import { Icon } from "@miaixz/icons";
 
 import { MiaixzViewError } from "../../shared/errors/view-error.js";
-import { clamp, classNames } from "../../shell/util/class-names.js";
+import { classNames } from "../styles/class-names.js";
+import { clampScale } from "../zoom/scale.js";
 import type { ImageViewLabels, ImageViewProps } from "./image-view.types.js";
 
 const defaultLabels: ImageViewLabels = {
@@ -88,13 +89,13 @@ export const ImageView = forwardRef<HTMLDivElement, ImageViewProps>(function Ima
   ref,
 ) {
   validateScaleConfiguration(initialScale, minScale, maxScale, scaleStep);
-  const [scale, setScale] = useState(() => clamp(initialScale, minScale, maxScale));
+  const [scale, setScale] = useState(() => clampScale(initialScale, minScale, maxScale));
   const [rotation, setRotation] = useState(0);
   const labels = { ...defaultLabels, ...labelOverrides };
   const transform = `scale(${scale}) rotate(${rotation}deg)`;
 
   useEffect(() => {
-    setScale((value) => clamp(value, minScale, maxScale));
+    setScale((value) => clampScale(value, minScale, maxScale));
   }, [maxScale, minScale]);
 
   return (
@@ -116,7 +117,9 @@ export const ImageView = forwardRef<HTMLDivElement, ImageViewProps>(function Ima
                 aria-label={labels.zoomOut}
                 className="miaixz-preview-command"
                 disabled={scale <= minScale}
-                onClick={() => setScale((value) => clamp(value - scaleStep, minScale, maxScale))}
+                onClick={() =>
+                  setScale((value) => clampScale(value - scaleStep, minScale, maxScale))
+                }
                 title={labels.zoomOut}
                 type="button"
               >
@@ -129,7 +132,9 @@ export const ImageView = forwardRef<HTMLDivElement, ImageViewProps>(function Ima
                 aria-label={labels.zoomIn}
                 className="miaixz-preview-command"
                 disabled={scale >= maxScale}
-                onClick={() => setScale((value) => clamp(value + scaleStep, minScale, maxScale))}
+                onClick={() =>
+                  setScale((value) => clampScale(value + scaleStep, minScale, maxScale))
+                }
                 title={labels.zoomIn}
                 type="button"
               >

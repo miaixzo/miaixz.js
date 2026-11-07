@@ -58,7 +58,7 @@
 }
 
 .miaixz-button[data-variant="solid"][data-tone="brand"] {
-  color: var(--miaixz-color-text-inverse);
+  color: var(--miaixz-color-on-brand);
   background: var(--miaixz-color-brand);
   border-color: var(--miaixz-color-brand);
 }

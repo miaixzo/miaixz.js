@@ -29,9 +29,10 @@ import { ViewerController, type ViewerControllerState } from "../../runtime/view
 import { resolveResourceBudget } from "../../runtime/resource-budget.js";
 import { isSpreadsheetRenderDocument } from "../../shared/contracts/document.js";
 import { ViewerError } from "../../shared/errors/viewer-error.js";
-import { clamp, classNames } from "../util/class-names.js";
 import { useLatestRef } from "../hooks/use-latest-ref.js";
 import { ModelView } from "../components/model-view.js";
+import { classNames } from "../styles/class-names.js";
+import { clampScale } from "../zoom/scale.js";
 import type { FileViewHandle, FileViewLabels, FileViewProps } from "./file-view.types.js";
 
 const defaultLabels: FileViewLabels = {
@@ -128,13 +129,13 @@ export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileV
    *
    * @returns No return value.
    */
-  const zoomIn = (): void => setScale((value) => clamp(value + 0.25, 0.25, 4));
+  const zoomIn = (): void => setScale((value) => clampScale(value + 0.25, 0.25, 4));
   /**
    * Decreases viewer scale by one quarter, capped at one quarter of the default scale.
    *
    * @returns No return value.
    */
-  const zoomOut = (): void => setScale((value) => clamp(value - 0.25, 0.25, 4));
+  const zoomOut = (): void => setScale((value) => clampScale(value - 0.25, 0.25, 4));
   /**
    * Restores the default viewer scale of one.
    *

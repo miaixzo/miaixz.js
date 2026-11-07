@@ -353,14 +353,16 @@
  * Cancellation glyphs have fuller ink bounds than the standard submit icons.
  */
 .miaixz-form-actions-cancel-icon {
-  width: 0.95em;
-  height: 0.95em;
+  --miaixz-form-actions-cancel-icon-scale: 0.95;
+
+  width: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
+  height: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
 }
 
 .miaixz-form-actions-cancel-icon > [data-miaixz-icon-glyph] {
-  font-size: 0.95em;
+  font-size: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
   font-variation-settings:
-    "FILL" var(--miaixz-icon-fill, 0),
+    "FILL" var(--miaixz-icon-fill),
     "opsz" 14;
 }
 

@@ -19,8 +19,6 @@
 */
 
 /**
- * Provides bounded presentation helpers for the viewer shell.
- *
  * Joins optional CSS class names.
  *
  * @param values - Class names and disabled values.
@@ -28,16 +26,4 @@
  */
 export function classNames(...values: Array<string | false | null | undefined>): string {
   return values.filter(Boolean).join(" ");
-}
-
-/**
- * Restricts a number to an inclusive range.
- *
- * @param value - Candidate number.
- * @param minimum - Inclusive lower boundary.
- * @param maximum - Inclusive upper boundary.
- * @returns Bounded number.
- */
-export function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum);
 }
