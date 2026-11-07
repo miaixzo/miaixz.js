@@ -142,10 +142,6 @@ describe("UI error protocol", () => {
     expect(warning).toHaveBeenCalledWith(
       "[UI_CONTROLLED_MODE_CHANGED] ui.warning.controlled.modeChanged",
     );
-    reportMiaixzUiWarning("UI_TREE_ICON_SLOT_DEPRECATED");
-    expect(warning).toHaveBeenLastCalledWith(
-      "[UI_TREE_ICON_SLOT_DEPRECATED] ui.warning.tree.iconSlotDeprecated",
-    );
     warning.mockRestore();
   });
 });

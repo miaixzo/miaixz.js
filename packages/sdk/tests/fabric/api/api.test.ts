@@ -70,7 +70,7 @@ import {
   isPlainTelemetryObject,
   normalizeSensitiveFieldName,
   resolveLogicalRequestId,
-  sanitizeTelemetryBody,
+  summarizeTelemetryBody,
   sanitizeTelemetryHeaders,
   sanitizeTelemetryUrl,
   sanitizeTelemetryValue,
@@ -421,8 +421,8 @@ describe("API telemetry", () => {
     const many = Array.from({ length: telemetryMaximumCollectionSize + 1 }, (_, index) => index);
     expect(sanitizeTelemetryValue(many)).toHaveLength(telemetryMaximumCollectionSize);
     expect((sanitizeTelemetryValue(many) as unknown[]).at(-1)).toBe("[TRUNCATED]");
-    expect(sanitizeTelemetryBody("secret")).toEqual({ type: "string", bytes: 6 });
-    expect(sanitizeTelemetryBody(["safe"])).toEqual({ type: "JSON", bytes: undefined });
+    expect(summarizeTelemetryBody("secret")).toEqual({ type: "string", bytes: 6 });
+    expect(summarizeTelemetryBody(["safe"])).toEqual({ type: "JSON", bytes: undefined });
     expect(sanitizeTelemetryHeaders({ Authorization: "secret", Accept: "json" })).toEqual({
       accept: "json",
       authorization: "[REDACTED]",

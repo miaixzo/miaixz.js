@@ -50,7 +50,6 @@ const defaultLabels: FileViewLabels = {
 export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileView(
   {
     source,
-    src,
     name,
     mimeType,
     httpHeaders,
@@ -88,8 +87,8 @@ export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileV
   const [scale, setScale] = useState(1);
   const [activeSpreadsheetSheetId, setActiveSpreadsheetSheetId] = useState<string>();
   const [retryVersion, setRetryVersion] = useState(0);
-  const maxTileCacheBytes = useMemo(
-    () => resolveResourceBudget(budget).maxTileCacheBytes,
+  const maxSpreadsheetCanvasBytes = useMemo(
+    () => resolveResourceBudget(budget).maxSpreadsheetCanvasBytes,
     [budget],
   );
   const elementRef = useRef<HTMLDivElement>(null);
@@ -169,13 +168,12 @@ export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileV
   );
 
   useEffect(() => {
-    const selectedSource = source ?? src;
-    if (selectedSource === undefined) {
+    if (source === undefined || source === null) {
       onErrorRef.current?.(new ViewerError("INVALID_SOURCE", "source"));
       return undefined;
     }
     void controller.open({
-      data: selectedSource,
+      data: source,
       ...(name === undefined ? {} : { name }),
       ...(mimeType === undefined ? {} : { mimeType }),
       ...(httpHeaders === undefined ? {} : { headers: httpHeaders }),
@@ -183,7 +181,7 @@ export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileV
     });
     setActiveSpreadsheetSheetId(undefined);
     return undefined;
-  }, [controller, credentials, httpHeaders, mimeType, name, onErrorRef, retryVersion, source, src]);
+  }, [controller, credentials, httpHeaders, mimeType, name, onErrorRef, retryVersion, source]);
 
   useEffect(() => () => controller.dispose(), [controller]);
 
@@ -238,7 +236,7 @@ export const FileView = forwardRef<FileViewHandle, FileViewProps>(function FileV
         {state.status === "ready" ? (
           <ModelView
             document={state.document}
-            maxTileCacheBytes={maxTileCacheBytes}
+            maxSpreadsheetCanvasBytes={maxSpreadsheetCanvasBytes}
             scale={scale}
             spreadsheetDiagnostics={state.outcome.warnings}
             spreadsheetOptions={{

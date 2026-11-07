@@ -154,7 +154,7 @@ describe("catalog presentation components", () => {
           <h1 id="page-title">Account</h1>
           <Sidebar
             footer={<span>Footer</span>}
-            sidebar={<nav aria-label="Local">Menu</nav>}
+            primaryNavigation={<nav aria-label="Local">Menu</nav>}
             sidebarLabel="Settings"
             size="wide"
             stickySidebar

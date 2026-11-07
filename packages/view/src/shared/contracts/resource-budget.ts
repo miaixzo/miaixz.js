@@ -40,12 +40,6 @@ export interface ResourceBudget {
   readonly maxNoProgressMilliseconds: number;
   readonly maxTaskMilliseconds: number;
   readonly maxEstimatedMemoryBytes: number;
-  /**
-   * Reserved for a future password retry flow; current viewers perform no password attempts.
-   *
-   * @deprecated Reserved compatibility field with current usage fixed at zero.
-   */
-  readonly maxPasswordAttempts: number;
   readonly maxSpreadsheetSheets: number;
   readonly maxSpreadsheetRows: number;
   readonly maxSpreadsheetColumns: number;
@@ -54,9 +48,7 @@ export interface ResourceBudget {
   readonly maxDrawingObjects: number;
   readonly maxVectorRecords: number;
   /**
-   * Reserved for a future bounded tile cache; current viewers retain no tile cache.
-   *
-   * @deprecated Reserved compatibility field with current usage fixed at zero.
+   * Maximum backing-store bytes for the visible spreadsheet canvas.
    */
-  readonly maxTileCacheBytes: number;
+  readonly maxSpreadsheetCanvasBytes: number;
 }

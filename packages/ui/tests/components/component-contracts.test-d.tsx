@@ -351,7 +351,7 @@ const treeNodes = [{ id: "root", label: "Root", textValue: "Root" }] as const;
 const validTreeContracts: readonly TreeProps[] = [
   { label: "Default", nodes: treeNodes },
   { label: "Runtime", nodes: treeNodes, view: runtimeTreeView },
-  { label: "Legacy icon", nodes: treeNodes, slotProps: { icon: { title: "Legacy" } } },
+  { label: "Expander", nodes: treeNodes, slotProps: { expander: { title: "Expand" } } },
 ];
 const compactTreeContract: TreeProps<unknown, "compact"> = {
   label: "Compact",

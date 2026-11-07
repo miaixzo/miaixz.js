@@ -94,7 +94,7 @@ const resourceProvider: FileResourceProvider = {
 <FileView resourceProvider={resourceProvider} source={fileReference} />;
 ```
 
-`FileViewHandle` exposes stable `zoomIn`, `zoomOut`, `resetZoom`, `retry`, `dispose`, `getState`, and `getElement` commands. The legacy `src` alias remains for the 0.x migration window; new code should use `source`.
+`FileViewHandle` exposes stable `zoomIn`, `zoomOut`, `resetZoom`, `retry`, `dispose`, `getState`, and `getElement` commands.
 
 ## Current built-in pipeline
 

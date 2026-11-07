@@ -145,7 +145,6 @@ export type MiaixzUiErrorCode = keyof typeof miaixzUiErrorMessageKeys;
  */
 export const miaixzUiWarningMessageKeys = Object.freeze({
   UI_CONTROLLED_MODE_CHANGED: "ui.warning.controlled.modeChanged",
-  UI_TREE_ICON_SLOT_DEPRECATED: "ui.warning.tree.iconSlotDeprecated",
 } as const);
 
 /**

@@ -36,9 +36,8 @@ export const Shell = withMiaixzThemeComponent(
   forwardRef<HTMLDivElement, ShellProps>(function Shell(
     {
       header,
-      sidebar,
       brand,
-      primaryNavigation = sidebar,
+      primaryNavigation,
       secondaryNavigation,
       contextNavigation,
       sidebarOverflow = "auto",

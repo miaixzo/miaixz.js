@@ -96,7 +96,7 @@ const resourceProvider: FileResourceProvider = {
 <FileView resourceProvider={resourceProvider} source={fileReference} />;
 ```
 
-`FileViewHandle` 提供稳定的 `zoomIn`、`zoomOut`、`resetZoom`、`retry`、`dispose`、`getState` 和 `getElement` 命令。旧的 `src` 别名只在 0.x 迁移期保留，新代码应使用 `source`。
+`FileViewHandle` 提供稳定的 `zoomIn`、`zoomOut`、`resetZoom`、`retry`、`dispose`、`getState` 和 `getElement` 命令。
 
 ## 内置处理流程
 

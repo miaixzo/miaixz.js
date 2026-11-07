@@ -450,7 +450,7 @@ const groups: NavigationRailGroupModel[] = [
 
 <Shell
   header={header}
-  sidebar={
+  primaryNavigation={
     <NavigationRail
       brand={brand}
       toggle={toggle}

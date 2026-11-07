@@ -182,20 +182,9 @@ interface FileViewBaseProps
 /**
  * Configures an automatic file preview with one canonical source.
  */
-export type FileViewProps = FileViewBaseProps &
-  (
-    | {
-        /**
-         * Supplies a File, Blob, remote descriptor, URL, ArrayBuffer, or Uint8Array.
-         */
-        readonly source: FileViewSource;
-        readonly src?: never;
-      }
-    | {
-        /**
-         * @deprecated Use `source`. This alias will be removed in the next major version.
-         */
-        readonly src: FileViewSource;
-        readonly source?: never;
-      }
-  );
+export interface FileViewProps extends FileViewBaseProps {
+  /**
+   * Supplies a File, Blob, remote descriptor, URL, ArrayBuffer, or Uint8Array.
+   */
+  readonly source: FileViewSource;
+}

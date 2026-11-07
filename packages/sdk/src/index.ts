@@ -58,7 +58,6 @@ export {
   isMiaixzDensity,
   isMiaixzThemeId,
   MiaixzAppearanceManager,
-  miaixzAppearanceMigrationV1ToV2,
   miaixzAppearanceMigration,
   miaixzAppearanceSchemaVersion,
   miaixzColorModes,

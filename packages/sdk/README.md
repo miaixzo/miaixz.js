@@ -333,9 +333,8 @@ try {
 Never record tokens, cookies, authorization headers, CSRF values, personal information, request bodies, or file contents in logs or telemetry. Frontend errors support interaction only; the server must still perform authorization and input validation.
 
 Request telemetry never exposes body content. Use `event.bodySummary.type` and
-`event.bodySummary.bytes` for coarse operational metrics; the deprecated `event.body` property is
-never emitted. Record any additional non-sensitive business metric explicitly at its owning call
-site instead of reconstructing it from a request body.
+`event.bodySummary.bytes` for coarse operational metrics. Record any additional non-sensitive
+business metric at its owning call site.
 
 ## Grants
 
