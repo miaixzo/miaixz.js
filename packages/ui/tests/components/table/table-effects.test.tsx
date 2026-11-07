@@ -26,6 +26,40 @@ describe("table row effects", () => {
     expect(screen.getByTestId("container")).toHaveAttribute("data-gutter", "flush");
   });
 
+  it("makes a static table scroll container focusable by default", () => {
+    render(
+      <TableContainer data-testid="container">
+        <Table aria-label="Static records">
+          <TableBody>
+            <TableRow>
+              <TableCell>Record</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>,
+    );
+
+    const container = screen.getByTestId("container");
+    expect(container).toHaveAttribute("tabindex", "0");
+    expect(container).toContainElement(screen.getByRole("table", { name: "Static records" }));
+    container.focus();
+    expect(container).toHaveFocus();
+  });
+
+  it("preserves an explicit container tab index and restores the default when omitted", () => {
+    const { rerender } = render(<TableContainer data-testid="container" tabIndex={-1} />);
+    const container = screen.getByTestId("container");
+    expect(container).toHaveAttribute("tabindex", "-1");
+
+    rerender(<TableContainer data-testid="container" tabIndex={2} />);
+    expect(screen.getByTestId("container")).toBe(container);
+    expect(container).toHaveAttribute("tabindex", "2");
+
+    rerender(<TableContainer data-testid="container" />);
+    expect(screen.getByTestId("container")).toBe(container);
+    expect(container).toHaveAttribute("tabindex", "0");
+  });
+
   it("exposes one global table appearance and preserves selected-row state", () => {
     render(
       <Table aria-label="Records">

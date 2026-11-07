@@ -25,9 +25,16 @@
 import { normalizeMiaixzApiEndpoint } from "../../fabric/api/endpoint.js";
 import { isMiaixzAppearanceSettings } from "../../display/validation.js";
 import { isMiaixzSdkError, MiaixzSdkError } from "../../errors/errors.js";
-import type { MiaixzEventBusPort, MiaixzSdkEventMap } from "../events/event-types.js";
+import type { MiaixzEventBusPort } from "../events/event-port.js";
 import type { MiaixzEnvironment, MiaixzFeatureValue, MiaixzSdkConfig } from "./config.types.js";
 import { isRecord } from "../../shared/object.js";
+
+/**
+ * Limits configuration-store events to configuration snapshots.
+ */
+type ConfigEventMap = {
+  readonly "config:changed": Readonly<MiaixzSdkConfig>;
+};
 
 /**
  * Configures the ordered sources used to load SDK configuration.
@@ -251,7 +258,7 @@ export class MiaixzConfigStore {
   readonly #preparers = new Set<(config: Readonly<MiaixzSdkConfig>) => void>();
   readonly #listeners = new Set<(config: Readonly<MiaixzSdkConfig>) => void>();
   #config: Readonly<MiaixzSdkConfig>;
-  readonly #events: MiaixzEventBusPort<MiaixzSdkEventMap> | undefined;
+  readonly #events: MiaixzEventBusPort<ConfigEventMap> | undefined;
   #stopEventListener: (() => void) | undefined;
 
   /**
@@ -260,7 +267,7 @@ export class MiaixzConfigStore {
    * @param config - Initial validated configuration.
    * @param events - Optional shared event bus.
    */
-  constructor(config: MiaixzSdkConfig, events?: MiaixzEventBusPort<MiaixzSdkEventMap>) {
+  constructor(config: MiaixzSdkConfig, events?: MiaixzEventBusPort<ConfigEventMap>) {
     this.#config = defineMiaixzConfig(config);
     this.#events = events;
     this.#stopEventListener = events?.on("config:changed", (nextConfig) => {

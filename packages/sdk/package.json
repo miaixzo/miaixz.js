@@ -46,10 +46,6 @@
       "types": "./dist/access/session/index.d.ts",
       "import": "./dist/access/session/index.js"
     },
-    "./context": {
-      "types": "./dist/access/context/index.d.ts",
-      "import": "./dist/access/context/index.js"
-    },
     "./config": {
       "types": "./dist/runtime/config/index.d.ts",
       "import": "./dist/runtime/config/index.js"

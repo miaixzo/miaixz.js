@@ -25,7 +25,7 @@
 import { VERSION } from "../version.js";
 
 import { MiaixzSdkError } from "../errors/errors.js";
-import type { MiaixzEventBusPort, MiaixzSdkEventMap } from "../runtime/events/event-types.js";
+import type { MiaixzEventBusPort } from "../runtime/events/event-port.js";
 import {
   createMiaixzStorageKey,
   getMiaixzBrowserStorage,
@@ -46,6 +46,13 @@ import type {
 } from "./appearance.types.js";
 import { miaixzAppearanceMigration } from "./migration.js";
 import { miaixzDefaultAppearance, parseMiaixzAppearanceSettings } from "./validation.js";
+
+/**
+ * Limits appearance synchronization to versioned appearance snapshots.
+ */
+type AppearanceEventMap = {
+  readonly "appearance:changed": Readonly<MiaixzAppearancePayload>;
+};
 
 /**
  * Identifies the current Appearance persistence and event schema.
@@ -88,7 +95,7 @@ export interface MiaixzAppearanceManagerOptions {
   /**
    * Supplies an optional event bus for local or cross-context synchronization.
    */
-  readonly events?: MiaixzEventBusPort<MiaixzSdkEventMap>;
+  readonly events?: MiaixzEventBusPort<AppearanceEventMap>;
 }
 
 /**
@@ -100,7 +107,7 @@ export class MiaixzAppearanceManager {
   readonly #appId: string;
   readonly #storage: MiaixzKeyValueStorage | undefined;
   readonly #migrations: readonly MiaixzStorageMigration[];
-  readonly #events: MiaixzEventBusPort<MiaixzSdkEventMap> | undefined;
+  readonly #events: MiaixzEventBusPort<AppearanceEventMap> | undefined;
   readonly #listeners = new Set<(appearance: Readonly<MiaixzAppearanceSettings>) => void>();
   #tenantId: string | undefined;
   #appearance: MiaixzAppearanceSettings;

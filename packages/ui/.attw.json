@@ -29,6 +29,7 @@
     "timeline/styles.css",
     "toaster/styles.css",
     "alert/styles.css",
+    "stage/styles.css",
     "action/styles.css",
     "avatar/styles.css",
     "button/styles.css",

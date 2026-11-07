@@ -25,22 +25,7 @@
 import { MiaixzSdkError } from "../../errors/errors.js";
 import { isRecord } from "../../shared/object.js";
 import type { MiaixzResponseParser, MiaixzResponseType } from "./request.js";
-import { isMiaixzApiEnvelope } from "./response.js";
-
-/**
- * Determines whether the selected response mode represents a JSON API response.
- *
- * @param response - HTTP response to inspect.
- * @param responseType - Configured response parsing mode.
- * @returns Whether the response is expected to contain a JSON envelope.
- */
-export function expectsJsonEnvelope(response: Response, responseType: MiaixzResponseType): boolean {
-  if (response.status === 204 || response.status === 205 || responseType === "void") return false;
-  if (responseType === "json") return true;
-  if (responseType !== "auto") return false;
-  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-  return contentType.includes("json") || contentType.includes("+json");
-}
+import type { MiaixzHttpErrorDetails, MiaixzHttpErrorMapper } from "./response.js";
 
 /**
  * Parses a response using the explicit mode or its Content-Type header.
@@ -83,81 +68,59 @@ export async function parseJsonBody(response: Response): Promise<unknown> {
 }
 
 /**
- * Stable details extracted from an unsuccessful response.
- */
-export interface MiaixzProblemDetails {
-  /**
-   * Optional machine-readable failure code.
-   */
-  code?: string;
-
-  /**
-   * Optional request identifier used for diagnostics.
-   */
-  requestId?: string;
-
-  /**
-   * Optional untrusted backend text retained only after MiaixzApiError sanitizes it.
-   */
-  serverMessage?: string;
-}
-
-/**
- * Describes a non-zero business response that may omit the success-only `data` field.
- */
-export interface MiaixzApiFailureEnvelope {
-  /**
-   * Machine-readable business failure code.
-   */
-  readonly code: string;
-
-  /**
-   * Human-readable business failure message.
-   */
-  readonly desc: string;
-}
-
-/**
- * Recognizes a non-zero Miaixz business response even when an older service omits `data`.
- *
- * Successful envelopes still require `data`; accepting an incomplete success response would
- * otherwise let callers observe an undefined payload as a valid result.
- *
- * @param value - Parsed response body.
- * @returns Whether the body carries a valid business failure code and message.
- */
-export function isMiaixzApiFailureEnvelope(
-  value: unknown,
-): value is Readonly<MiaixzApiFailureEnvelope> {
-  return (
-    isRecord(value) &&
-    typeof value.code === "string" &&
-    value.code !== "0" &&
-    typeof value.desc === "string"
-  );
-}
-
-/**
  * Normalizes an unsuccessful HTTP body into stable problem details.
  *
  * @param body - Parsed unsuccessful response body.
  * @param response - Original HTTP response.
+ * @param mapper - Optional synchronous replacement for generic problem details.
  * @returns Stable problem details extracted from the response.
  */
-export function extractProblem(body: unknown, response: Response): MiaixzProblemDetails {
-  if (isMiaixzApiFailureEnvelope(body)) {
-    return {
-      code: body.code,
-      serverMessage: body.desc,
+export function extractProblem(
+  body: unknown,
+  response: Response,
+  mapper?: MiaixzHttpErrorMapper,
+): MiaixzHttpErrorDetails {
+  const fallback: MiaixzHttpErrorDetails = isRecord(body)
+    ? {
+        ...(typeof body.code === "string" ? { code: body.code } : {}),
+        ...(typeof body.requestId === "string" ? { requestId: body.requestId } : {}),
+        ...(typeof body.message === "string" ? { serverMessage: body.message } : {}),
+      }
+    : {};
+  if (mapper === undefined) return fallback;
+  try {
+    const mapped: unknown = mapper(body, Object.freeze({ status: response.status }));
+    if (!isRecord(mapped)) return fallback;
+    const prototype: unknown = Object.getPrototypeOf(mapped);
+    if (prototype !== Object.prototype && prototype !== null) return fallback;
+    const keys = ["code", "requestId", "serverMessage"] as const;
+    if (Reflect.ownKeys(mapped).some((key) => !keys.some((allowed) => allowed === key)))
+      return fallback;
+    const fields = {
+      code: Object.getOwnPropertyDescriptor(mapped, "code"),
+      requestId: Object.getOwnPropertyDescriptor(mapped, "requestId"),
+      serverMessage: Object.getOwnPropertyDescriptor(mapped, "serverMessage"),
     };
+    for (const key of keys) {
+      const field = fields[key];
+      if (
+        field !== undefined &&
+        (!("value" in field) || (field.value !== undefined && typeof field.value !== "string"))
+      )
+        return fallback;
+    }
+    return {
+      ...(typeof fields.code?.value === "string" ? { code: fields.code.value as string } : {}),
+      ...(typeof fields.requestId?.value === "string"
+        ? { requestId: fields.requestId.value as string }
+        : {}),
+      ...(typeof fields.serverMessage?.value === "string"
+        ? { serverMessage: fields.serverMessage.value as string }
+        : {}),
+    };
+  } catch {
+    return fallback;
   }
-  if (isMiaixzApiEnvelope(body)) return { code: `HTTP_${response.status}` };
-  if (!isRecord(body)) return {};
-  const result: MiaixzProblemDetails = {};
-  if (typeof body.code === "string") result.code = body.code;
-  if (typeof body.requestId === "string") result.requestId = body.requestId;
-  if (typeof body.message === "string") result.serverMessage = body.message;
-  return result;
 }
 
 /**

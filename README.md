@@ -10,12 +10,12 @@ The repository is organized as an npm workspace. All public packages use one syn
 
 ## Packages
 
-| Package                             | npm                                                | Description                                                                                                                         |
-| ----------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [`@miaixz/sdk`](./packages/sdk)     | [npm](https://www.npmjs.com/package/@miaixz/sdk)   | Browser API client, runtime context, configuration, permissions, events, files, appearance, i18n, types, formatters, and utilities. |
-| [`@miaixz/icons`](./packages/icons) | [npm](https://www.npmjs.com/package/@miaixz/icons) | Miaixz variable font, React Icon, semantic sizes, continuous animation, and accessibility.                                          |
-| [`@miaixz/ui`](./packages/ui)       | [npm](https://www.npmjs.com/package/@miaixz/ui)    | React design system with components, design tokens, themes, density modes, styles, and interaction primitives.                      |
-| [`@miaixz/view`](./packages/view)   | [npm](https://www.npmjs.com/package/@miaixz/view)  | Independent React components for image, PDF, Office, and other local file previews.                                                 |
+| Package                             | npm                                                | Description                                                                                                           |
+| ----------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [`@miaixz/sdk`](./packages/sdk)     | [npm](https://www.npmjs.com/package/@miaixz/sdk)   | Browser HTTP, session, configuration, permissions, events, files, appearance, i18n, types, formatters, and utilities. |
+| [`@miaixz/icons`](./packages/icons) | [npm](https://www.npmjs.com/package/@miaixz/icons) | Miaixz variable font, React Icon, semantic sizes, continuous animation, and accessibility.                            |
+| [`@miaixz/ui`](./packages/ui)       | [npm](https://www.npmjs.com/package/@miaixz/ui)    | React design system with components, design tokens, themes, density modes, styles, and interaction primitives.        |
+| [`@miaixz/view`](./packages/view)   | [npm](https://www.npmjs.com/package/@miaixz/view)  | Independent React components for image, PDF, Office, and other local file previews.                                   |
 
 ### Package relationship
 
@@ -60,25 +60,22 @@ All packages are ESM-only and do not expose CommonJS `require` entry points.
 
 ## Quick start
 
-Create a browser SDK instance:
+Create independent HTTP and Appearance instances:
 
 ```ts
-import { createMiaixzSdk } from "@miaixz/sdk";
+import { createApiClient, createMiaixzAppearanceManager } from "@miaixz/sdk";
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config: {
-    apiBaseUrl: "https://api.miaixz.org",
-    environment: "production",
-  },
-  locale: "en-US",
+export const api = createApiClient({
+  baseUrl: "https://api.example.test",
+  environment: "production",
 });
+export const appearance = createMiaixzAppearanceManager({ appId: "portal" });
 
-await sdk.ready;
-
-const response = await sdk.api.get<readonly { id: string; name: string }[]>("/spaces");
+const response = await api.get<readonly { id: string; name: string }[]>("/items");
 console.log(response.data);
 ```
+
+Applications supply their protocols and explicitly compose the required mechanisms.
 
 Use the shared React components and styles:
 
@@ -86,11 +83,11 @@ Use the shared React components and styles:
 import "@miaixz/ui/styles.css";
 import { Button, Field, Input, Theme } from "@miaixz/ui";
 
-import { sdk } from "./sdk.js";
+import { appearance } from "./sdk.js";
 
 export function CreateSpaceForm() {
   return (
-    <Theme appearance={sdk.appearance}>
+    <Theme appearance={appearance}>
       <form>
         <Field label="Space name" required>
           <Input placeholder="Enter a space name" />

@@ -19,7 +19,7 @@
 */
 
 /**
- * Exports HTTP clients, request signing, response contracts, and telemetry types.
+ * Exports HTTP clients, response contracts, error adapters, and telemetry types.
  */
 
 export { appendMiaixzQuery, createApiClient } from "./client.js";
@@ -33,7 +33,6 @@ export type {
   MiaixzTokenProvider,
 } from "./client.js";
 export type {
-  MiaixzEnvelopeMode,
   MiaixzHttpMethod,
   MiaixzPreparedRequest,
   MiaixzQuery,
@@ -45,17 +44,12 @@ export type {
   MiaixzResponseParser,
   MiaixzResponseType,
 } from "./request.js";
-export { isMiaixzApiEnvelope, isMiaixzApiSuccess, unwrapMiaixzData } from "./response.js";
-export type { MiaixzHttpResponse, MiaixzResponseInterceptor } from "./response.js";
-export { RestGatewayClient, RestSigner, Signer } from "./signer.js";
 export type {
-  RestGatewayClientOptions,
-  RestGatewayParameters,
-  RestGatewayRequestInput,
-  RestJsonValue,
-  RestSignatureAuth,
-  RestSignInput,
-} from "./signer.js";
+  MiaixzHttpErrorDetails,
+  MiaixzHttpErrorMapper,
+  MiaixzHttpResponse,
+  MiaixzResponseInterceptor,
+} from "./response.js";
 export type {
   MiaixzApiTelemetryHooks,
   MiaixzErrorEvent,

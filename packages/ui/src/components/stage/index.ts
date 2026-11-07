@@ -19,38 +19,17 @@
 */
 
 /**
- * Converts runtime-context fields to canonical Miaixz request headers.
+ * Exposes neutral asynchronous presentation through the scoped public entry.
  */
 
-import { miaixzHeaders } from "../../fabric/api/constants.js";
-import type { MiaixzRuntimeContext } from "./context.types.js";
-
-/**
- * Maps runtime-context fields to their canonical HTTP headers.
- */
-const CONTEXT_HEADER_MAP: readonly [keyof MiaixzRuntimeContext, string][] = [
-  ["userId", miaixzHeaders.userId],
-  ["tenantId", miaixzHeaders.tenantId],
-  ["organizationId", miaixzHeaders.organizationId],
-  ["departmentId", miaixzHeaders.departmentId],
-  ["spaceId", miaixzHeaders.spaceId],
-  ["locale", miaixzHeaders.locale],
-  ["timezone", miaixzHeaders.timezone],
-  ["traceId", miaixzHeaders.traceId],
-];
-
-/**
- * Converts tenant, organization, space, locale, and trace context into request headers.
- *
- * @param context - Runtime context to convert.
- * @returns Headers containing all defined runtime-context values.
- * @public
- */
-export function miaixzContextToHeaders(context: Readonly<MiaixzRuntimeContext>): Headers {
-  const headers = new Headers();
-  for (const [key, header] of CONTEXT_HEADER_MAP) {
-    const value = context[key];
-    if (value) headers.set(header, value);
-  }
-  return headers;
-}
+export { Stage } from "./stage.js";
+export { StageLoading } from "./stage-loading.js";
+export { useStageSettled } from "./use-stage-settled.js";
+export type {
+  StageOwnerState,
+  StageProps,
+  StageSlotProps,
+  StageLoadingOwnerState,
+  StageLoadingProps,
+  StageLoadingSlotProps,
+} from "./stage.types.js";

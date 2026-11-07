@@ -22,17 +22,40 @@
  * Verifies capability-limited direct host calls and lifecycle ownership.
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { createMiaixzDirectHostBridge } from "../../../src/runtime/bridge/direct-host-bridge.js";
+import { isPlainRecord } from "../../../src/runtime/bridge/post-message-protocol.js";
 import { VERSION } from "../../../src/version.js";
+
+/**
+ * Defines the neutral context fields selected by this fixture's caller.
+ */
+interface FixtureContext {
+  readonly label: string;
+}
+
+/**
+ * Validates, projects, and freezes the caller-owned context snapshot.
+ *
+ * @param value - Untrusted context returned by the fixture provider.
+ * @returns An independently owned snapshot containing only the selected field.
+ */
+function parseFixtureContext(value: unknown): Readonly<FixtureContext> {
+  if (!isPlainRecord(value) || typeof value.label !== "string") {
+    throw new TypeError("Invalid fixture context.");
+  }
+  return Object.freeze({ label: value.label });
+}
 
 describe("Direct Host Bridge", () => {
   it("delegates every capability with defensive validation and idempotent cleanup", async () => {
     const unsubscribe = vi.fn(async () => undefined);
     const listener = vi.fn();
+    const source = { label: "neutral", privateValue: "synthetic marker" };
+    const parser = vi.fn(parseFixtureContext);
     const adapter = {
-      getContext: vi.fn(async () => ({ tenantId: "tenant" })),
+      getContext: vi.fn(async () => source),
       navigate: vi.fn(async (_request: { readonly state?: unknown }) => undefined),
       hasPermissions: vi.fn(async () => true),
       registerMessages: vi.fn(async () => undefined),
@@ -42,10 +65,20 @@ describe("Direct Host Bridge", () => {
         return unsubscribe;
       }),
     };
-    const bridge = createMiaixzDirectHostBridge({ moduleId: "module-one", adapter });
+    const bridge = createMiaixzDirectHostBridge<FixtureContext>({
+      moduleId: "module-one",
+      adapter,
+      parseContext: parser,
+    });
 
     expect(bridge.protocolVersion).toBe(VERSION);
-    await expect(bridge.getContext()).resolves.toEqual({ tenantId: "tenant" });
+    expectTypeOf(bridge.getContext).returns.toEqualTypeOf<Promise<Readonly<FixtureContext>>>();
+    const context = await bridge.getContext();
+    expect(context).toEqual({ label: "neutral" });
+    expect(context).not.toBe(source);
+    expect(context).toBe(parser.mock.results[0]?.value);
+    expect(Object.isFrozen(context)).toBe(true);
+    expect(parser).toHaveBeenCalledExactlyOnceWith(source);
     const state = { page: 1 };
     await bridge.navigate({ path: "/settings", replace: true, state });
     expect(adapter.navigate).toHaveBeenCalledWith({ path: "/settings", replace: true, state });
@@ -67,7 +100,58 @@ describe("Direct Host Bridge", () => {
     await vi.waitFor(() => expect(unsubscribe).toHaveBeenCalledTimes(2));
     await secondCancel();
     await expect(bridge.getContext()).rejects.toMatchObject({ code: "BRIDGE_DISPOSED" });
+    expect(adapter.getContext).toHaveBeenCalledOnce();
+    expect(parser).toHaveBeenCalledOnce();
   });
+
+  it("does not call the context provider when the parser is missing", async () => {
+    const provider = vi.fn(async () => ({ label: "neutral" }));
+    const bridge = createMiaixzDirectHostBridge<FixtureContext>({
+      moduleId: "module-one",
+      adapter: { getContext: provider },
+    });
+
+    await expect(bridge.getContext()).rejects.toMatchObject({
+      code: "BRIDGE_CAPABILITY_UNAVAILABLE",
+    });
+    expect(provider).not.toHaveBeenCalled();
+    bridge.dispose();
+  });
+
+  it("does not call the context parser when the provider is missing", async () => {
+    const parser = vi.fn(parseFixtureContext);
+    const bridge = createMiaixzDirectHostBridge<FixtureContext>({
+      moduleId: "module-one",
+      adapter: {},
+      parseContext: parser,
+    });
+
+    await expect(bridge.getContext()).rejects.toMatchObject({
+      code: "BRIDGE_CAPABILITY_UNAVAILABLE",
+    });
+    expect(parser).not.toHaveBeenCalled();
+    bridge.dispose();
+  });
+
+  it.each([null, {}, { label: 1 }])(
+    "rejects context rejected by the caller parser: %j",
+    async (value) => {
+      const provider = vi.fn(async () => value);
+      const parser = vi.fn(parseFixtureContext);
+      const bridge = createMiaixzDirectHostBridge<
+        FixtureContext | null | { readonly label?: number }
+      >({
+        moduleId: "module-one",
+        adapter: { getContext: provider },
+        parseContext: parser,
+      });
+
+      await expect(bridge.getContext()).rejects.toMatchObject({ code: "BRIDGE_MESSAGE_INVALID" });
+      expect(provider).toHaveBeenCalledOnce();
+      expect(parser).toHaveBeenCalledExactlyOnceWith(value);
+      bridge.dispose();
+    },
+  );
 
   it("rejects invalid identifiers, payloads, missing capabilities, and invalid subscriptions", async () => {
     expect(() => createMiaixzDirectHostBridge({ moduleId: "Bad", adapter: {} })).toThrowError(

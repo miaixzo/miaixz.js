@@ -4,7 +4,7 @@
 
 `@miaixz/sdk` is an ESM-only npm package. It does not provide a CommonJS `require` entry point, so consumers must use standard ESM `import` statements.
 
-This is the official Miaixz browser SDK. It gives independently deployed frontend services, such as Home, Spaces, and Settings, a shared API protocol and common session, runtime context, configuration, grants, events, files, appearance, and internationalization capabilities.
+This is the official Miaixz browser SDK. It provides independent HTTP, session, configuration, grants, events, storage, files, appearance, internationalization, and module communication mechanisms. Applications own their business protocols, context schemas, deployment values, and runtime composition.
 
 The SDK has no third-party runtime dependencies and can be built and published independently with npm.
 
@@ -25,7 +25,6 @@ This table is checked directly against the package export map.
 | `.`            | JavaScript |
 | `./api`        | JavaScript |
 | `./session`    | JavaScript |
-| `./context`    | JavaScript |
 | `./config`     | JavaScript |
 | `./grants`     | JavaScript |
 | `./runtime`    | JavaScript |
@@ -48,101 +47,93 @@ public consumers use the documented package entries above rather than source pat
 
 ## One-time setup
 
-```ts
-import { createMiaixzSdk } from "@miaixz/sdk";
+Create the mechanisms required by the consumer and wire their providers explicitly:
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config: {
-    apiBaseUrl: "https://api.miaixz.example",
-    environment: "production",
-    services: { space: "https://space-api.miaixz.example" },
+```ts
+import { createApiClient, MiaixzConfigStore } from "@miaixz/sdk";
+
+const config = new MiaixzConfigStore({
+  apiBaseUrl: "https://api.example.test",
+  environment: "production",
+  services: { demo: "https://demo-api.example.test" },
+});
+const settings = config.getSnapshot();
+const api = createApiClient({
+  baseUrl: settings.apiBaseUrl,
+  environment: settings.environment,
+});
+
+const response = await api.get<readonly { id: string; name: string }[]>("/items");
+console.log(response.data);
+```
+
+`MiaixzConfigStore` validates and publishes configuration. It does not construct clients or
+synchronize other mechanisms. The consumer owns subscriptions, client replacement, and cleanup.
+The HTTP client's default credentials mode is `same-origin`.
+
+### Session and authentication providers
+
+Session storage is independent and uses memory by default. Connect a Bearer provider explicitly:
+
+```ts
+import { createApiClient, createMiaixzSessionManager } from "@miaixz/sdk";
+
+const session = createMiaixzSessionManager();
+const authenticatedApi = createApiClient({
+  baseUrl: "https://api.example.test",
+  tokenProvider: () => session.getAccessToken(),
+});
+```
+
+The application establishes trusted identity and passes a validated session to
+`session.setSession()`. The SDK does not create a login protocol or an application context.
+For Cookie/BFF requests, configure credentials and authoritative CSRF handling explicitly:
+
+```ts
+const cookieApi = createApiClient({
+  baseUrl: "https://api.example.test",
+  credentials: "include",
+  csrf: {
+    required: true,
+    tokenProvider: () =>
+      document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content,
   },
-  csrfTokenProvider: () =>
-    document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content,
-  locale: "en-US",
-});
-
-await sdk.ready;
-sdk.context.set({
-  tenantId: "tenant-1",
-  spaceId: "space-1",
-  locale: "en-US",
 });
 ```
 
-A tenant is the data and security isolation boundary. The SDK sends `tenantId` in the `X-Miaixz-Tenant-Id` request header. Other runtime context, including the active space, is also sent through headers and does not require path parameters such as `/spaces/:spaceId`.
+The SDK does not read HttpOnly cookies. With required CSRF handling, `POST`, `PUT`, `PATCH`,
+and `DELETE` require a non-empty provider token. Same-named consumer or interceptor values cannot
+replace the provider result in `X-CSRF-Token`. `GET`, `HEAD`, and `OPTIONS` do not invoke that
+provider or attach the header.
 
-`organizationId` identifies the selected organization entity inside the current tenant. It must never replace `tenantId` as the tenant isolation boundary. Departments, positions, job titles, and related structures remain part of the organization domain.
-
-`context.set()` replaces the entire context. Use `context.patch()` for partial updates. Even when a full replacement omits `locale`, the composed SDK writes the active internationalization locale to request headers.
-
-Authentication uses Cookie/BFF mode by default. Requests send `credentials: "include"`; the SDK does not read HttpOnly cookies, create token sessions, or attach an `Authorization` header. `POST`, `PUT`, `PATCH`, and `DELETE` requests also require a non-empty token from `csrfTokenProvider`. The SDK ignores same-named values supplied by consumers or request interceptors and writes only the provider result to `X-CSRF-Token`. `GET`, `HEAD`, and `OPTIONS` requests do not invoke the provider or attach that header.
-
-Bearer mode must be enabled explicitly with `authMode: "bearer"`. Authentication sessions are stored only in the current SDK instance by default and do not survive a page reload:
+Enable persistent session storage only when explicitly accepting the Web Storage credential risk:
 
 ```ts
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  authMode: "bearer",
-  config,
-});
+import { createMiaixzPersistentSessionStorage, createMiaixzSessionManager } from "@miaixz/sdk";
 
-sdk.session.setSession({
-  accessToken: "token",
-  tokenType: "DP-Token",
-});
-```
-
-Enable persistent storage through the dedicated factory only when you explicitly accept the risk that injected scripts could steal credentials from Web Storage. Prefer the default in-memory mode or HttpOnly Cookie/BFF mode:
-
-```ts
-import { createMiaixzPersistentSessionStorage, createMiaixzSdk } from "@miaixz/sdk";
-
-const sessionPersistence = createMiaixzPersistentSessionStorage(window.sessionStorage, {
+const persistence = createMiaixzPersistentSessionStorage(window.sessionStorage, {
   acknowledgeWebStorageRisk: true,
 });
-
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  authMode: "bearer",
-  sessionPersistence,
-  config,
-});
+const persistentSession = createMiaixzSessionManager({ persistence });
 ```
 
-## API response envelope
+Release owned subscriptions and call `session.destroy()` when its owner is disposed.
 
-All JSON APIs use the following response envelope by default:
+## HTTP response contract
 
-```json
-{
-  "code": "0",
-  "desc": "success",
-  "data": {}
-}
-```
+Successful HTTP responses preserve the parsed body. JSON is selected by the explicit response
+mode or Content-Type; the SDK does not interpret application success codes or unwrap a business
+response. Response interceptors receive the original parsed body, followed by the caller's optional
+`parse` validator. Text, Blob, ArrayBuffer, void, and empty responses retain their transport contracts.
 
-- `code === "0"`: the request succeeded, and the SDK returns the inner `data` value automatically.
-- `code !== "0"`: the SDK throws `MiaixzApiError`, even when the HTTP status is `200`.
-- A JSON response without `code`, `desc`, or `data`: the SDK throws an error with code `API_ENVELOPE_INVALID`.
-- Text, Blob, ArrayBuffer, and empty responses do not require this envelope.
+HTTP failures remain failures regardless of the body. The default problem extractor reads optional
+string `code`, `requestId`, and `message`. A synchronous `httpErrorMapper(body, { status })` may
+return only optional string `code`, `requestId`, and `serverMessage` fields. A valid object, including
+`{}`, replaces the whole default detail record; `undefined`, a thrown error, or an invalid return
+falls back to generic extraction. Request IDs then fall back to the response header and codes to
+`HTTP_<status>`. The mapper cannot change status, retries, credentials, or forwarding policy.
 
-```ts
-interface Space {
-  id: string;
-  name: string;
-}
-
-const response = await sdk.api.get<Space>("/space/current");
-
-/*
- * The response already contains data; response.data.data is unnecessary.
- */
-console.log(response.data.name);
-```
-
-Exceptional endpoints can set `envelope: "optional"` to accept JSON with or without an envelope. Set `envelope: "none"` to preserve the raw JSON value. Business APIs should keep the default `required` mode.
+Applications own their response protocols and business error translations.
 
 ## Project locale catalogs
 
@@ -164,7 +155,7 @@ const japanese = defineLocale({
 });
 ```
 
-Pass locale definitions through `locales` when creating `MiaixzI18n` or `MiaixzSdk`. The runtime exposes immutable descriptors through `i18n.locales`, resolves aliases during `changeLocale()`, and loads both locale-owned and application-owned messages before publishing the new locale.
+Pass locale definitions through `locales` when creating `MiaixzI18n`. The runtime exposes immutable descriptors through `i18n.locales`, resolves aliases during `changeLocale()`, and loads both locale-owned and application-owned messages before publishing the new locale.
 
 ```ts
 /*
@@ -173,29 +164,26 @@ Pass locale definitions through `locales` when creating `MiaixzI18n` or `MiaixzS
 import type { MiaixzMessages } from "@miaixz/sdk/i18n";
 
 export default {
-  "space.error.notFound": "Space not found",
-  "sdk.error.network": "The network is unavailable. Try again later.",
+  "demo.itemMissing": "Item not found",
 } satisfies MiaixzMessages;
 ```
 
 ```ts
-import { createMiaixzMessageLoader, createMiaixzSdk } from "@miaixz/sdk";
+import { createMiaixzI18n, createMiaixzMessageLoader } from "@miaixz/sdk";
 
 const loadMessages = createMiaixzMessageLoader({
-  space: {
+  demo: {
     "en-US": () => import("./locales/en-US.js"),
     "fr-FR": () => import("./locales/fr-FR.js"),
   },
 });
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config,
+const i18n = createMiaixzI18n({
   locales: [japanese],
   locale: "en-US",
   fallbackLocale: "en-US",
   loadMessages,
-  onI18nLoadError(error) {
+  onLoadError(error) {
     /*
      * Delegate reporting to the project logger or error interface.
      */
@@ -203,30 +191,30 @@ const sdk = createMiaixzSdk({
   },
 });
 
-await sdk.ready;
-console.log(sdk.i18n.t("space.error.notFound"));
+await i18n.initialize(["demo"]);
+console.log(i18n.t("demo.itemMissing"));
 
 /*
  * The target project catalog is loaded and cached before the locale changes.
  */
-await sdk.i18n.changeLocale("fr-FR");
+await i18n.changeLocale("fr-FR");
 ```
 
 Statically imported catalogs can also be passed through `messages` during initialization. Project messages take precedence over built-in SDK messages. Missing messages fall back to `fallbackLocale`; if no fallback is available, the message key is returned.
 
-Backend business errors can use `api.error.<code>` as a project message key, for example `api.error.SPACE_FORBIDDEN`. The SDK uses the project translation when the key exists and otherwise falls back to the `desc` returned by the API.
+Application message keys and business error mapping belong to their consuming application. The independent translator does not inspect HTTP responses or synchronize other stores.
 
 ## Appearance, themes, and density
 
-The SDK is the source of truth for Appearance state across services. The VERSION-bound schema persists a theme ID,
+The independent Appearance manager owns appearance state for its configured scope. The VERSION-bound schema persists a theme ID,
 Light/Dark preference, Density, and optional mode-specific color overrides. It does not import CSS or
 write DOM attributes; `@miaixz/ui` owns validation against the theme catalog and atomic rendering.
 
 ```tsx
-import { createMiaixzSdk } from "@miaixz/sdk";
+import { createMiaixzAppearanceManager } from "@miaixz/sdk";
 import { Theme, useTheme } from "@miaixz/ui/theme";
 
-const sdk = createMiaixzSdk({ appId: "portal", config });
+const appearance = createMiaixzAppearanceManager({ appId: "portal" });
 
 function AppearanceControls() {
   const { theme, colorMode, density, setTheme, setColorMode, setDensity, setOverrides } =
@@ -253,7 +241,7 @@ function AppearanceControls() {
 
 export function Root() {
   return (
-    <Theme appearance={sdk.appearance}>
+    <Theme appearance={appearance}>
       <AppearanceControls />
     </Theme>
   );
@@ -270,26 +258,33 @@ Supported radius scales are `0`, `0.5`, `0.75`, `1`, `1.5`, and `2` (default `1`
 range from `12` to `18` pixels in one-pixel steps (default `14`). Both preferences use the same
 validated persistence and restore flow.
 
-The composed SDK defaults to `appearanceScope: "tenant"` for tenant-specific preferences. Set
-`appearanceScope: "global"` when theme, color mode, and density are application-wide user interface
-preferences that must remain stable while `context.tenantId` changes.
+Applications explicitly select scope with `appearance.setScope(tenantId)` or
+`appearance.setScope()` for the global scope. No application context or automatic scope linkage
+is provided. Optional event wiring is configured by the owner.
 
 Applications should switch Appearance through `useTheme()` because the UI runtime validates and
-applies the complete theme before persistence. Calling `sdk.appearance.patch()` is reserved for
-non-visual integration code that already has access to the same validated catalog transaction.
+applies the complete theme before persistence. Calling `appearance.patch()` is reserved for
+non-visual integration code with access to the same validated catalog transaction.
 
 ## Service-specific APIs
 
+Consumers may resolve service URLs from configuration and construct independent clients:
+
 ```ts
-const spaceApi = sdk.createServiceClient("space");
-const spaces = await spaceApi.get<readonly Space[]>("/spaces");
+import { createApiClient, getMiaixzServiceEndpoint } from "@miaixz/sdk";
+
+const snapshot = config.getSnapshot();
+const serviceApi = createApiClient({
+  baseUrl: getMiaixzServiceEndpoint(snapshot, "demo"),
+  environment: snapshot.environment,
+});
 ```
 
-Service endpoints come from centralized configuration, so frontend services do not need to hard-code deployment addresses.
+The consumer supplies actual service names, deployment addresses, and provider wiring.
 
 Primary and service endpoints must be absolute URLs. Production and staging environments accept HTTPS only. Development and test environments additionally accept HTTP endpoints on `localhost`, `127.0.0.1`, and `[::1]`. Endpoints cannot contain user information, query parameters, or fragments.
 
-Individual requests accept only relative paths or same-origin paths beginning with `/`. Absolute URLs and `//host` values are rejected. Cross-service calls must use the corresponding service client. Authentication, cookies, CSRF, and runtime context requests always use `redirect: "error"`; request interceptors cannot weaken this security policy or forward requests to another origin.
+Individual requests accept only relative paths or same-origin paths beginning with `/`. Absolute URLs and `//host` values are rejected. Cross-service calls must use a client configured for that service. Requests containing authentication, cookies, CSRF, or configured/provider context headers use `redirect: "error"`; request interceptors cannot weaken this security policy or forward requests to another origin.
 
 ```ts
 import { createApiClient } from "@miaixz/sdk/api";
@@ -305,7 +300,7 @@ await publicApi.get("/health", {
 });
 ```
 
-After `sdk.config.set(nextConfig)`, the primary API client and file client switch automatically to the new address and timeout configuration. Service clients created afterward also use the latest configuration.
+`contextHeaderNames` is validated and copied when creating a client. After request interceptors, those names and actual provider header names retain redirect protection, including with `includeContext: false`. The SDK does not define application header names. Updating a ConfigStore does not automatically rebuild existing clients; that lifecycle belongs to the consumer.
 
 ## Error handling
 
@@ -320,7 +315,7 @@ import {
 } from "@miaixz/sdk/errors";
 
 try {
-  await sdk.api.get("/spaces");
+  await api.get("/items");
 } catch (error) {
   if (error instanceof MiaixzAbortError) return;
   if (error instanceof MiaixzTimeoutError || error instanceof MiaixzNetworkError) {
@@ -345,39 +340,43 @@ site instead of reconstructing it from a request body.
 ## Grants
 
 ```ts
-sdk.setGrants({
-  allowed: ["space:*", "organization:read"],
-  denied: ["space:delete"],
-  roles: ["member"],
+import { createMiaixzGrantSet } from "@miaixz/sdk";
+
+const grants = createMiaixzGrantSet({
+  allowed: ["demo:items:*"],
+  denied: ["demo:items:delete"],
+  roles: ["reader"],
 });
 
-sdk.grants.can("space:read");
-sdk.grants.canAll(["space:read", "organization:read"]);
+grants.can("demo:items:read");
+grants.canAll(["demo:items:read", "demo:items:write"]);
 ```
 
+The evaluator is independent; its owner replaces snapshots and publishes any change signals.
 Frontend grants control presentation and interaction only. They do not replace server-side authorization.
 
 ## Local and cross-tab events
 
-SDK events are dispatched synchronously within the current instance by default and do not create a `BroadcastChannel`. To enable same-origin cross-tab synchronization, the composed entry point derives a unique versioned channel name from `appId`:
+Events dispatch synchronously within an independent bus. Without `channelName`, or with `false`,
+no BroadcastChannel is created:
 
 ```ts
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config,
-  eventChannel: true,
-});
+import { createMiaixzEventBus } from "@miaixz/sdk/events";
 
-const stop = sdk.events.on("locale:changed", ({ locale }) => {
-  console.log(locale);
+const events = createMiaixzEventBus({ channelName: false });
+const stop = events.on("grants:changed", ({ revision }) => {
+  console.log(revision);
 });
-
 stop();
+events.close();
 ```
 
-Built-in authentication, context, appearance, locale, and configuration events have mandatory runtime validators. Authentication events carry only the `authenticated` or `anonymous` state and never expose sessions, tokens, cookies, or authorization headers.
+Built-in session, grants, appearance, locale, and configuration events have mandatory runtime
+validators. Session events expose only the authenticated/anonymous status. Consumers explicitly
+wire managers and subscriptions; no application context event or automatic runtime composition
+is provided. The independent I18n runtime reports through its own subscriptions.
 
-Application-defined events can also be used within the current instance. A matching runtime validator is required before an event can cross tabs. When creating an event bus directly, use a channel name in the form `miaixz:v1:<appId>:events`:
+Application-defined events can also be used within the current instance. A matching runtime validator is required before an event can cross tabs. When creating an event bus directly, use a channel name in the form `miaixz:<appId>:events`:
 
 ```ts
 import { createMiaixzEventBus } from "@miaixz/sdk/events";
@@ -387,7 +386,7 @@ interface PortalEvents {
 }
 
 const events = createMiaixzEventBus<PortalEvents>({
-  channelName: "miaixz:v1:portal:events",
+  channelName: "miaixz:portal:events",
   validators: {
     "portal:ready": (payload) =>
       typeof payload === "object" &&
@@ -403,12 +402,44 @@ const events = createMiaixzEventBus<PortalEvents>({
 ```ts
 import { createApiClient } from "@miaixz/sdk/api";
 import { createMiaixzI18n } from "@miaixz/sdk/i18n";
-import type { MiaixzSpace } from "@miaixz/sdk/types";
+import type { MiaixzPage } from "@miaixz/sdk/types";
 import { formatMiaixzBytes } from "@miaixz/sdk/formatters";
 ```
 
 The **Public entries** table above is the authoritative list of published subpaths and is checked
 directly against `package.json`; no second hand-maintained subpath list is kept here.
+
+## Data helpers
+
+Neutral collection, JSON snapshot, and CSV helpers are available from the root entry:
+
+```ts
+import {
+  cloneMiaixzJsonValue,
+  freezeMiaixzJsonValue,
+  mergeMiaixzJsonValue,
+  resolveCollectionValue,
+  serializeMiaixzCsv,
+} from "@miaixz/sdk";
+
+const mode = resolveCollectionValue([{ value: "light" }, { value: "dark" }] as const, "dark");
+const snapshot = freezeMiaixzJsonValue(cloneMiaixzJsonValue({ ready: true }));
+const merged = mergeMiaixzJsonValue(snapshot, { ready: false });
+const csv = serializeMiaixzCsv(
+  [
+    ["Name", "Count"],
+    ["Demo", 1],
+  ],
+  "\r\n",
+);
+```
+
+JSON clone/merge accept null and finite plain acyclic JSON, reject explicit undefined, and replace
+arrays. Only two plain objects merge recursively; otherwise the patch replaces the base, without
+validating the discarded base. `onInvalid(path, expectation)` supplies only error construction; merge returns unknown.
+Freeze operates in place on an already validated snapshot, returns the same reference, and
+short-circuits already frozen nodes. CSV only quotes and joins cells with the explicit LF or CRLF;
+labels, BOM, MIME, filenames, and downloads remain with the consumer.
 
 ## Microfrontend module manifests
 
@@ -425,30 +456,30 @@ import { VERSION } from "@miaixz/sdk";
 
 const manifest = {
   protocolVersion: MIAIXZ_MODULE_PROTOCOL_VERSION,
-  id: "spaces",
+  id: "demo",
   version: VERSION,
   hostVersion: `^${VERSION}`,
   kind: "integrated",
-  basePath: "/spaces",
-  entry: "@miaixz/spaces",
+  basePath: "/demo",
+  entry: "demo-module",
   routes: [
     {
-      id: "spaces-home",
+      id: "demo-home",
       path: "/",
-      titleKey: "spaces.route.home",
-      requiredPermissions: ["spaces:workspace:read"],
+      titleKey: "demo.route.home",
+      requiredPermissions: ["demo:items:read"],
     },
   ],
   navigation: [
     {
-      id: "spaces-navigation",
-      routeId: "spaces-home",
-      labelKey: "spaces.navigation.home",
+      id: "demo-navigation",
+      routeId: "demo-home",
+      labelKey: "demo.navigation.home",
       order: 10,
     },
   ],
-  requiredPermissions: ["spaces:workspace:read"],
-  requiredCapabilities: ["context", "navigation", "permissions"],
+  requiredPermissions: ["demo:items:read"],
+  requiredCapabilities: ["context", "permissions"],
 } satisfies MiaixzModuleManifest;
 
 const verifiedManifest = parseMiaixzModuleManifest(manifest, {
@@ -471,13 +502,29 @@ export const module: MiaixzIntegratedModule = {
 Modules in the same runtime use `createMiaixzDirectHostBridge()`. Cross-origin iframes must use exact origins on both sides and create separate host and child bridges. Never use `"*"`:
 
 ```ts
+import { isRecord } from "@miaixz/sdk";
 import { createMiaixzDirectHostBridge } from "@miaixz/sdk/runtime";
 
-const bridge = createMiaixzDirectHostBridge({
-  moduleId: "spaces",
+interface DemoContext {
+  readonly mode: "compact" | "standard";
+}
+
+function parseContext(value: unknown): Readonly<DemoContext> {
+  if (
+    !isRecord(value) ||
+    (value.mode !== "compact" && value.mode !== "standard") ||
+    Object.keys(value).some((key) => key !== "mode")
+  )
+    throw new TypeError("Invalid demo context.");
+  return Object.freeze({ mode: value.mode });
+}
+
+const bridge = createMiaixzDirectHostBridge<DemoContext>({
+  moduleId: "demo",
+  parseContext,
   adapter: {
-    getContext: async () => sdk.context.getSnapshot(),
-    hasPermissions: async (permissions) => sdk.grants.canAll(permissions),
+    getContext: async () => ({ mode: "compact" }),
+    hasPermissions: async (permissions) => grants.canAll(permissions),
   },
 });
 
@@ -488,7 +535,9 @@ bridge.dispose();
 Modules must not obtain context through shared globals or direct access to the host DOM. See the [repository examples](https://github.com/miaixzo/miaixz.js/tree/main/packages/sdk/tests/examples) for complete compilable examples.
 
 PostMessage Hosts apply request, subscription, payload, catalog, and adapter-response limits by
-default. Existing initialization code does not need to change. A Host with a measured need for a
+default. Direct and PostMessage context capabilities require a caller-supplied `parseContext`;
+a missing parser makes that capability unavailable. Host and Child each validate independently,
+and their parsers own the allowed-field projection and defensive copy. A Host with a measured need for a
 larger catalog or event payload may pass `limits`, but values remain capped by SDK hard limits;
 exceeding a limit returns `BRIDGE_RESOURCE_LIMIT_EXCEEDED`.
 

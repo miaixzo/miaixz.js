@@ -19,71 +19,63 @@
 */
 
 /**
- * Defines organization identity and its owning tenant.
+ * Implements the error boundary module.
  */
 
-import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
+"use client";
+
+import { Component, type ReactNode } from "react";
 
 /**
- * Describes an organization within a tenant.
+ * Supplies child content and a caller-owned recovery presentation.
  *
  * @public
  */
-export interface MiaixzOrganizationSummary {
+export interface MiaixzErrorBoundaryProps {
   /**
-   * Unique identifier of the organization.
+   * Child content isolated by this boundary.
    */
-  id: MiaixzIdentifier;
-
+  readonly children: ReactNode;
   /**
-   * Identifier of the tenant that owns the organization.
+   * Renders recovery content using the local retry callback.
    */
-  tenantId: MiaixzIdentifier;
-
-  /**
-   * Display name of the organization.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable organization code.
-   */
-  code?: string;
+  readonly fallback: (retry: () => void) => ReactNode;
 }
 
 /**
- * Describes a department within an organization.
+ * Tracks failure without retaining error details or child data.
+ */
+interface ErrorBoundaryState {
+  readonly failed: boolean;
+}
+
+/**
+ * Contains rendering failures and delegates presentation to its caller.
+ * The boundary adds no DOM, diagnostics, or application initialization policy.
  *
  * @public
  */
-export interface MiaixzDepartmentSummary {
-  /**
-   * Unique identifier of the department.
-   */
-  id: MiaixzIdentifier;
+export class MiaixzErrorBoundary extends Component<MiaixzErrorBoundaryProps, ErrorBoundaryState> {
+  override state: ErrorBoundaryState = { failed: false };
 
   /**
-   * Identifier of the tenant that owns the department.
+   * Marks the failed subtree without retaining the thrown value.
+   *
+   * @returns The local failure marker.
    */
-  tenantId: MiaixzIdentifier;
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { failed: true };
+  }
 
   /**
-   * Identifier of the organization that contains the department.
+   * Returns child content or the caller's recovery presentation.
+   * Retrying resets only this boundary; an external key can replace its whole scope.
+   *
+   * @returns Child content or the caller-provided fallback.
    */
-  organizationId: MiaixzIdentifier;
-
-  /**
-   * Display name of the department.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable department code.
-   */
-  code?: string;
-
-  /**
-   * Optional identifier of the parent department.
-   */
-  parentId?: MiaixzIdentifier;
+  override render(): ReactNode {
+    return this.state.failed
+      ? this.props.fallback(() => this.setState({ failed: false }))
+      : this.props.children;
+  }
 }

@@ -32,7 +32,7 @@ import {
 } from "../contracts/host-context.js";
 import { isMiaixzModulePermission } from "../contracts/permission.js";
 import type { MiaixzMessageCatalog } from "../../i18n/i18n.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
+import { parseBridgeContext } from "./post-message-protocol.js";
 
 const moduleIdentifierPattern = /^[a-z][a-z0-9-]{1,63}$/;
 
@@ -173,15 +173,18 @@ function parseEventType(moduleId: string, type: string): string {
 
 /**
  * Implements the same-runtime Host Bridge with explicit capability injection.
+ *
+ * @typeParam Context - Caller-defined context validated before it is exposed.
  */
-class MiaixzDirectHostBridge implements MiaixzHostBridge {
+class MiaixzDirectHostBridge<Context = unknown> implements MiaixzHostBridge<Context> {
   /**
    * Micro-frontend protocol version implemented by the bridge.
    */
   readonly protocolVersion = MIAIXZ_MODULE_PROTOCOL_VERSION;
 
   readonly #moduleId: string;
-  readonly #adapter: MiaixzHostAdapter;
+  readonly #adapter: MiaixzHostAdapter<Context>;
+  readonly #parseContext: ((value: unknown) => Readonly<Context>) | undefined;
   readonly #subscriptions = new Set<() => Promise<void>>();
   #disposed = false;
 
@@ -190,9 +193,10 @@ class MiaixzDirectHostBridge implements MiaixzHostBridge {
    *
    * @param options - Validated module identity and injected host capabilities.
    */
-  constructor(options: Readonly<MiaixzDirectHostBridgeOptions>) {
+  constructor(options: Readonly<MiaixzDirectHostBridgeOptions<Context>>) {
     this.#moduleId = parseModuleId(options.moduleId);
     this.#adapter = options.adapter;
+    this.#parseContext = options.parseContext;
   }
 
   /**
@@ -200,10 +204,17 @@ class MiaixzDirectHostBridge implements MiaixzHostBridge {
    *
    * @returns Immutable runtime context from the host Adapter.
    */
-  getContext(): Promise<Readonly<MiaixzRuntimeContext>> {
-    return Promise.resolve().then(() => {
+  getContext(): Promise<Readonly<Context>> {
+    return Promise.resolve().then(async () => {
       this.#assertActive();
-      return this.#requireCapability("getContext")();
+      if (
+        typeof this.#parseContext !== "function" ||
+        typeof this.#adapter.getContext !== "function"
+      ) {
+        throw createBridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
+      }
+      const value: unknown = await this.#requireCapability("getContext")();
+      return parseBridgeContext(value, this.#parseContext);
     });
   }
 
@@ -351,27 +362,28 @@ class MiaixzDirectHostBridge implements MiaixzHostBridge {
    * @returns Injected Adapter capability.
    * @throws MiaixzSdkError When the host omitted the requested capability.
    */
-  #requireCapability<Name extends keyof MiaixzHostAdapter>(
+  #requireCapability<Name extends keyof MiaixzHostAdapter<Context>>(
     name: Name,
-  ): NonNullable<MiaixzHostAdapter[Name]> {
+  ): NonNullable<MiaixzHostAdapter<Context>[Name]> {
     const capability = this.#adapter[name];
     if (capability === undefined) {
       throw createBridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
     }
-    return capability as NonNullable<MiaixzHostAdapter[Name]>;
+    return capability as NonNullable<MiaixzHostAdapter<Context>[Name]>;
   }
 }
 
 /**
  * Creates a module-scoped same-runtime Host Bridge.
  *
+ * @typeParam Context - Caller-defined context accepted by the injected parser.
  * @param options - Module identity and explicitly injected host capabilities.
  * @returns Host Bridge that delegates validated calls to the Adapter.
  * @throws MiaixzSdkError When the module identifier is invalid.
  * @public
  */
-export function createMiaixzDirectHostBridge(
-  options: Readonly<MiaixzDirectHostBridgeOptions>,
-): MiaixzHostBridge {
+export function createMiaixzDirectHostBridge<Context = unknown>(
+  options: Readonly<MiaixzDirectHostBridgeOptions<Context>>,
+): MiaixzHostBridge<Context> {
   return new MiaixzDirectHostBridge(options);
 }

@@ -60,6 +60,9 @@ describe("UI dynamic example", () => {
       "Appearance",
       "MiaixzLocaleProvider",
       "Theme",
+      "Stage",
+      "StageLoading",
+      "MiaixzErrorBoundary",
       "CompleteCatalog",
       "UI_COMPONENT_NAMES",
       "NumberInput",
@@ -98,9 +101,10 @@ describe("UI dynamic example", () => {
       "MiaixzDocumentLocale",
       "MiaixzLinkProvider",
       "MiaixzLocaleProvider",
+      "MiaixzErrorBoundary",
       "Theme",
     ].sort();
-    expect(catalogNames).toHaveLength(121);
+    expect(catalogNames).toHaveLength(124);
     expect([...new Set(catalogNames)].sort()).toEqual(expectedNames);
   });
 });

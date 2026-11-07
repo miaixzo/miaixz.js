@@ -25,7 +25,6 @@
 import { VERSION } from "../../version.js";
 
 import type { MiaixzMessageCatalog } from "../../i18n/i18n.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
 
 /**
  * Describes a navigation request issued by a remote module through its host bridge.
@@ -55,9 +54,10 @@ export interface MiaixzNavigationRequest {
  * This task freezes the public shape only; runtime implementations are supplied by Host Bridge
  * tasks and never expose authentication credentials.
  *
+ * @typeParam Context - Caller-defined context accepted by the injected parser.
  * @public
  */
-export interface MiaixzHostBridge {
+export interface MiaixzHostBridge<Context = unknown> {
   /**
    * Micro-frontend protocol version implemented by the bridge.
    */
@@ -68,7 +68,7 @@ export interface MiaixzHostBridge {
    *
    * @returns Immutable runtime context from the host.
    */
-  getContext(): Promise<Readonly<MiaixzRuntimeContext>>;
+  getContext(): Promise<Readonly<Context>>;
 
   /**
    * Requests same-site navigation from the host.
@@ -127,46 +127,48 @@ export interface MiaixzHostBridge {
 /**
  * Supplies the optional capabilities exposed by one Miaixz host.
  *
+ * @typeParam Context - Caller-defined context supplied by the host.
  * @public
  */
-export interface MiaixzHostAdapter {
+export interface MiaixzHostAdapter<Context = unknown> {
   /**
    * Reads the current non-sensitive host runtime context when available.
    */
-  readonly getContext?: MiaixzHostBridge["getContext"];
+  readonly getContext?: MiaixzHostBridge<Context>["getContext"];
 
   /**
    * Handles validated same-site navigation requests when available.
    */
-  readonly navigate?: MiaixzHostBridge["navigate"];
+  readonly navigate?: MiaixzHostBridge<Context>["navigate"];
 
   /**
    * Evaluates validated module permissions when available.
    */
-  readonly hasPermissions?: MiaixzHostBridge["hasPermissions"];
+  readonly hasPermissions?: MiaixzHostBridge<Context>["hasPermissions"];
 
   /**
    * Registers module-owned internationalization resources when available.
    */
-  readonly registerMessages?: MiaixzHostBridge["registerMessages"];
+  readonly registerMessages?: MiaixzHostBridge<Context>["registerMessages"];
 
   /**
    * Emits module-scoped events when available.
    */
-  readonly emit?: MiaixzHostBridge["emit"];
+  readonly emit?: MiaixzHostBridge<Context>["emit"];
 
   /**
    * Subscribes to module-scoped events when available.
    */
-  readonly subscribe?: MiaixzHostBridge["subscribe"];
+  readonly subscribe?: MiaixzHostBridge<Context>["subscribe"];
 }
 
 /**
  * Configures a same-runtime bridge for one identified module.
  *
+ * @typeParam Context - Caller-defined context validated before it is exposed.
  * @public
  */
-export interface MiaixzDirectHostBridgeOptions {
+export interface MiaixzDirectHostBridgeOptions<Context = unknown> {
   /**
    * Identifies the module allowed to use the bridge.
    */
@@ -175,5 +177,11 @@ export interface MiaixzDirectHostBridgeOptions {
   /**
    * Supplies the host capabilities exposed to the module.
    */
-  readonly adapter: MiaixzHostAdapter;
+  readonly adapter: MiaixzHostAdapter<Context>;
+
+  /**
+   * Selects and validates context fields that may be exposed to the module.
+   * Context capability is unavailable when the parser is absent.
+   */
+  readonly parseContext?: (value: unknown) => Readonly<Context>;
 }

@@ -179,6 +179,44 @@ declare const workbookFile: File;
 
 `initialSheet` 接受可见工作表 ID、准确名称或从零开始的可见表索引。隐藏工作表参与覆盖审计，但不会显示为标签；无效选择会回退到保存的活动表，并通过 `onDiagnostics` 发出 `XLSX_INITIAL_SHEET_NOT_FOUND`。
 
+## 严格 ZIP 检查与条目读取
+
+根入口还提供独立于预览会话的中性 classic ZIP 机制：
+
+```ts compile
+import { inspectZipArchive, readZipEntry, ZipArchiveError } from "@miaixz/view";
+import type { ZipArchiveBudget } from "@miaixz/view";
+
+declare const source: Uint8Array;
+declare const budget: ZipArchiveBudget;
+declare const maxOutputBytes: number;
+const controller = new AbortController();
+
+try {
+  const entries = inspectZipArchive(source, { budget, signal: controller.signal });
+  const entry = entries.find(({ path }) => !path.endsWith("/"));
+  if (entry !== undefined) {
+    const bytes = await readZipEntry(source, entry.path, {
+      budget,
+      maxOutputBytes,
+      signal: controller.signal,
+    });
+    console.log(bytes.byteLength);
+  }
+} catch (error) {
+  if (error instanceof ZipArchiveError) console.log(error.reason);
+  else throw error;
+}
+```
+
+调用方显式提供四项预算：`maxSourceBytes`、`maxExpandedBytes`、`maxArchiveEntryBytes`、`maxArchiveEntries`；各项及单次读取的 `maxOutputBytes` 都必须是正安全整数，非法值抛出 TypeError，不替换默认值。严格入口不附加预览压缩比、路径长度、流停滞或期限策略。
+
+`inspectZipArchive` 同步检查全部目录项（包括目录）：portable path、大小写不敏感重复、符号链接、加密、classic 头范围、local/central 一致性、压缩方式及声明预算。只支持 stored/raw-DEFLATE，名称始终严格 UTF-8 解码，不要求 bit 11；拒绝 ZIP64 与分卷。合法空 ZIP 返回空数组，数组及条目元信息冻结，条目只读字段为 path/size/method/compressed/offset/crc；Uint8Array 按实际 byteOffset/byteLength 视图范围处理。
+
+inspect 不解压、不检查内容 CRC。`readZipEntry` 重新检查 source、按精确 path 定位，不接受调用方 offset；先复制选中的压缩内容，再有界读取并核实际大小与 CRC。stored 长度不符在额外内容分配前拒绝为 integrity-mismatch；DEFLATE 输出超过声明大小或读取限额为 output-limit，最终不足声明或 CRC 不符为 integrity-mismatch。不解压或验证未读取附件的内容。
+
+归档结构错误或超过预算使用 `ZipArchiveError` 及只读中性 reason：`source-invalid`、`directory-missing`、`unsupported-layout`、`directory-invalid`、`central-header-invalid`、`entry-offset-invalid`、`path-invalid`、`unsupported-entry`、`symlink`、`duplicate-path`、`expanded-limit`、`local-header-mismatch`、`entry-content-invalid`、`directory-length-mismatch`、`output-limit`、`integrity-mismatch`。不存在的所选 path 为 entry-content-invalid；原生 UTF-8/解压异常与 signal 原始取消 reason 原样传播，领域检查与文案由调用方处理。原预览 ZIP 的解码、预算和错误合同保持。
+
 ## 公共入口
 
 | 入口           | 类型       |
@@ -192,18 +230,18 @@ declare const workbookFile: File;
 | `./runtime`    | JavaScript |
 | `./styles.css` | CSS        |
 
-本包只导出文件预览组件，不提供页面布局用途的 `View` 组件。
+本包导出文件预览组件及上述中性 ZIP 机制，不提供页面布局用途的 `View` 组件。
 
 ## 安全边界
 
-所有解析输入均视为不可信内容：
+预览处理流程将所有解析输入视为不可信内容：
 
 - 远程响应体和解压输出在流式读取时计数，停滞流会被取消。
 - 文档级守卫限制累计解压字节、文本、页数、绘图对象、向量记录、内存估算、嵌套深度和总任务时间。
 - XML 实体与过深结构会被拒绝；ZIP 路径、目录元数据、条目大小和压缩率都会校验。
 - 远程请求只使用调用方显式提供的认证信息。
 - 内嵌 SVG 脚本和外部资源被阻止，宏永远不会执行。
-- 对外错误不会保留源字节、凭据、本地路径或内部堆栈。
+- 对外预览错误不会保留源字节、凭据、本地路径或内部堆栈。
 
 工具栏是否显示不是授权边界。应用在签发 URL 或开放下载、打印操作时仍必须执行权限检查。
 

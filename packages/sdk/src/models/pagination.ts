@@ -41,38 +41,6 @@ export interface MiaixzPagination {
 }
 
 /**
- * Describes optional pagination parameters for a list request.
- *
- * @public
- */
-export interface MiaixzPageQuery {
-  /**
-   * Optional request nonce used to distinguish otherwise identical queries.
-   */
-  nonce?: string;
-
-  /**
-   * Optional one-based page number to request.
-   */
-  pageNo?: number;
-
-  /**
-   * Optional maximum number of items to request per page.
-   */
-  pageSize?: number;
-
-  /**
-   * Optional keyword used for search filtering.
-   */
-  keyword?: string;
-
-  /**
-   * Optional sorting criteria in Bus query format.
-   */
-  orderBy?: string;
-}
-
-/**
  * Describes a page of immutable result items and its pagination metadata.
  *
  * @typeParam T - Type of each result item.

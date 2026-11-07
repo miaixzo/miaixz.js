@@ -392,6 +392,7 @@ function Appearance(props: AppearanceProps) {
 
       <Drawer
         closeOnBackdrop
+        closeOnEscape
         footer={null}
         className="miaixz-appearance-drawer"
         closeLabel={localeRuntime.t("ui.appearance.close")}

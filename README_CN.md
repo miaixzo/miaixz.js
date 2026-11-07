@@ -10,12 +10,12 @@
 
 ## 包
 
-| 包                                  | npm                                                | 说明                                                                    |
-| ----------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`@miaixz/sdk`](./packages/sdk)     | [npm](https://www.npmjs.com/package/@miaixz/sdk)   | 浏览器 API 客户端、运行时上下文、配置、权限、事件、文件、外观和国际化。 |
-| [`@miaixz/icons`](./packages/icons) | [npm](https://www.npmjs.com/package/@miaixz/icons) | Miaixz 可变图标字体、React Icon、语义尺寸、连续动画和无障碍能力。       |
-| [`@miaixz/ui`](./packages/ui)       | [npm](https://www.npmjs.com/package/@miaixz/ui)    | React 设计系统，包含组件、设计令牌、主题、密度、样式和交互基础能力。    |
-| [`@miaixz/view`](./packages/view)   | [npm](https://www.npmjs.com/package/@miaixz/view)  | 独立的图片、PDF、Office 及其他本地文件预览 React 组件。                 |
+| 包                                  | npm                                                | 说明                                                                 |
+| ----------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
+| [`@miaixz/sdk`](./packages/sdk)     | [npm](https://www.npmjs.com/package/@miaixz/sdk)   | 浏览器 HTTP、会话、配置、权限、事件、文件、外观和国际化机制。        |
+| [`@miaixz/icons`](./packages/icons) | [npm](https://www.npmjs.com/package/@miaixz/icons) | Miaixz 可变图标字体、React Icon、语义尺寸、连续动画和无障碍能力。    |
+| [`@miaixz/ui`](./packages/ui)       | [npm](https://www.npmjs.com/package/@miaixz/ui)    | React 设计系统，包含组件、设计令牌、主题、密度、样式和交互基础能力。 |
+| [`@miaixz/view`](./packages/view)   | [npm](https://www.npmjs.com/package/@miaixz/view)  | 独立的图片、PDF、Office 及其他本地文件预览 React 组件。              |
 
 ### 包依赖关系
 
@@ -60,25 +60,22 @@ npm install @miaixz/view @miaixz/icons react react-dom
 
 ## 快速开始
 
-创建浏览器 SDK 实例：
+独立创建 HTTP 与 Appearance 实例：
 
 ```ts
-import { createMiaixzSdk } from "@miaixz/sdk";
+import { createApiClient, createMiaixzAppearanceManager } from "@miaixz/sdk";
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config: {
-    apiBaseUrl: "https://api.miaixz.org",
-    environment: "production",
-  },
-  locale: "zh-CN",
+export const api = createApiClient({
+  baseUrl: "https://api.example.test",
+  environment: "production",
 });
+export const appearance = createMiaixzAppearanceManager({ appId: "portal" });
 
-await sdk.ready;
-
-const response = await sdk.api.get<readonly { id: string; name: string }[]>("/spaces");
+const response = await api.get<readonly { id: string; name: string }[]>("/items");
 console.log(response.data);
 ```
+
+应用提供自己的业务协议，并显式装配所需的独立机制。
 
 使用共享 React 组件和样式：
 
@@ -86,11 +83,11 @@ console.log(response.data);
 import "@miaixz/ui/styles.css";
 import { Button, Field, Input, Theme } from "@miaixz/ui";
 
-import { sdk } from "./sdk.js";
+import { appearance } from "./sdk.js";
 
 export function CreateSpaceForm() {
   return (
-    <Theme appearance={sdk.appearance}>
+    <Theme appearance={appearance}>
       <form>
         <Field label="空间名称" required>
           <Input placeholder="请输入空间名称" />

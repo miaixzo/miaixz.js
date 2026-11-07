@@ -19,10 +19,23 @@
 */
 
 /**
- * Exposes the public runtime-context contract.
+ * Serializes string and number cells without choosing application export policies.
+ * Every cell is quoted; embedded quotes are doubled and row separators are explicit.
+ *
+ * @param rows - Ordered rows whose cells retain their original string conversion.
+ * @param lineEnding - Required row separator selected by the caller.
+ * @returns CSV text without a byte-order mark or a trailing row separator.
+ * @throws TypeError When the caller does not select a supported row separator.
+ * @public
  */
-
-export { createMiaixzContextStore, MiaixzContextStore } from "./context-store.js";
-export { miaixzContextToHeaders } from "./context-headers.js";
-export { isMiaixzRuntimeContext } from "./context-validation.js";
-export type { MiaixzContextStoreOptions, MiaixzRuntimeContext } from "./context.types.js";
+export function serializeMiaixzCsv(
+  rows: readonly (readonly (string | number)[])[],
+  lineEnding: "\n" | "\r\n",
+): string {
+  if (lineEnding !== "\n" && lineEnding !== "\r\n") {
+    throw new TypeError("Invalid CSV line ending.");
+  }
+  return rows
+    .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+    .join(lineEnding);
+}

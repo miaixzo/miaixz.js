@@ -6,17 +6,12 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 
 import {
+  createMiaixzAppearanceManager,
   isMiaixzAppearanceSettings,
   miaixzDefaultAppearance,
   migrateMiaixzAppearanceV1,
   parseMiaixzAppearanceSettings,
 } from "../../src/display/index.js";
-import { createMiaixzSdk } from "../../src/sdk.js";
-
-const testConfig = Object.freeze({
-  apiBaseUrl: "https://api.example.test",
-  environment: "test",
-});
 
 /**
  * Creates an isolated in-memory storage implementation for appearance tests.
@@ -81,18 +76,17 @@ test("appearance parsing validates and normalizes theme overrides", () => {
   );
 });
 
-test("appearance manager persists and clears shell, radius, and typography preferences", async () => {
+test("appearance manager persists and clears shell, radius, and typography preferences", () => {
   const { storage } = createMemoryStorage();
-  const sdk = createMiaixzSdk({ appId: "portal", config: testConfig, storage });
-  await sdk.ready;
+  const appearance = createMiaixzAppearanceManager({ appId: "portal", storage });
 
-  sdk.appearance.setShellLayout("horizontal");
-  sdk.appearance.setRadiusScale(0.75);
-  sdk.appearance.setBaseFontSize(12);
-  sdk.appearance.setOverrides({ light: { brand: "#123456" } });
-  sdk.appearance.setOverrides(undefined);
+  appearance.setShellLayout("horizontal");
+  appearance.setRadiusScale(0.75);
+  appearance.setBaseFontSize(12);
+  appearance.setOverrides({ light: { brand: "#123456" } });
+  appearance.setOverrides(undefined);
 
-  assert.deepEqual(sdk.appearance.getSnapshot(), {
+  assert.deepEqual(appearance.getSnapshot(), {
     theme: "miaixz",
     colorMode: "system",
     density: "standard",
@@ -101,17 +95,16 @@ test("appearance manager persists and clears shell, radius, and typography prefe
     baseFontSize: 12,
   });
 
-  const restored = createMiaixzSdk({ appId: "portal", config: testConfig, storage });
-  await restored.ready;
-  assert.equal(restored.appearance.getSnapshot().radiusScale, 0.75);
-  assert.equal(restored.appearance.getSnapshot().baseFontSize, 12);
+  const restored = createMiaixzAppearanceManager({ appId: "portal", storage });
+  assert.equal(restored.getSnapshot().radiusScale, 0.75);
+  assert.equal(restored.getSnapshot().baseFontSize, 12);
   restored.destroy();
 
-  sdk.appearance.setShellLayout(undefined);
-  sdk.appearance.setRadiusScale(undefined);
-  sdk.appearance.setBaseFontSize(undefined);
-  assert.deepEqual(sdk.appearance.getSnapshot(), miaixzDefaultAppearance);
-  sdk.destroy();
+  appearance.setShellLayout(undefined);
+  appearance.setRadiusScale(undefined);
+  appearance.setBaseFontSize(undefined);
+  assert.deepEqual(appearance.getSnapshot(), miaixzDefaultAppearance);
+  appearance.destroy();
 });
 
 test("appearance v1 migration preserves mode, density, and colors", () => {
@@ -134,24 +127,17 @@ test("appearance v1 migration preserves mode, density, and colors", () => {
   assert.equal(Object.isFrozen(appearance.overrides?.dark), true);
 });
 
-test("global Appearance remains stable while the tenant context changes", async () => {
+test("global Appearance persists across an explicit global scope reload", () => {
   const { storage, values } = createMemoryStorage();
-  const sdk = createMiaixzSdk({
-    appId: "portal",
-    appearanceScope: "global",
-    config: testConfig,
-    initialContext: { tenantId: "tenant-a" },
-    storage,
-  });
-  await sdk.ready;
+  const appearance = createMiaixzAppearanceManager({ appId: "portal", storage });
 
-  sdk.appearance.set({
+  appearance.set({
     theme: "neutral",
     colorMode: "dark",
     density: "comfortable",
   });
-  sdk.context.patch({ tenantId: "tenant-b" });
-  assert.deepEqual(sdk.appearance.getSnapshot(), {
+  appearance.setScope(undefined);
+  assert.deepEqual(appearance.getSnapshot(), {
     theme: "neutral",
     colorMode: "dark",
     density: "comfortable",
@@ -160,40 +146,42 @@ test("global Appearance remains stable while the tenant context changes", async 
     [...values.keys()].filter((key) => key.endsWith(":appearance")),
     ["miaixz:global:portal:appearance"],
   );
-
-  sdk.destroy();
+  appearance.destroy();
 });
 
-test("tenant Appearance remains the backwards-compatible default", async () => {
+test("tenant Appearance changes only when its owner explicitly selects a scope", () => {
   const { storage, values } = createMemoryStorage();
-  const sdk = createMiaixzSdk({
+  const appearance = createMiaixzAppearanceManager({
     appId: "portal",
-    config: testConfig,
-    initialContext: { tenantId: "tenant-a" },
+    tenantId: "tenant-a",
     storage,
   });
-  await sdk.ready;
 
-  sdk.appearance.setTheme("neutral");
-  sdk.context.patch({ tenantId: "tenant-b" });
-  assert.deepEqual(sdk.appearance.getSnapshot(), miaixzDefaultAppearance);
+  appearance.setTheme("neutral");
+  appearance.setScope("tenant-b");
+  assert.deepEqual(appearance.getSnapshot(), miaixzDefaultAppearance);
   assert.deepEqual(
     [...values.keys()].filter((key) => key.endsWith(":appearance")),
     ["miaixz:tenant-a:portal:appearance"],
   );
-
-  sdk.destroy();
+  appearance.setScope("tenant-a");
+  assert.equal(appearance.getSnapshot().theme, "neutral");
+  appearance.destroy();
 });
 
-test("the composed SDK rejects an invalid Appearance scope", () => {
+test("invalid storage scope leaves Appearance and persisted keys unchanged", () => {
+  const { storage, values } = createMemoryStorage();
+  const appearance = createMiaixzAppearanceManager({ appId: "portal", storage });
+  appearance.setTheme("neutral");
+  const snapshot = appearance.getSnapshot();
+  const persisted = [...values.entries()];
+
   assert.throws(
-    () =>
-      createMiaixzSdk({
-        appId: "portal",
-        appearanceScope: "account" as unknown as "tenant",
-        config: testConfig,
-      }),
+    () => appearance.setScope("../invalid"),
     (error: unknown) =>
-      (error as { readonly code?: string } | undefined)?.code === "APPEARANCE_SCOPE_INVALID",
+      (error as { readonly code?: string } | undefined)?.code === "STORAGE_SCOPE_INVALID",
   );
+  assert.equal(appearance.getSnapshot(), snapshot);
+  assert.deepEqual([...values.entries()], persisted);
+  appearance.destroy();
 });

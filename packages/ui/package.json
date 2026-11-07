@@ -117,6 +117,8 @@
       "Spinner",
       "Split",
       "Stack",
+      "Stage",
+      "StageLoading",
       "Status",
       "Steps",
       "Switch",
@@ -393,7 +395,11 @@
     "attributes": [
       "data-miaixz-tab-trigger",
       "data-motion-replay",
-      "data-motion-state"
+      "data-motion-state",
+      "data-current-row",
+      "data-selected",
+      "data-empty",
+      "data-disabled"
     ]
   },
   "files": [
@@ -711,6 +717,10 @@
       "types": "./dist/components/search/index.d.ts",
       "import": "./dist/components/search/index.js"
     },
+    "./stage": {
+      "types": "./dist/components/stage/index.d.ts",
+      "import": "./dist/components/stage/index.js"
+    },
     "./overlay": {
       "types": "./dist/components/overlay/index.d.ts",
       "import": "./dist/components/overlay/index.js"
@@ -784,6 +794,7 @@
     "./timeline/styles.css": "./dist/styles/components/timeline.css",
     "./toaster/styles.css": "./dist/styles/components/toaster.css",
     "./alert/styles.css": "./dist/styles/components/alert.css",
+    "./stage/styles.css": "./dist/styles/components/stage.css",
     "./action/styles.css": "./dist/styles/components/action.css",
     "./avatar/styles.css": "./dist/styles/components/avatar.css",
     "./button/styles.css": "./dist/styles/components/button.css",

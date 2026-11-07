@@ -26,6 +26,8 @@ import { VERSION } from "../../../src/version.js";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { MiaixzSdkError } from "../../../src/errors/errors.js";
+import { createEnvelope } from "../../../src/runtime/bridge/post-message-protocol.js";
 import {
   createMiaixzPostMessageChildBridge,
   createMiaixzPostMessageHost,
@@ -46,6 +48,34 @@ const manifest = {
   requiredPermissions: [],
   requiredCapabilities: ["context", "events", "i18n", "navigation", "permissions"],
 } as const;
+
+/**
+ * Caller-owned context used only by these neutral transport fixtures.
+ */
+interface FixtureContext {
+  /**
+   * Value explicitly selected by each endpoint's parser.
+   */
+  readonly label: string;
+}
+
+/**
+ * Validates and copies the one field this fixture permits across its boundary.
+ *
+ * @param value - Untrusted provider or remote context.
+ * @returns A new immutable context selected by the caller.
+ */
+function parseFixtureContext(value: unknown): Readonly<FixtureContext> {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("label" in value) ||
+    typeof value.label !== "string"
+  ) {
+    throw new TypeError("Invalid fixture context.");
+  }
+  return Object.freeze({ label: value.label });
+}
 
 /**
  * Window-like test transport that delivers bridge messages to its connected peer.
@@ -123,12 +153,17 @@ describe("postMessage Host/Child integration", () => {
     const emit = vi.fn();
     const unsubscribe = vi.fn(async () => undefined);
     let publish!: (payload: unknown) => void;
-    const host = createMiaixzPostMessageHost({
+    const source = { label: "ready", privateValue: "synthetic provider marker" };
+    const getContext = vi.fn(async () => source);
+    const hostParser = vi.fn(parseFixtureContext);
+    const childParser = vi.fn(parseFixtureContext);
+    const host = createMiaixzPostMessageHost<FixtureContext>({
       manifest,
       targetWindow: runtime as unknown as Window,
       targetOrigin: origin,
+      parseContext: hostParser,
       adapter: {
-        getContext: async () => ({ tenantId: "tenant", locale: "en-US" }),
+        getContext,
         navigate,
         hasPermissions: async (permissions) => permissions.length === 1,
         registerMessages,
@@ -140,16 +175,34 @@ describe("postMessage Host/Child integration", () => {
       },
       timeoutMs: 1_000,
     });
-    const child = await createMiaixzPostMessageChildBridge({
+    const child = await createMiaixzPostMessageChildBridge<FixtureContext>({
       moduleId: "module-one",
       moduleVersion: "1.2.3",
       targetWindow: runtime as unknown as Window,
       targetOrigin: origin,
+      parseContext: childParser,
       timeoutMs: 1_000,
     });
     await expect(host.ready).resolves.toBeUndefined();
 
-    await expect(child.getContext()).resolves.toEqual({ tenantId: "tenant", locale: "en-US" });
+    const context = await child.getContext();
+    const response = runtime.posted.find(
+      (entry) => entry.kind === "response" && entry.method === "context.get",
+    );
+    expect(context).toEqual({ label: "ready" });
+    expect(getContext).toHaveBeenCalledOnce();
+    expect(hostParser).toHaveBeenCalledExactlyOnceWith(source);
+    expect(response?.payload).toEqual({ label: "ready" });
+    expect(response?.payload).toBe(hostParser.mock.results[0]?.value);
+    expect(response?.payload).not.toBe(source);
+    expect(Object.isFrozen(response?.payload)).toBe(true);
+    expect(childParser).toHaveBeenCalledExactlyOnceWith(response?.payload);
+    expect(context).toBe(childParser.mock.results[0]?.value);
+    expect(context).not.toBe(response?.payload);
+    expect(context).not.toBe(source);
+    expect(Object.isFrozen(context)).toBe(true);
+    source.label = "changed after projection";
+    expect(context.label).toBe("ready");
     await child.navigate({ path: "/settings", replace: true, state: { source: "child" } });
     expect(navigate).toHaveBeenCalledWith({
       path: "/settings",
@@ -497,5 +550,345 @@ describe("postMessage Host/Child integration", () => {
     const cancel = await child.subscribe("module-one:event", () => undefined);
     child.dispose();
     await expect(cancel()).resolves.toBeUndefined();
+  });
+});
+
+describe("postMessage caller-owned Context boundaries", () => {
+  it("rejects an invalid provider at the Host without sending its raw value", async () => {
+    const runtime = new LoopbackWindow();
+    vi.stubGlobal("window", runtime);
+    const source = { label: 1, privateValue: "synthetic provider marker" };
+    const getContext = vi.fn(async () => source);
+    const hostParser = vi.fn(parseFixtureContext);
+    const childParser = vi.fn(parseFixtureContext);
+    const host = createMiaixzPostMessageHost<unknown>({
+      manifest: { ...manifest, requiredCapabilities: ["context"] },
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      adapter: { getContext },
+      parseContext: hostParser,
+      timeoutMs: 1_000,
+    });
+    const child = await createMiaixzPostMessageChildBridge<FixtureContext>({
+      moduleId: "module-one",
+      moduleVersion: "1.2.3",
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      parseContext: childParser,
+      timeoutMs: 1_000,
+    });
+    await host.ready;
+    const failure: unknown = await child.getContext().catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(MiaixzSdkError);
+    expect(failure).toMatchObject({ code: "BRIDGE_MESSAGE_INVALID" });
+    expect((failure as MiaixzSdkError).cause).toBeUndefined();
+    expect((failure as MiaixzSdkError).details).toBeUndefined();
+    expect(getContext).toHaveBeenCalledOnce();
+    expect(hostParser).toHaveBeenCalledExactlyOnceWith(source);
+    expect(childParser).not.toHaveBeenCalled();
+    const response = runtime.posted.find(
+      (entry) => entry.kind === "response" && entry.method === "context.get",
+    );
+    expect(response?.error).toEqual({
+      code: "BRIDGE_MESSAGE_INVALID",
+      messageKey: "sdk.error.bridge.messageInvalid",
+    });
+    expect(response).not.toHaveProperty("payload");
+    expect(JSON.stringify(response)).not.toContain("synthetic provider marker");
+    child.dispose();
+    host.dispose();
+  });
+
+  it.each(["parser", "provider"] as const)(
+    "rejects a required Host Context capability when its %s is missing",
+    async (missing) => {
+      const runtime = new LoopbackWindow();
+      vi.stubGlobal("window", runtime);
+      const getContext = vi.fn(async () => ({ label: "ready" }));
+      const hostParser = vi.fn(parseFixtureContext);
+      const host = createMiaixzPostMessageHost<FixtureContext>({
+        manifest: { ...manifest, requiredCapabilities: ["context"] },
+        targetWindow: runtime as unknown as Window,
+        targetOrigin: origin,
+        adapter: missing === "provider" ? {} : { getContext },
+        ...(missing === "parser" ? {} : { parseContext: hostParser }),
+        timeoutMs: 1_000,
+      });
+      await expect(host.ready).rejects.toMatchObject({ code: "BRIDGE_CAPABILITY_UNAVAILABLE" });
+      expect(getContext).not.toHaveBeenCalled();
+      expect(hostParser).not.toHaveBeenCalled();
+      expect(runtime.listeners.size).toBe(0);
+      expect(runtime.posted).toEqual([]);
+      host.dispose();
+    },
+  );
+
+  it.each(["parser", "provider"] as const)(
+    "omits optional Host Context capability without its %s and never calls the provider",
+    async (missing) => {
+      const runtime = new LoopbackWindow();
+      vi.stubGlobal("window", runtime);
+      const getContext = vi.fn(async () => ({ label: "ready" }));
+      const hostParser = vi.fn(parseFixtureContext);
+      const childParser = vi.fn(parseFixtureContext);
+      const host = createMiaixzPostMessageHost<FixtureContext>({
+        manifest: { ...manifest, requiredCapabilities: [] },
+        targetWindow: runtime as unknown as Window,
+        targetOrigin: origin,
+        adapter: missing === "provider" ? {} : { getContext },
+        ...(missing === "parser" ? {} : { parseContext: hostParser }),
+        timeoutMs: 1_000,
+      });
+      const child = await createMiaixzPostMessageChildBridge<FixtureContext>({
+        moduleId: "module-one",
+        moduleVersion: "1.2.3",
+        targetWindow: runtime as unknown as Window,
+        targetOrigin: origin,
+        parseContext: childParser,
+        timeoutMs: 1_000,
+      });
+      await host.ready;
+      const handshake = runtime.posted.find(
+        (entry) => entry.kind === "response" && entry.method === "bridge.handshake",
+      );
+      expect(handshake?.payload).toEqual({
+        accepted: true,
+        protocolVersion: VERSION,
+        capabilities: [],
+      });
+      await expect(child.getContext()).rejects.toMatchObject({
+        code: "BRIDGE_CAPABILITY_UNAVAILABLE",
+      });
+      expect(
+        runtime.posted.filter(
+          (entry) => entry.kind === "request" && entry.method === "context.get",
+        ),
+      ).toHaveLength(1);
+      expect(getContext).not.toHaveBeenCalled();
+      expect(hostParser).not.toHaveBeenCalled();
+      expect(childParser).not.toHaveBeenCalled();
+      child.dispose();
+      host.dispose();
+    },
+  );
+
+  it("rejects a missing Child parser locally without requesting or reading Host context", async () => {
+    const runtime = new LoopbackWindow();
+    vi.stubGlobal("window", runtime);
+    const getContext = vi.fn(async () => ({ label: "ready" }));
+    const hostParser = vi.fn(parseFixtureContext);
+    const host = createMiaixzPostMessageHost<FixtureContext>({
+      manifest: { ...manifest, requiredCapabilities: ["context"] },
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      adapter: { getContext },
+      parseContext: hostParser,
+      timeoutMs: 1_000,
+    });
+    const child = await createMiaixzPostMessageChildBridge({
+      moduleId: "module-one",
+      moduleVersion: "1.2.3",
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      timeoutMs: 1_000,
+    });
+    await host.ready;
+    const handshake = runtime.posted.find(
+      (entry) => entry.kind === "response" && entry.method === "bridge.handshake",
+    );
+    expect(handshake?.payload).toEqual({
+      accepted: true,
+      protocolVersion: VERSION,
+      capabilities: ["context"],
+    });
+    await expect(child.getContext()).rejects.toMatchObject({
+      code: "BRIDGE_CAPABILITY_UNAVAILABLE",
+    });
+    expect(
+      runtime.posted.filter((entry) => entry.kind === "request" && entry.method === "context.get"),
+    ).toHaveLength(0);
+    expect(getContext).not.toHaveBeenCalled();
+    expect(hostParser).not.toHaveBeenCalled();
+    child.dispose();
+    await expect(child.getContext()).rejects.toMatchObject({ code: "BRIDGE_DISPOSED" });
+    host.dispose();
+  });
+
+  it("ignores Context requests with an incorrect origin or source before reading the provider", async () => {
+    const runtime = new LoopbackWindow();
+    const unrelated = new LoopbackWindow();
+    vi.stubGlobal("window", runtime);
+    const getContext = vi.fn(async () => ({ label: "ready" }));
+    const hostParser = vi.fn(parseFixtureContext);
+    const host = createMiaixzPostMessageHost<FixtureContext>({
+      manifest: { ...manifest, requiredCapabilities: ["context"] },
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      adapter: { getContext },
+      parseContext: hostParser,
+      timeoutMs: 1_000,
+    });
+    runtime.dispatch(
+      createEnvelope(
+        "module-one",
+        "request",
+        "bridge.handshake",
+        "11111111-1111-4111-8111-111111111111",
+        { moduleId: "module-one", moduleVersion: "1.2.3", protocolVersion: VERSION },
+      ),
+    );
+    await host.ready;
+    const request = createEnvelope(
+      "module-one",
+      "request",
+      "context.get",
+      "22222222-2222-4222-8222-222222222222",
+    );
+    runtime.dispatch(request, "https://other.example");
+    runtime.dispatch(request, origin, unrelated as unknown as Window);
+    expect(getContext).not.toHaveBeenCalled();
+    expect(hostParser).not.toHaveBeenCalled();
+    expect(
+      runtime.posted.filter((entry) => entry.kind === "response" && entry.method === "context.get"),
+    ).toHaveLength(0);
+    runtime.dispatch(request);
+    await vi.waitFor(() =>
+      expect(
+        runtime.posted.filter(
+          (entry) => entry.kind === "response" && entry.method === "context.get",
+        ),
+      ).toHaveLength(1),
+    );
+    expect(getContext).toHaveBeenCalledOnce();
+    expect(hostParser).toHaveBeenCalledExactlyOnceWith({ label: "ready" });
+    expect(
+      runtime.posted.find((entry) => entry.kind === "response" && entry.method === "context.get")
+        ?.payload,
+    ).toEqual({ label: "ready" });
+    host.dispose();
+  });
+
+  it("filters Context response origin and source before independently rejecting an invalid remote value", async () => {
+    const runtime = new LoopbackWindow();
+    const unrelated = new LoopbackWindow();
+    runtime.postMessage = (data: MiaixzBridgeEnvelope, targetOrigin: string): void => {
+      runtime.posted.push(data);
+      if (data.kind !== "request" || data.method !== "bridge.handshake") return;
+      queueMicrotask(() =>
+        runtime.dispatch(
+          {
+            ...data,
+            kind: "response",
+            payload: { accepted: true, protocolVersion: VERSION, capabilities: ["context"] },
+          },
+          targetOrigin,
+        ),
+      );
+    };
+    vi.stubGlobal("window", runtime);
+    const childParser = vi.fn(parseFixtureContext);
+    const child = await createMiaixzPostMessageChildBridge<FixtureContext>({
+      moduleId: "module-one",
+      moduleVersion: "1.2.3",
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      parseContext: childParser,
+      timeoutMs: 1_000,
+    });
+    const settled = vi.fn();
+    const pending = child.getContext().then(
+      (value) => {
+        settled(value);
+        return value;
+      },
+      (error: unknown) => {
+        settled(error);
+        return error;
+      },
+    );
+    const request = runtime.posted.find(
+      (entry) => entry.kind === "request" && entry.method === "context.get",
+    );
+    if (request === undefined) throw new Error("Missing Context request.");
+    const payload = { label: 1, privateValue: "synthetic remote marker" };
+    const response = { ...request, kind: "response", payload };
+    runtime.dispatch(response, "https://other.example");
+    runtime.dispatch(response, origin, unrelated as unknown as Window);
+    await Promise.resolve();
+    expect(childParser).not.toHaveBeenCalled();
+    expect(settled).not.toHaveBeenCalled();
+    runtime.dispatch(response);
+    const failure = await pending;
+    expect(failure).toBeInstanceOf(MiaixzSdkError);
+    expect(failure).toMatchObject({ code: "BRIDGE_MESSAGE_INVALID" });
+    expect((failure as MiaixzSdkError).cause).toBeUndefined();
+    expect((failure as MiaixzSdkError).details).toBeUndefined();
+    expect((failure as MiaixzSdkError).message).not.toContain("synthetic remote marker");
+    expect(childParser).toHaveBeenCalledExactlyOnceWith(payload);
+    expect(settled).toHaveBeenCalledExactlyOnceWith(failure);
+    child.dispose();
+  });
+
+  it("cancels a pending Context request exactly once on dispose and suppresses late success", async () => {
+    const runtime = new LoopbackWindow();
+    vi.stubGlobal("window", runtime);
+    let resolveContext!: (value: FixtureContext) => void;
+    const providerResult = new Promise<FixtureContext>((resolve) => {
+      resolveContext = resolve;
+    });
+    const getContext = vi.fn(() => providerResult);
+    const hostParser = vi.fn(parseFixtureContext);
+    const childParser = vi.fn(parseFixtureContext);
+    const host = createMiaixzPostMessageHost<FixtureContext>({
+      manifest: { ...manifest, requiredCapabilities: ["context"] },
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      adapter: { getContext },
+      parseContext: hostParser,
+      timeoutMs: 1_000,
+    });
+    const child = await createMiaixzPostMessageChildBridge<FixtureContext>({
+      moduleId: "module-one",
+      moduleVersion: "1.2.3",
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      parseContext: childParser,
+      timeoutMs: 1_000,
+    });
+    await host.ready;
+    const pending = child.getContext();
+    const rejected = expect(pending).rejects.toMatchObject({ code: "BRIDGE_DISPOSED" });
+    await vi.waitFor(() => expect(getContext).toHaveBeenCalledOnce());
+    const request = runtime.posted.find(
+      (entry) => entry.kind === "request" && entry.method === "context.get",
+    );
+    if (request === undefined) throw new Error("Missing Context request.");
+    child.dispose();
+    child.dispose();
+    await rejected;
+    expect(
+      runtime.posted.filter((entry) => entry.kind === "cancel" && entry.method === "context.get"),
+    ).toEqual([
+      expect.objectContaining({
+        messageId: request.messageId,
+        method: request.method,
+        kind: "cancel",
+      }),
+    ]);
+    expect(
+      runtime.posted.filter(
+        (entry) => entry.kind === "request" && entry.method === "bridge.dispose",
+      ),
+    ).toHaveLength(1);
+    await vi.waitFor(() => expect(runtime.listeners.size).toBe(0));
+    resolveContext({ label: "late" });
+    await vi.waitFor(() => expect(hostParser).toHaveBeenCalledExactlyOnceWith({ label: "late" }));
+    await Promise.resolve();
+    expect(childParser).not.toHaveBeenCalled();
+    expect(
+      runtime.posted.filter((entry) => entry.kind === "response" && entry.method === "context.get"),
+    ).toHaveLength(0);
+    await expect(child.getContext()).rejects.toMatchObject({ code: "BRIDGE_DISPOSED" });
+    host.dispose();
   });
 });

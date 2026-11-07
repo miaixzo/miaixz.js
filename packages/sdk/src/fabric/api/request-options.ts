@@ -32,10 +32,8 @@ import type {
   MiaixzQueryPrimitive,
   MiaixzRequestBody,
   MiaixzRequestInterceptor,
-  MiaixzRequestOptions,
-  MiaixzResponseType,
 } from "./request.js";
-import type { MiaixzResponseInterceptor } from "./response.js";
+import type { MiaixzHttpErrorMapper, MiaixzResponseInterceptor } from "./response.js";
 import type { MiaixzApiTelemetryHooks } from "./telemetry.types.js";
 
 /**
@@ -151,6 +149,18 @@ export interface MiaixzApiClientOptions {
   readonly contextHeadersProvider?: MiaixzContextHeadersProvider;
 
   /**
+   * Additional context-header names protected from Fetch redirects, even when supplied manually.
+   * The client validates, normalizes, and copies the list when it is created.
+   */
+  readonly contextHeaderNames?: readonly string[];
+
+  /**
+   * Optional synchronous replacement for generic unsuccessful-response details.
+   * HTTP status, retry policy, and authentication remain controlled by the transport.
+   */
+  readonly httpErrorMapper?: MiaixzHttpErrorMapper;
+
+  /**
    * Optional request interceptors executed in registration order.
    */
   readonly requestInterceptors?: readonly MiaixzRequestInterceptor[];
@@ -185,20 +195,6 @@ export const retryableMethods = new Set<MiaixzHttpMethod>(["GET", "HEAD", "PUT",
  * HTTP methods protected by the CSRF policy.
  */
 export const csrfProtectedMethods = new Set<MiaixzHttpMethod>(["POST", "PUT", "PATCH", "DELETE"]);
-
-/**
- * Canonical runtime-context header names.
- */
-export const contextHeaderNames = new Set([
-  miaixzHeaders.traceId.toLowerCase(),
-  miaixzHeaders.userId.toLowerCase(),
-  miaixzHeaders.tenantId.toLowerCase(),
-  miaixzHeaders.organizationId.toLowerCase(),
-  miaixzHeaders.departmentId.toLowerCase(),
-  miaixzHeaders.spaceId.toLowerCase(),
-  miaixzHeaders.locale.toLowerCase(),
-  miaixzHeaders.timezone.toLowerCase(),
-]);
 
 /**
  * Validates and normalizes an API base URL for the selected environment.
@@ -251,40 +247,6 @@ export function normalizeRetry(value: number): number {
     });
   }
   return value;
-}
-
-/**
- * Resolves and validates the response-envelope mode before a request is sent.
- *
- * @param responseType - Response body parser selected by the caller.
- * @param envelope - Optional caller-supplied envelope behavior.
- * @returns The initial envelope mode for the request.
- */
-export function normalizeEnvelopeMode(
-  responseType: MiaixzResponseType,
-  envelope: MiaixzRequestOptions["envelope"],
-): "required" | "optional" | "none" {
-  if (
-    (responseType === "text" ||
-      responseType === "blob" ||
-      responseType === "arrayBuffer" ||
-      responseType === "void") &&
-    envelope !== undefined &&
-    envelope !== "none"
-  ) {
-    throw new MiaixzSdkError({
-      code: "API_ENVELOPE_MODE_INVALID",
-    });
-  }
-  if (
-    responseType === "text" ||
-    responseType === "blob" ||
-    responseType === "arrayBuffer" ||
-    responseType === "void"
-  ) {
-    return "none";
-  }
-  return envelope ?? "required";
 }
 
 /**
@@ -362,11 +324,11 @@ export function validatePreparedRequestUrl(
  * Reports whether the final request contains any runtime-context header.
  *
  * @param headers - Final request headers to inspect.
- * @param providedNames - Header names returned by the configured context provider.
+ * @param protectedNames - Configured header names and names returned by the context provider.
  * @returns Whether at least one context header remains on the request.
  */
-export function hasContextHeader(headers: Headers, providedNames: ReadonlySet<string>): boolean {
-  return [...contextHeaderNames, ...providedNames].some((name) => headers.has(name));
+export function hasContextHeader(headers: Headers, protectedNames: ReadonlySet<string>): boolean {
+  return [...protectedNames].some((name) => headers.has(name));
 }
 
 /**
@@ -375,14 +337,14 @@ export function hasContextHeader(headers: Headers, providedNames: ReadonlySet<st
  * @param headers - Final request headers after interception.
  * @param credentials - Final Fetch credentials mode.
  * @param authenticationEnabled - Whether an authentication integration is active.
- * @param providedContextNames - Header names returned by the context provider.
+ * @param protectedContextNames - Configured and provider-supplied context-header names.
  * @returns The fixed safe redirect mode for the request.
  */
 export function resolveRedirectMode(
   headers: Headers,
   credentials: RequestCredentials | undefined,
   authenticationEnabled: boolean,
-  providedContextNames: ReadonlySet<string>,
+  protectedContextNames: ReadonlySet<string>,
 ): RequestRedirect {
   return authenticationEnabled ||
     credentials === "include" ||
@@ -391,7 +353,7 @@ export function resolveRedirectMode(
     headers.has("Proxy-Authorization") ||
     headers.has("X-Api-Key") ||
     headers.has(miaixzHeaders.csrfToken) ||
-    hasContextHeader(headers, providedContextNames)
+    hasContextHeader(headers, protectedContextNames)
     ? "error"
     : "follow";
 }

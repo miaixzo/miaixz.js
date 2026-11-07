@@ -19,7 +19,7 @@
 */
 
 /**
- * Verifies the supplied production workbook against the complete DrawingML path.
+ * Verifies the reviewed synthetic workbook against the complete DrawingML path.
  */
 
 import { VERSION } from "../../../src/version.js";
@@ -50,6 +50,7 @@ interface FixtureInventory {
   readonly packageParts: readonly string[];
   readonly workbook: {
     readonly sheetCount: number;
+    readonly sheetNames: readonly string[];
     readonly dimensions: readonly string[];
     readonly savedCellCount: number;
     readonly mergedCellCount: number;
@@ -79,6 +80,7 @@ interface FixtureInventory {
     readonly picturePlacementCount: number;
     readonly emfPlacementCount: number;
     readonly emfRecordCounts: readonly number[];
+    readonly emfRecordTypes: readonly number[];
   };
 }
 
@@ -92,7 +94,7 @@ async function fixtureInventory(): Promise<FixtureInventory> {
 }
 
 /**
- * Creates a bounded driver context over the supplied production workbook.
+ * Creates a bounded driver context over the reviewed synthetic workbook.
  *
  * @returns Driver context containing an immutable workbook copy.
  */
@@ -153,7 +155,7 @@ async function workbookContext(): Promise<DriverContext> {
 }
 
 describe("XLSX DrawingML flowcharts", () => {
-  it("uses the frozen production fixture without silent replacement", async () => {
+  it("uses the reviewed synthetic fixture without silent replacement", async () => {
     const bytes = await readFile(fixturePath);
     const inventory = await fixtureInventory();
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(inventory.sha256);
@@ -172,6 +174,7 @@ describe("XLSX DrawingML flowcharts", () => {
     expect(outcome.model.kind).toBe("spreadsheet");
     if (outcome.model.kind !== "spreadsheet") return;
     expect(outcome.model.sheets).toHaveLength(inventory.workbook.sheetCount);
+    expect(outcome.model.sheets.map((sheet) => sheet.name)).toEqual(inventory.workbook.sheetNames);
     expect(isSpreadsheetRenderDocument(outcome.model)).toBe(true);
     if (!isSpreadsheetRenderDocument(outcome.model)) return;
     expect(outcome.model.layoutVersion).toBe(VERSION);
@@ -227,7 +230,7 @@ describe("XLSX DrawingML flowcharts", () => {
       ),
     ).toEqual(inventory.view.outlinedRowCounts);
     expect(outcome.model.sheets[0]?.cells.find((cell) => cell.address === "A1")?.displayValue).toBe(
-      "プロジェクト名",
+      inventory.workbook.sheetNames[0],
     );
     expect(outcome.model.sheets.reduce((count, sheet) => count + sheet.cells.length, 0)).toBe(
       inventory.workbook.savedCellCount,
@@ -238,6 +241,12 @@ describe("XLSX DrawingML flowcharts", () => {
       borderCount: inventory.workbook.borderCount,
     });
     expect(outcome.model.styles.cellStyles).toHaveLength(inventory.workbook.cellStyleCount);
+    expect(outcome.model.styles.cellStyles[4]?.font.color).toBe("#1F2933");
+    expect(outcome.model.styles.cellStyles[7]?.font.color).toBe("#008000");
+    expect(outcome.model.styles.cellStyles[8]?.font.color).toBe("#315B78");
+    expect(outcome.model.styles.cellStyles[2]?.fill).toBe("#D9D9D9");
+    expect(outcome.model.styles.cellStyles[1]?.fill).toBe("#003366");
+    expect(outcome.model.styles.cellStyles[1]?.border.left?.color).toBe("#000000");
     expect(
       outcome.model.sheets.reduce((count, sheet) => count + sheet.layout.mergedCells.length, 0),
     ).toBe(inventory.workbook.mergedCellCount);
@@ -321,6 +330,9 @@ describe("XLSX DrawingML flowcharts", () => {
       const svg = Buffer.from(payload, "base64").toString("utf8");
       expect(svg).toMatch(/<(?:ellipse|image|path|polygon|polyline|rect|text)\b/u);
       expect(svg).not.toContain("NaN");
+      expect(svg).toContain('fill="#808080"');
+      expect(svg).toContain('stroke="none"');
+      expect(svg).toMatch(/<path d="[^"]*C[^"]*L[^"]*Z"[^>]*fill=/u);
     }
     expect(
       shapes.filter((shape) => shape.kind === "image" && shape.imageCrop !== undefined),
@@ -349,8 +361,30 @@ describe("XLSX DrawingML flowcharts", () => {
       .map((entry) => entry.path)
       .filter((path) => path.endsWith(".emf"))
       .sort();
-    const decodedVectors = await Promise.all(
-      vectorParts.map(async (path) => decodeEmf(await archive.read(path), defaultResourceBudget)),
+    const vectorBytes = await Promise.all(vectorParts.map((path) => archive.read(path)));
+    const decodedVectors = vectorBytes.map((bytes) => decodeEmf(bytes, defaultResourceBudget));
+    const recordTypes = new Set<number>();
+    for (const bytes of vectorBytes) {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      let offset = 0;
+      while (offset < bytes.byteLength) {
+        const size = view.getUint32(offset + 4, true);
+        expect(size).toBeGreaterThanOrEqual(8);
+        expect(size % 4).toBe(0);
+        expect(size).toBeLessThanOrEqual(bytes.byteLength - offset);
+        recordTypes.add(view.getUint32(offset, true));
+        offset += size;
+      }
+      expect(offset).toBe(bytes.byteLength);
+    }
+    expect([...recordTypes].sort((first, second) => first - second)).toEqual(
+      inventory.drawing.emfRecordTypes,
+    );
+    expect([...recordTypes]).toEqual(
+      expect.arrayContaining([
+        1, 6, 9, 10, 11, 12, 14, 17, 18, 19, 21, 27, 33, 34, 36, 37, 39, 40, 54, 59, 60, 61, 62, 64,
+        67, 70, 76, 81, 85, 86, 88, 89, 94, 95, 98,
+      ]),
     );
     expect(decodedVectors.map((vector) => vector.recordCount)).toEqual(
       inventory.drawing.emfRecordCounts,

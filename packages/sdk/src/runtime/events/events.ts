@@ -27,9 +27,7 @@ import { VERSION } from "../../version.js";
 import { MiaixzSdkError } from "../../errors/errors.js";
 import { isMiaixzAppearanceSettings } from "../../display/validation.js";
 import { isMiaixzSdkConfig } from "../config/config.js";
-import { isMiaixzRuntimeContext } from "../../access/context/context-validation.js";
 import type { MiaixzAppearancePayload } from "../../display/appearance.types.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
 import type { MiaixzSdkConfig } from "../config/config.types.js";
 
 import type {
@@ -48,16 +46,6 @@ const miaixzEventChannelPattern = /^miaixz:[a-z][a-z0-9-]{1,63}:events$/;
 const miaixzUuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const miaixzEventEnvelopeKeys = new Set(["version", "eventId", "sourceId", "type", "payload"]);
-const miaixzRuntimeContextKeys = new Set([
-  "userId",
-  "tenantId",
-  "organizationId",
-  "departmentId",
-  "spaceId",
-  "locale",
-  "timezone",
-  "traceId",
-]);
 const miaixzSdkConfigKeys = new Set([
   "apiBaseUrl",
   "environment",
@@ -182,20 +170,6 @@ function isMiaixzSessionStatusEvent(payload: unknown): payload is MiaixzSessionS
 }
 
 /**
- * Validates the built-in runtime-context payload.
- *
- * @param payload - Untrusted event payload.
- * @returns Whether the payload contains only supported string-valued Context fields.
- */
-function isMiaixzContextEvent(payload: unknown): payload is MiaixzRuntimeContext {
-  return (
-    isPlainEventObject(payload) &&
-    Object.keys(payload).every((key) => miaixzRuntimeContextKeys.has(key)) &&
-    isMiaixzRuntimeContext(payload)
-  );
-}
-
-/**
  * Validates the built-in appearance payload and its nested settings.
  *
  * @param payload - Untrusted event payload.
@@ -252,7 +226,6 @@ const miaixzBuiltinEventValidators: Readonly<Record<string, MiaixzEventValidator
     Number.isSafeInteger(payload.revision) &&
     Number(payload.revision) > 0,
   "session:changed": isMiaixzSessionStatusEvent,
-  "context:changed": isMiaixzContextEvent,
   "appearance:changed": isMiaixzAppearanceEvent,
   "locale:changed": isMiaixzLocaleEvent,
   "config:changed": isMiaixzConfigEvent,

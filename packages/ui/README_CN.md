@@ -63,21 +63,15 @@ const tenantIcon: IconName = "blocks";
 
 ## 主题、颜色和密度
 
-`@miaixz/sdk` 负责存储和同步外观状态，`Theme` 是校验并应用这些设置到 DOM 的唯一运行时所有者：
+独立的 SDK Appearance manager 负责外观状态，所有者显式配置同步，`Theme` 是校验并应用这些设置到 DOM 的唯一运行时所有者：
 
 ```tsx
-import { createMiaixzSdk } from "@miaixz/sdk";
+import { createMiaixzAppearanceManager } from "@miaixz/sdk";
 import { Theme } from "@miaixz/ui";
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config: {
-    apiBaseUrl: "https://api.miaixz.example",
-    environment: "production",
-  },
-});
+const appearance = createMiaixzAppearanceManager({ appId: "portal" });
 
-sdk.appearance.patch({
+appearance.patch({
   colorMode: "system",
   density: "comfortable",
   overrides: { light: { brand: "#55b52d" } },
@@ -85,7 +79,7 @@ sdk.appearance.patch({
 
 export function Root() {
   return (
-    <Theme appearance={sdk.appearance}>
+    <Theme appearance={appearance}>
       <App />
     </Theme>
   );
@@ -133,7 +127,7 @@ export function Root() {
 - 基础与表单：Button、ButtonGroup、Input、NumberInput、Search、Textarea、Select、Combobox、Picker、Field、Checkbox、Radio、Rating、Slider、Switch、Calendar、DatePicker、TimePicker、Dropzone、Upload。
 - 导航与布局：Navigation、Breadcrumb、Tabs、Segmented、Toolbar、Shell、Page、View、Header、Grid、Masonry、Cluster、Split、Stack、Sidebar、Scroll、Entry。
 - 数据展示：Panel、List、Table、Datagrid、Tree、Badge、Tag、Pagination、Avatar、AvatarGroup、Divider、Status。
-- 反馈与浮层：Alert、Notice、Progress、Spinner、Overlay、Tooltip、Popover、Dropdown、Dialog、Confirm、Drawer、Disclosure、Toast、Skeleton、Empty、Exception、Hidden。
+- 反馈与浮层：Alert、Notice、Progress、Spinner、Overlay、StageLoading、Stage、Tooltip、Popover、Dropdown、Dialog、Confirm、Drawer、Disclosure、Toast、Skeleton、Empty、Exception、Hidden。
 
 纯图标按钮必须提供无障碍名称。`Icon`、`IconName`、图标目录、字体和图标 CSS 只属于 `@miaixz/icons`；`@miaixz/ui` 不重复导出这些能力。
 
@@ -160,6 +154,59 @@ Drawer 默认不会因点击背景、按 Escape、失焦或指针离开而关闭
 现有未指定 `selectionMode` 的 Picker 保持可搜索多选行为。显式 `selectionMode="single"` 使用 `MiaixzOption | null`，`selectionMode="multiple"` 使用 `readonly MiaixzOption[]`。
 
 `presentation` 支持 `popover`、`drawer`、`dialog` 和 `inline`；`commitMode="immediate"` 为默认值，`commitMode="confirm"` 只在确认后更新公开值和原生表单值。自定义内容负责自己的搜索、分页、异步请求和键盘语义。
+
+## 异步内容与非视觉工具
+
+沿用上面的语言 Provider 和样式入口。`Stage` 提供 loading/empty/error/ready 呈现，ready 仅渲染 children；文案、placeholder、数据和请求恢复由调用方提供。error 默认 `presentation="region"`，也可选 `"inline"`；显式提供 loadingLabel，onRetry 与 retryLabel 同时存在才显示重试按钮。
+
+```tsx
+import type { ReactNode } from "react";
+import { Stage, StageLoading, useStageSettled } from "@miaixz/ui/stage";
+import { MiaixzErrorBoundary, mergeStyleModules } from "@miaixz/ui";
+
+function RetainedContent(props: {
+  active: boolean;
+  settled: boolean;
+  label: string;
+  children?: ReactNode;
+  placeholder?: ReactNode;
+}) {
+  const retained = useStageSettled(props.settled);
+  return (
+    <StageLoading active={props.active} label={props.label} placeholder={props.placeholder}>
+      {retained ? props.children : undefined}
+    </StageLoading>
+  );
+}
+
+<Stage
+  status="error"
+  title="Preview unavailable"
+  description="Retry this content request."
+  loadingLabel="Retrying content"
+  retryLabel="Retry content"
+  onRetry={retryRequest}
+/>;
+
+<MiaixzErrorBoundary
+  fallback={(retryRender) => <button onClick={retryRender}>Retry rendering</button>}
+>
+  {children}
+</MiaixzErrorBoundary>;
+
+const styleModules = mergeStyleModules(baseStyles, overrideStyles);
+```
+
+`StageLoading` 沿用 Overlay 原有节点、交互阻断及焦点恢复；按 `children ?? placeholder` 渲染，二者均可省略。`useStageSettled(boolean)` 只记当前挂载是否曾完成，业务状态映射与作用域重建归调用方。有实际根节点的分支支持 Theme/defaults/variants、原生/data 属性及 OwnerState 槽回调。StageLoading 提供 root/content/surface；Stage 提供实际 root、error 外层 region 与 Exception 的 title/content/illustration，页面及抽屉高度仍由调用方决定。
+
+`MiaixzErrorBoundary` 只捕获渲染失败，不新增 DOM；仅接收 children 与 `fallback(retry)`，retry 重置局部边界，外部 key 重建其作用域。请求失败通过明确的内容状态呈现。`mergeStyleModules` 只按序合并 string class map，保留重复和空字符串、冻结结果；两者仅从根入口导出，不属于 Theme 组件。
+
+| 入口                          | 类型             |
+| ----------------------------- | ---------------- |
+| `@miaixz/ui/stage`            | JavaScript/types |
+| `@miaixz/ui/stage/styles.css` | CSS              |
+
+完整 `@miaixz/ui/styles.css` 已聚合新样式；scoped JS 与 CSS 指向同一实现，不复制项目适配器。
 
 ## 错误处理
 

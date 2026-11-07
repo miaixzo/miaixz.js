@@ -19,41 +19,20 @@
 */
 
 /**
- * Defines tenant identity and lifecycle metadata at the security boundary.
- */
-
-import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
-
-/**
- * Represents the lifecycle state of a platform tenant.
+ * Resolves an untrusted collection value against the collection's only value source.
  *
+ * @typeParam Value - Literal values supplied by the collection.
+ * @param items - Collection items.
+ * @param value - Candidate value.
+ * @returns The matching typed value.
+ * @throws TypeError When the candidate is absent from the collection.
  * @public
  */
-export type MiaixzTenantState = "active" | "suspended" | "disabled";
-
-/**
- * Platform tenant and security-boundary summary.
- *
- * @public
- */
-export interface MiaixzTenantSummary {
-  /**
-   * Unique identifier of the tenant.
-   */
-  id: MiaixzIdentifier;
-
-  /**
-   * Display name of the tenant.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable tenant code.
-   */
-  code?: string;
-
-  /**
-   * Current lifecycle state of the tenant.
-   */
-  state: MiaixzTenantState;
+export function resolveCollectionValue<const Value extends string>(
+  items: readonly { readonly value: Value }[],
+  value: string,
+): Value {
+  const match = items.find((item) => item.value === value);
+  if (match === undefined) throw new TypeError(`Unknown collection value "${value}".`);
+  return match.value;
 }

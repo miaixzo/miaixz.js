@@ -37,6 +37,12 @@ import type {
 } from "../components/action/action.types.js";
 import type { AlertOwnerState, AlertProps } from "../components/alert/alert.types.js";
 import type {
+  StageOwnerState,
+  StageProps,
+  StageLoadingOwnerState,
+  StageLoadingProps,
+} from "../components/stage/stage.types.js";
+import type {
   AvatarGroupOwnerState,
   AvatarGroupProps,
   AvatarOwnerState,
@@ -310,6 +316,8 @@ export interface MiaixzThemeComponentRegistry {
   readonly Picker: MiaixzThemeEntry<PickerProps, ComboboxOwnerState>;
   readonly Alert: MiaixzThemeEntry<AlertProps, AlertOwnerState>;
   readonly Notice: MiaixzThemeEntry<NoticeProps, NoticeOwnerState>;
+  readonly Stage: MiaixzThemeEntry<StageProps, StageOwnerState>;
+  readonly StageLoading: MiaixzThemeEntry<StageLoadingProps, StageLoadingOwnerState>;
   readonly Overlay: MiaixzThemeEntry<OverlayProps, OverlayOwnerState>;
   readonly Toast: MiaixzThemeEntry<ToastProps, ToastOwnerState>;
   readonly Toaster: MiaixzThemeEntry<ToasterProps, ToasterOwnerState>;

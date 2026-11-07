@@ -32,8 +32,6 @@ export const miaixzSdkErrorMessageKeys = Object.freeze({
   FETCH_UNAVAILABLE: "sdk.error.api.fetchUnavailable",
   API_BASE_URL_INVALID: "sdk.error.api.baseUrlInvalid",
   API_REQUEST_ORIGIN_INVALID: "sdk.error.api.requestOriginInvalid",
-  API_ENVELOPE_INVALID: "sdk.error.api.envelopeInvalid",
-  API_ENVELOPE_MODE_INVALID: "sdk.error.api.envelopeModeInvalid",
   API_RESPONSE_INVALID: "sdk.error.api.responseInvalid",
   API_TIMEOUT_INVALID: "sdk.error.api.timeoutInvalid",
   API_RETRY_INVALID: "sdk.error.api.retryInvalid",
@@ -47,7 +45,6 @@ export const miaixzSdkErrorMessageKeys = Object.freeze({
   CONFIG_FETCH_UNAVAILABLE: "sdk.error.config.fetchUnavailable",
   CONFIG_FETCH_FAILED: "sdk.error.config.fetchFailed",
   SERVICE_ENDPOINT_MISSING: "sdk.error.config.serviceMissing",
-  CONTEXT_INVALID: "sdk.error.context.invalid",
   GRANTS_INVALID: "sdk.error.grants.invalid",
   FILE_DOWNLOAD_FAILED: "sdk.error.file.downloadFailed",
   MODULE_MANIFEST_INVALID: "sdk.error.module.manifestInvalid",
@@ -78,11 +75,6 @@ export const miaixzSdkErrorMessageKeys = Object.freeze({
   I18N_LOCALE_DEFINITION_INVALID: "sdk.error.i18n.localeDefinitionInvalid",
   I18N_LOCALE_DUPLICATE: "sdk.error.i18n.localeDuplicate",
   I18N_LOAD_FAILED: "sdk.error.i18n.loadFailed",
-  REST_SIGNATURE_CREDENTIAL_INVALID: "sdk.error.restSignature.credentialInvalid",
-  REST_SIGNATURE_CREDENTIAL_REQUIRED: "sdk.error.restSignature.credentialRequired",
-  REST_SIGNATURE_CRYPTO_UNAVAILABLE: "sdk.error.restSignature.cryptoUnavailable",
-  REST_SIGNATURE_MODE_INVALID: "sdk.error.restSignature.modeInvalid",
-  REST_SIGNATURE_PARAMETER_INVALID: "sdk.error.restSignature.parameterInvalid",
 } as const);
 
 /**

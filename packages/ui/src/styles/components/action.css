@@ -336,7 +336,9 @@
   pointer-events: none;
 }
 
-/* Measure intrinsic recipes without adding invisible scrollable overflow. */
+/**
+ * Measure intrinsic recipes without adding invisible scrollable overflow.
+ */
 .miaixz-action-measurements > span {
   flex: none;
 }

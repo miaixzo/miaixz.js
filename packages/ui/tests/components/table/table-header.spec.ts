@@ -14,6 +14,7 @@
  * Verifies themed opaque Table headers in browsers.
  */
 
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -69,3 +70,38 @@ for (const theme of themes) {
     });
   }
 }
+
+test("TableContainer supports native keyboard entry and horizontal scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/tests/?stickyTable=1");
+
+  const container = page.locator("#tables");
+  await expect(container).toHaveAttribute("tabindex", "0");
+  await expect(container.getByRole("table")).toBeVisible();
+  await expect(
+    container.locator("button, input, textarea, select, a[href], [tabindex]"),
+  ).toHaveCount(0);
+  const dimensions = await container.evaluate((node) => ({
+    clientWidth: node.clientWidth,
+    scrollWidth: node.scrollWidth,
+  }));
+  expect(dimensions.scrollWidth).toBeGreaterThan(dimensions.clientWidth);
+
+  const previousInput = page.getByRole("textbox", { name: "标识", exact: true });
+  await expect(previousInput).toHaveCount(1);
+  await previousInput.click();
+  await page.keyboard.press("Tab");
+  await expect(container).toBeFocused();
+
+  const initialScrollLeft = await container.evaluate((node) => node.scrollLeft);
+  for (let index = 0; index < 3; index++) await page.keyboard.press("ArrowRight", { delay: 50 });
+  await expect
+    .poll(() => container.evaluate((node) => node.scrollLeft))
+    .toBeGreaterThan(initialScrollLeft);
+
+  const result = await new AxeBuilder({ page })
+    .include("#tables")
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(result.violations).toEqual([]);
+});

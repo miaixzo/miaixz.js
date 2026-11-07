@@ -1,15 +1,13 @@
 {
   "fixture": "system-flow.xlsx",
-  "sha256": "a9e45f4988a530f288a3beac149a55ed182759a2feb6029233bbd43443c225cc",
+  "sha256": "c4cb7fb64d87712b955eadd0e6acbc1ef2c5fa89d4a2b5d43c1a020ef6a7e7b8",
   "expectedStatus": "complete",
   "packageParts": [
     "[Content_Types].xml",
     "_rels/.rels",
     "docProps/app.xml",
     "docProps/core.xml",
-    "docProps/custom.xml",
     "xl/_rels/workbook.xml.rels",
-    "xl/calcChain.xml",
     "xl/drawings/_rels/drawing1.xml.rels",
     "xl/drawings/_rels/drawing2.xml.rels",
     "xl/drawings/drawing1.xml",
@@ -17,8 +15,6 @@
     "xl/media/image1.emf",
     "xl/media/image2.png",
     "xl/media/image3.emf",
-    "xl/printerSettings/printerSettings1.bin",
-    "xl/printerSettings/printerSettings2.bin",
     "xl/sharedStrings.xml",
     "xl/styles.xml",
     "xl/theme/theme1.xml",
@@ -36,7 +32,8 @@
     "cellStyleCount": 83,
     "fontCount": 14,
     "fillCount": 4,
-    "borderCount": 16
+    "borderCount": 16,
+    "sheetNames": ["Geometry Atlas", "Transform Atlas"]
   },
   "view": {
     "activeSheetIndex": 1,
@@ -60,6 +57,74 @@
     "emfPlacementCount": 4,
     "mediaPartCount": 3,
     "emfPartCount": 2,
-    "emfRecordCounts": [34, 525]
+    "emfRecordCounts": [64, 321],
+    "emfRecordTypes": [
+      1, 6, 9, 10, 11, 12, 14, 17, 18, 19, 21, 27, 33, 34, 36, 37, 38, 39, 40, 42, 43, 54, 59, 60,
+      61, 62, 64, 67, 70, 76, 81, 85, 86, 88, 89, 94, 95, 98
+    ]
+  },
+  "rawCoverage": {
+    "formulaCount": 371,
+    "inlineRichTextCells": 0,
+    "sharedRichTextRuns": 2,
+    "phoneticRuns": 1,
+    "hiddenRowCounts": [1, 1],
+    "hiddenColumnCounts": [1, 1],
+    "media": [
+      {
+        "part": "xl/media/image1.emf",
+        "bytes": 1480,
+        "sha256": "7c2e737813efdda31dd919c5a4581ca4cb014dca7a8e4782c28ec65a270428ae",
+        "format": "EMF",
+        "recordCount": 64,
+        "descriptionChars": 0,
+        "recordTypes": [
+          1, 6, 9, 10, 11, 12, 14, 17, 18, 19, 21, 27, 33, 34, 37, 38, 39, 40, 42, 43, 54, 59, 60,
+          61, 62, 64, 67, 76, 85, 86, 88, 89, 94, 95, 98
+        ]
+      },
+      {
+        "part": "xl/media/image2.png",
+        "bytes": 37028,
+        "sha256": "aabe12bc246ed3b8a269ea6230d61162990b6e6c28c690e9793435b2143eab67",
+        "format": "PNG",
+        "size": [128, 96],
+        "chunks": ["IHDR", "IDAT", "IEND"]
+      },
+      {
+        "part": "xl/media/image3.emf",
+        "bytes": 7472,
+        "sha256": "07f6d4504d120869181fed38db4e4a2adfbc86694c2bd072d99a93cc85fbbab9",
+        "format": "EMF",
+        "recordCount": 321,
+        "descriptionChars": 0,
+        "recordTypes": [
+          1, 6, 9, 10, 11, 12, 14, 17, 18, 19, 21, 27, 33, 34, 36, 37, 38, 39, 40, 42, 43, 54, 59,
+          60, 61, 62, 64, 67, 70, 76, 81, 85, 86, 88, 89, 94, 95, 98
+        ]
+      }
+    ],
+    "inlineStringCells": 371
+  },
+  "generation": {
+    "source": "Fully synthetic geometry and style atlas; no original workbook, geometry, or media used as input.",
+    "method": "Python standard-library OOXML construction from a fixed neutral catalog, self-generated PNG pixels and standard EMF records, retaining the original supported record families and theme/indexed/tint/system-color mechanisms.",
+    "zipCompression": "stored",
+    "zipMemberOrder": "sorted",
+    "zipTimestamp": "2000-01-01T00:00:00",
+    "documentCreatedAndModified": "2000-01-01T00:00:00Z",
+    "reproducibility": {
+      "independentInvocations": 2,
+      "identicalBytes": true,
+      "generatorSha256": "24bfe5c493a33a931210b1f269c1465f524fa40088f8b051e5508ecc7bbdf9dc"
+    },
+    "excludedParts": [
+      "custom properties",
+      "external relationships",
+      "macros",
+      "embedded documents",
+      "printer settings",
+      "cached original calculations"
+    ]
   }
 }

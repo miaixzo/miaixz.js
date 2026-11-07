@@ -33,13 +33,6 @@ export type MiaixzIdentifier = string;
 export type MiaixzTimestamp = number;
 
 /**
- * Represents the logical data status defined by the Bus audit model.
- *
- * @public
- */
-export type MiaixzLogicalStatus = -1 | 0 | 1;
-
-/**
  * Describes the identity shared by Miaixz domain entities.
  *
  * @public
@@ -49,61 +42,6 @@ export interface MiaixzEntity {
    * Unique identifier of the entity.
    */
   id: MiaixzIdentifier;
-}
-
-/**
- * Describes the logical status and audit metadata shared by Bus entities.
- *
- * @public
- */
-export interface MiaixzAudit extends MiaixzEntity {
-  /**
-   * Logical data status: deleted, inactive, or active.
-   */
-  status: MiaixzLogicalStatus;
-
-  /**
-   * Identifier of the user who created the entity.
-   */
-  creator?: MiaixzIdentifier;
-
-  /**
-   * Entity creation time as Unix epoch milliseconds.
-   */
-  created: MiaixzTimestamp;
-
-  /**
-   * Identifier of the user who last modified the entity.
-   */
-  modifier?: MiaixzIdentifier;
-
-  /**
-   * Entity modification time as Unix epoch milliseconds.
-   */
-  modified: MiaixzTimestamp;
-}
-
-/**
- * Describes the standard envelope returned by Miaixz APIs.
- *
- * @typeParam T - Type of the successful response payload.
- * @public
- */
-export interface MiaixzApiEnvelope<T> {
-  /**
-   * Result code, where zero represents a successful response.
-   */
-  readonly code: string;
-
-  /**
-   * Human-readable result message supplied by the API.
-   */
-  readonly desc: string;
-
-  /**
-   * Payload returned by the API.
-   */
-  readonly data: T;
 }
 
 /**

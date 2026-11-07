@@ -19,56 +19,25 @@
 */
 
 /**
- * Defines workspace identity, tenant association, and lifecycle status.
- */
-
-import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
-
-/**
- * Represents the lifecycle state of a workspace.
+ * Combines split CSS Modules without discarding same-name classes.
  *
+ * @param modules - CSS Module maps in source order.
+ * @returns A frozen class map preserving class order, duplicates, and empty strings.
  * @public
  */
-export type MiaixzSpaceState = "active" | "disabled" | "archived";
-
-/**
- * Describes a workspace available within a tenant.
- *
- * @public
- */
-export interface MiaixzSpaceSummary {
-  /**
-   * Unique identifier of the workspace.
-   */
-  id: MiaixzIdentifier;
-
-  /**
-   * Identifier of the tenant that owns the workspace.
-   */
-  tenantId: MiaixzIdentifier;
-
-  /**
-   * Display name of the workspace.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable workspace code.
-   */
-  code?: string;
-
-  /**
-   * Optional description of the workspace purpose.
-   */
-  description?: string;
-
-  /**
-   * Current lifecycle state of the workspace.
-   */
-  state: MiaixzSpaceState;
-
-  /**
-   * Optional identifier of the user responsible for the workspace.
-   */
-  ownerId?: MiaixzIdentifier;
+export function mergeStyleModules(
+  ...modules: readonly Readonly<Record<string, string>>[]
+): Readonly<Record<string, string>> {
+  const keys = new Set(modules.flatMap((module) => Object.keys(module)));
+  return Object.freeze(
+    Object.fromEntries(
+      [...keys].map((key) => [
+        key,
+        modules
+          .map((module) => module[key])
+          .filter((className): className is string => className !== undefined)
+          .join(" "),
+      ]),
+    ),
+  );
 }

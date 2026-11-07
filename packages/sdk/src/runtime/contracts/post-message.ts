@@ -24,7 +24,7 @@
 
 import { VERSION } from "../../version.js";
 
-import type { MiaixzHostAdapter, MiaixzHostBridge } from "./host-context.js";
+import type { MiaixzHostAdapter } from "./host-context.js";
 import type { MiaixzModuleManifest } from "./module-manifest.js";
 
 /**
@@ -109,9 +109,10 @@ export interface MiaixzBridgeEnvelope {
 /**
  * Configures the Host side of one iframe postMessage Bridge.
  *
+ * @typeParam Context - Caller-defined context selected before it crosses the transport.
  * @public
  */
-export interface MiaixzPostMessageHostOptions {
+export interface MiaixzPostMessageHostOptions<Context = unknown> {
   /**
    * Supplies the validated iframe module manifest.
    */
@@ -130,7 +131,13 @@ export interface MiaixzPostMessageHostOptions {
   /**
    * Supplies the Host capabilities exposed to the iframe.
    */
-  readonly adapter: MiaixzHostAdapter;
+  readonly adapter: MiaixzHostAdapter<Context>;
+
+  /**
+   * Selects and validates the context that may be sent to the Child.
+   * Context capability is not advertised without this parser.
+   */
+  readonly parseContext?: (value: unknown) => Readonly<Context>;
 
   /**
    * Overrides the ten-second request and handshake timeout.
@@ -163,9 +170,10 @@ export interface MiaixzPostMessageHost {
 /**
  * Configures the Child side of one iframe postMessage Bridge.
  *
+ * @typeParam Context - Caller-defined context independently validated after receipt.
  * @public
  */
-export interface MiaixzPostMessageChildOptions {
+export interface MiaixzPostMessageChildOptions<Context = unknown> {
   /**
    * Identifies the iframe module opening the connection.
    */
@@ -185,6 +193,12 @@ export interface MiaixzPostMessageChildOptions {
    * Supplies the single allowed parent origin.
    */
   readonly targetOrigin: string;
+
+  /**
+   * Independently validates context received from the Host.
+   * Context requests are unavailable without this parser.
+   */
+  readonly parseContext?: (value: unknown) => Readonly<Context>;
 
   /**
    * Overrides the ten-second request and handshake timeout.

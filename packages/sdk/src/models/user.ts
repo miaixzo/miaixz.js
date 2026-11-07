@@ -19,7 +19,7 @@
 */
 
 /**
- * Defines user identity fields used by application display and context.
+ * Defines the display identity summary used by session consumers.
  */
 
 import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
@@ -49,31 +49,4 @@ export interface MiaixzUserSummary {
    * Optional URL of the user's avatar image.
    */
   avatarUrl?: string;
-}
-
-/**
- * Describes a user and their preferences.
- *
- * @public
- */
-export interface MiaixzUser extends MiaixzUserSummary {
-  /**
-   * Optional email address associated with the user.
-   */
-  email?: string;
-
-  /**
-   * Optional locale preferred by the user.
-   */
-  locale?: string;
-
-  /**
-   * Optional IANA timezone preferred by the user.
-   */
-  timezone?: string;
-
-  /**
-   * Indicates whether the user is active.
-   */
-  active: boolean;
 }
