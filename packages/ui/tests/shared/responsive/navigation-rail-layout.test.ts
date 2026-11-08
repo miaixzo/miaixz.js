@@ -132,6 +132,7 @@ describe("navigation rail layout", () => {
       "rail",
     );
     expect(entries.map(({ kind }) => kind)).toEqual(["label", "link", "divider", "label", "link"]);
+    expect(entries[1]).toMatchObject({ id: "low", kind: "link", icon: null });
     expect(entries[4]).toMatchObject({
       id: "last",
       kind: "link",
