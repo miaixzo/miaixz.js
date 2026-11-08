@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/view",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Composable image, PDF, and Office preview components for Miaixz applications.",
   "type": "module",
   "engines": {
@@ -86,7 +86,7 @@
     "check": "npm run audit:runtime-deps && npm run typecheck && npm run lint && npm run test:coverage && npm run format:check && npm run check:package"
   },
   "peerDependencies": {
-    "@miaixz/icons": ">=0.8.2 <0.9.0",
+    "@miaixz/icons": ">=0.8.3 <0.9.0",
     "react": ">=18.3 <20",
     "react-dom": ">=18.3 <20"
   },
@@ -96,7 +96,7 @@
     "@babel/core": "8.0.1",
     "@babel/eslint-parser": "8.0.1",
     "@eslint/js": "10.0.1",
-    "@miaixz/icons": "0.8.2",
+    "@miaixz/icons": "0.8.3",
     "@playwright/test": "1.62.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -106,7 +106,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitest/coverage-v8": "4.1.12",
-    "eslint": "10.9.1",
+    "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jsdoc": "62.7.0",
     "eslint-plugin-react-hooks": "7.1.1",

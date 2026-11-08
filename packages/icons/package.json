@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/icons",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Miaixz variable-font icons, React component, and accessibility primitives.",
   "type": "module",
   "engines": {
@@ -82,7 +82,7 @@
     "@types/react-dom": "19.2.5",
     "@vitest/coverage-v8": "4.1.12",
     "ajv": "8.20.0",
-    "eslint": "10.9.1",
+    "eslint": "10.14.0",
     "jsdom": "29.1.1",
     "pixelmatch": "7.1.0",
     "pngjs": "7.0.0",

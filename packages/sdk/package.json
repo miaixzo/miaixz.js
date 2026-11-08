@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/sdk",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Miaixz API client, runtime contracts, formatters, and utilities.",
   "type": "module",
   "engines": {
@@ -118,7 +118,7 @@
     "@eslint/js": "10.0.1",
     "@types/node": "26.4.0",
     "@vitest/coverage-v8": "4.1.12",
-    "eslint": "10.9.1",
+    "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jsdoc": "62.7.0",
     "globals": "17.11.0",

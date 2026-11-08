@@ -1,6 +1,6 @@
 {
   "name": "miaixz.js",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "private": true,
   "packageManager": "npm@10.9.3",
   "description": "Build with intelligence. Create without limits.",
@@ -73,6 +73,7 @@
   "author": "The Miaixz Team",
   "devDependencies": {
     "@babel/parser": "8.0.4",
+    "eslint": "10.14.0",
     "prettier": "3.9.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -80,5 +81,13 @@
     "svg-path-bbox": "2.1.0",
     "svg-pathdata": "7.2.0",
     "svgo": "4.1.0"
+  },
+  "overrides": {
+    "@eslint/config-array": {
+      "minimatch": "11.0.5"
+    },
+    "eslint": {
+      "minimatch": "11.0.5"
+    }
   }
 }
