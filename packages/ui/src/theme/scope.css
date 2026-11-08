@@ -45,3 +45,25 @@
 [data-miaixz-theme] :where([aria-disabled="true"], :disabled) {
   opacity: var(--miaixz-opacity-disabled);
 }
+
+/**
+ * Supplies white text and contrast-adjusted fills for neutral and danger solid buttons.
+ */
+.miaixz-button[data-variant="solid"] {
+  --miaixz-button-readable-fill: var(--miaixz-button-fill);
+  --miaixz-button-solid-foreground: white;
+  --miaixz-button-danger-interaction-fill: color-mix(
+    in srgb,
+    var(--miaixz-color-danger) 90%,
+    black
+  );
+}
+
+@supports (color: color(from white xyz-d65 calc(x * min(1, 0.18 / max(y, 0.18))) min(y, 0.18) z)) {
+  .miaixz-button[data-variant="solid"]:not([data-tone="brand"]) {
+    --miaixz-button-readable-fill: color(
+      from var(--miaixz-button-fill) xyz-d65 calc(x * min(1, 0.18 / max(y, 0.18))) min(y, 0.18)
+        calc(z * min(1, 0.18 / max(y, 0.18)))
+    );
+  }
+}

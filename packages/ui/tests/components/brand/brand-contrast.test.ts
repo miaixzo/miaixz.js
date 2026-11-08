@@ -77,7 +77,7 @@ describe("brand foreground semantics", () => {
     }
   }
 
-  it("uses semantic foregrounds without changing branded backgrounds or indicators", () => {
+  it("keeps solid brand buttons and the navigation indicator on their theme tokens", () => {
     expect(rule("button", '.miaixz-button[data-variant="plain"][data-tone="brand"] {')).toContain(
       "color: var(--miaixz-color-brand-strong);",
     );
@@ -93,12 +93,22 @@ describe("brand foreground semantics", () => {
     expect(rule("tabs", ".miaixz-tab:focus-visible {")).toContain(
       "color: var(--miaixz-color-text-primary);",
     );
-    expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
-      "color: var(--miaixz-color-on-brand);",
+    const solid = rule("button", '.miaixz-button[data-variant="solid"] {');
+    expect(solid).toContain("color: var(--miaixz-button-solid-foreground);");
+    expect(readFileSync("src/theme/scope.css", "utf8")).toContain(
+      "--miaixz-button-solid-foreground: white;",
     );
-    expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
-      "background: var(--miaixz-color-brand);",
-    );
+    expect(solid).toContain("background: var(--miaixz-button-readable-fill);");
+    const brand = rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {');
+    expect(brand).toContain("--miaixz-button-fill: var(--miaixz-color-brand);");
+    expect(brand).not.toMatch(/(?:^|[;{])\s*color\s*:/u);
+    expect(brand).toContain("background: var(--miaixz-button-fill);");
+    expect(brand).toContain("border-color: var(--miaixz-button-fill);");
+    for (const state of ["hover", "active"]) {
+      expect(
+        rule("button", `.miaixz-button[data-variant="solid"][data-tone="brand"]:${state}:not(`),
+      ).toContain(`--miaixz-button-fill: var(--miaixz-color-brand-${state});`);
+    }
     expect(rule("appearance", ".miaixz-appearance-trigger {")).toContain(
       "color: var(--miaixz-color-text-inverse);",
     );

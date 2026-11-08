@@ -37,7 +37,16 @@ const recipes = {
   "appearance.css": [
     "color-mix(in srgb, var(--miaixz-appearance-preview-brand) 18%, var(--miaixz-appearance-preview-surface))",
   ],
+  "scope.css": ["color-mix(in srgb, var(--miaixz-color-danger) 90%, black)"],
 };
+
+/**
+ * Exact solid-button contrast recipes owned by the theme scope.
+ */
+const solidButtonRelativeColors = [
+  "color(from white xyz-d65 calc(x * min(1, 0.18 / max(y, 0.18))) min(y, 0.18) z)",
+  "color(from var(--miaixz-button-fill) xyz-d65 calc(x * min(1, 0.18 / max(y, 0.18))) min(y, 0.18) calc(z * min(1, 0.18 / max(y, 0.18))))",
+];
 
 /**
  * Inspects a component stylesheet for paint values that bypass the theme token contract.
@@ -62,7 +71,14 @@ export function inspectComponentColors(fileName, source) {
       return [match.index, end];
     },
   );
-  if (/#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(/iu.test(clean))
+  const directColors =
+    fileName === "scope.css"
+      ? solidButtonRelativeColors.reduce(
+          (css, recipe) => css.replaceAll(recipe, ""),
+          clean.replace(/\s+/gu, " ").replace(/\(\s+/gu, "(").replace(/\s+\)/gu, ")"),
+        )
+      : clean;
+  if (/#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(/iu.test(directColors))
     findings.push("literal or relative color outside theme");
   /**
    * Paint values may contain tokens and CSS geometry, but not named color values.

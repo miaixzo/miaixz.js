@@ -21,7 +21,9 @@ const orderedCatalog = [...ICON_CATALOG].sort((left, right) =>
 );
 const refinementFills = [0, 0.25, 0.5, 0.75, 1] as const;
 
-/** Exact pilot names and real font sizes for source refinement previews. */
+/**
+ * Selects the pilot icons used to preview source refinement at different font sizes.
+ */
 const refinementPilots: readonly IconName[] = [
   "layout-dashboard",
   "folder",

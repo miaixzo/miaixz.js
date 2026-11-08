@@ -17,12 +17,33 @@ import { resolveThemeDefinitions } from "../../src/theme/resolve.js";
 import { serializeThemeApplication } from "../../src/theme/serialize.js";
 
 const presetDirectory = resolve("src/theme/presets");
-const builtInThemeNames = readdirSync(presetDirectory, { recursive: true })
+const presets = readdirSync(presetDirectory, { recursive: true })
   .filter((entry) => entry.toString().endsWith("preset.json"))
-  .map((entry) => JSON.parse(readFileSync(resolve(presetDirectory, entry.toString()), "utf8")))
+  .map((entry) => JSON.parse(readFileSync(resolve(presetDirectory, entry.toString()), "utf8")));
+const builtInThemeNames = presets
   .filter(({ builtin }) => builtin)
   .sort((left, right) => left.order - right.order)
   .map(({ name }) => String(name));
+
+type BrandButtonColors = readonly [normal: string, hover: string, active: string];
+
+/**
+ * Approved brand colors for all shipped presets, including lazy-loaded themes.
+ * Keep this baseline independent of the theme source and rendered styles.
+ */
+const brandButtonColors = {
+  miaixz: { light: ["#62B52F", "#58A62A", "#4E9724"], dark: ["#7BCB52", "#8BD965", "#70BF48"] },
+  neutral: { light: ["#4B5563", "#374151", "#1F2937"], dark: ["#D1D5DB", "#E5E7EB", "#B8BEC7"] },
+  contrast: { light: ["#004F1F", "#003A17", "#00270F"], dark: ["#7CFF8A", "#A3FFAD", "#60E971"] },
+  glacier: { light: ["#2563EB", "#1D4ED8", "#1E40AF"], dark: ["#79A7FF", "#91B7FF", "#6596F2"] },
+  porcelain: { light: ["#1E6091", "#184F78", "#123F61"], dark: ["#78C8F0", "#8FD3F4", "#62B5DD"] },
+  tidal: { light: ["#087E8B", "#066B76", "#055861"], dark: ["#65D3DC", "#7ADDE4", "#51C0C9"] },
+  olive: { light: ["#65702A", "#555F23", "#454E1C"], dark: ["#C1CD74", "#CED98A", "#AFBC63"] },
+  amber: { light: ["#9A5C00", "#814C00", "#693E00"], dark: ["#F3BD5D", "#F8CA76", "#DFA94A"] },
+  copper: { light: ["#A3471C", "#893B17", "#703013"], dark: ["#F29A70", "#F7AC88", "#DC845D"] },
+  rose: { light: ["#A33161", "#8A2851", "#712142"], dark: ["#F08DB1", "#F5A1C0", "#D8789C"] },
+  ink: { light: ["#40516E", "#34425A", "#293548"], dark: ["#A8B9D8", "#B9C8E2", "#95A7C8"] },
+} satisfies Record<string, Record<"light" | "dark", BrandButtonColors>>;
 
 const compactTypography = {
   "--miaixz-text-compact-body-size": "12px",
@@ -80,6 +101,72 @@ for (const density of ["compact", "standard", "comfortable"] as const) {
     await expect(page.getByRole("group", { name: "四项指标" })).toBeVisible();
     await expect(page.getByRole("table", { name: "固定成员数据" })).toBeVisible();
   });
+}
+
+test("solid brand button color baselines cover every shipped theme preset", () => {
+  expect(Object.keys(brandButtonColors).sort()).toEqual(
+    presets.map(({ name }) => String(name)).sort(),
+  );
+});
+
+for (const [theme, colors] of Object.entries(brandButtonColors)) {
+  for (const mode of ["light", "dark"] as const) {
+    test(`${theme} ${mode} solid brand buttons keep approved colors in each interaction state`, async ({
+      page,
+    }) => {
+      await page.goto(`/tests/?theme=${miaixzTheme.name}&colorMode=${mode}&density=standard`);
+      const root = page.locator("html");
+      if (theme !== miaixzTheme.name) {
+        await page.locator(".miaixz-appearance-trigger").click();
+        const drawer = page.locator(".miaixz-appearance-drawer");
+        const themeOption = drawer.locator(".miaixz-appearance-option").filter({
+          has: page.locator(`input[type="radio"][value="${theme}"]`),
+        });
+        await themeOption.click();
+        await expect(root).toHaveAttribute("data-miaixz-theme", theme);
+        await page.keyboard.press("Escape");
+        await expect(drawer).toBeHidden();
+      }
+      await expect(root).toHaveAttribute("data-miaixz-theme", theme);
+      await expect(root).toHaveAttribute("data-miaixz-color-mode", mode);
+      const button = page.getByRole("button", { name: "默认按钮", exact: true });
+      await expect(button).toHaveAttribute("data-variant", "solid");
+      await expect(button).toHaveAttribute("data-tone", "brand");
+
+      const expectColors = (token: string, hex: string) =>
+        test.step(token, async () => {
+          const channels = [1, 3, 5].map((offset) =>
+            Number.parseInt(hex.slice(offset, offset + 2), 16),
+          );
+          const expected = `rgb(${channels.join(", ")})`;
+          const themeColor = await button.evaluate((element, name) => {
+            const sample = document.createElement("span");
+            sample.style.color = `var(--miaixz-color-${name})`;
+            element.append(sample);
+            const color = getComputedStyle(sample).color;
+            sample.remove();
+            return color;
+          }, token);
+          expect(themeColor, `Approved theme token ${token}`).toBe(expected);
+          await expect(button).toHaveCSS("color", "rgb(255, 255, 255)");
+          await expect(button).toHaveCSS("background-color", expected);
+          await expect(button).toHaveCSS("border-color", expected);
+        });
+
+      const [normal, hover, active] = colors[mode];
+      await button.scrollIntoViewIfNeeded();
+      await page.mouse.move(1, 1);
+      await expectColors("brand", normal);
+      await button.hover();
+      await expectColors("brand-hover", hover);
+      await page.mouse.down();
+      try {
+        await expectColors("brand-active", active);
+      } finally {
+        await page.mouse.up();
+      }
+    });
+  }
 }
 
 test("appearance settings remain geometrically stable while density changes", async ({ page }) => {
