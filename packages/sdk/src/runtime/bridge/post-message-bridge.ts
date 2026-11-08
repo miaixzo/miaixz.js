@@ -34,29 +34,31 @@ import { PostMessageHost } from "./post-message-host.js";
 /**
  * Creates the Host side of a validated iframe postMessage Bridge.
  *
+ * @typeParam Context - Caller-defined context selected by the Host parser.
  * @param options - Manifest, target, origin, Adapter, and timeout configuration.
  * @returns Host lifecycle whose ready Promise tracks the handshake.
  * @throws MiaixzSdkError When construction parameters or browser capabilities are invalid.
  * @public
  */
-export function createMiaixzPostMessageHost(
-  options: MiaixzPostMessageHostOptions,
+export function createMiaixzPostMessageHost<Context = unknown>(
+  options: MiaixzPostMessageHostOptions<Context>,
 ): MiaixzPostMessageHost {
-  return new PostMessageHost(options);
+  return new PostMessageHost<Context>(options);
 }
 
 /**
  * Creates and handshakes the Child side of an iframe postMessage Bridge.
  *
+ * @typeParam Context - Caller-defined context independently validated by the Child.
  * @param options - Module identity, target, origin, and timeout configuration.
  * @returns Promise resolving to the connected Host Bridge.
  * @throws MiaixzSdkError When construction, handshake, or browser capabilities are invalid.
  * @public
  */
-export function createMiaixzPostMessageChildBridge(
-  options: MiaixzPostMessageChildOptions,
-): Promise<MiaixzHostBridge> {
-  const bridge = new PostMessageChildBridge(options);
+export function createMiaixzPostMessageChildBridge<Context = unknown>(
+  options: MiaixzPostMessageChildOptions<Context>,
+): Promise<MiaixzHostBridge<Context>> {
+  const bridge = new PostMessageChildBridge<Context>(options);
   return bridge.connect().catch((error: unknown) => {
     bridge.dispose();
     throw error;

@@ -259,10 +259,6 @@ export interface TreeOwnerState {
   readonly selectionMode: "none" | "single" | "multiple";
   readonly view: TreeViewMode;
   readonly itemId: string;
-  /**
-   * @deprecated Use logicalLevel, semanticLevel, or visualLevel.
-   */
-  readonly level: number;
   readonly logicalLevel: number;
   readonly semanticLevel: number;
   readonly visualLevel: number;
@@ -328,10 +324,6 @@ export interface TreeSlotProps {
   readonly createInput?: MiaixzSlotProps<TreeOwnerState, InputHTMLAttributes<HTMLInputElement>>;
   readonly renameInput?: MiaixzSlotProps<TreeOwnerState, InputHTMLAttributes<HTMLInputElement>>;
   readonly deleteAction?: MiaixzSlotProps<TreeOwnerState, ButtonHTMLAttributes<HTMLButtonElement>>;
-  /**
-   * @deprecated Use expander. This alias remains available throughout 0.7.x.
-   */
-  readonly icon?: MiaixzSlotProps<TreeOwnerState, TreeIconAttributes>;
   readonly childrenGroup?: MiaixzSlotProps<TreeOwnerState, HTMLAttributes<HTMLDivElement>>;
   readonly loadingIndicator?: MiaixzSlotProps<TreeOwnerState, HTMLAttributes<HTMLSpanElement>>;
   readonly error?: MiaixzSlotProps<TreeOwnerState, HTMLAttributes<HTMLDivElement>>;

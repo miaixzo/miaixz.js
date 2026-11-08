@@ -22,9 +22,8 @@
  * Implements the tree module.
  */
 
-import { forwardRef, useEffect, type ReactElement, type RefAttributes } from "react";
+import { forwardRef, type ReactElement, type RefAttributes } from "react";
 
-import { reportMiaixzUiWarning } from "../../errors/ui-error.js";
 import { useMiaixzLocale } from "../../i18n/i18n.js";
 import { classNames } from "../../shared/class-names.js";
 import { useMergedRef } from "../../shared/use-merged-ref.js";
@@ -93,11 +92,6 @@ function TreeImplementation<Value = unknown, View extends TreeViewMode = TreeVie
   } = componentProps;
   const { t } = useMiaixzLocale();
   const rootRef = useMergedRef(forwardedRef, null);
-  useEffect(() => {
-    if (slotProps?.icon !== undefined && slotProps.expander === undefined) {
-      reportMiaixzUiWarning("UI_TREE_ICON_SLOT_DEPRECATED");
-    }
-  }, [slotProps?.expander, slotProps?.icon]);
 
   const rootInteraction = controller.getRootProps();
   const effectiveView = view as TreeViewMode;

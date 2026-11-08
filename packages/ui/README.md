@@ -1,5 +1,7 @@
 # @miaixz/ui
 
+[English](./README.md) | [简体中文](./README_CN.md)
+
 ## Theme ownership and local delivery
 
 Theme definitions, types, generated CSS and runtime logic live together in `src/theme/`.
@@ -238,6 +240,7 @@ This table is checked directly against the package export map.
 | `./notice`                   | JavaScript |
 | `./field`                    | JavaScript |
 | `./search`                   | JavaScript |
+| `./stage`                    | JavaScript |
 | `./overlay`                  | JavaScript |
 | `./picker`                   | JavaScript |
 | `./datagrid`                 | JavaScript |
@@ -275,6 +278,7 @@ This table is checked directly against the package export map.
 | `./timeline/styles.css`      | CSS        |
 | `./toaster/styles.css`       | CSS        |
 | `./alert/styles.css`         | CSS        |
+| `./stage/styles.css`         | CSS        |
 | `./action/styles.css`        | CSS        |
 | `./avatar/styles.css`        | CSS        |
 | `./button/styles.css`        | CSS        |
@@ -446,7 +450,7 @@ const groups: NavigationRailGroupModel[] = [
 
 <Shell
   header={header}
-  sidebar={
+  primaryNavigation={
     <NavigationRail
       brand={brand}
       toggle={toggle}
@@ -472,22 +476,16 @@ Business applications should not override internal component selectors. Apply br
 
 ## Themes, colors, and density
 
-The SDK stores and synchronizes appearance state. `Theme` is the only runtime owner that validates
+The independent SDK Appearance manager stores appearance state; its owner configures any synchronization. `Theme` is the only runtime owner that validates
 and applies those settings to the DOM:
 
 ```tsx
-import { createMiaixzSdk } from "@miaixz/sdk";
+import { createMiaixzAppearanceManager } from "@miaixz/sdk";
 import { Theme } from "@miaixz/ui";
 
-const sdk = createMiaixzSdk({
-  appId: "portal",
-  config: {
-    apiBaseUrl: "https://api.miaixz.example",
-    environment: "production",
-  },
-});
+const appearance = createMiaixzAppearanceManager({ appId: "portal" });
 
-sdk.appearance.patch({
+appearance.patch({
   colorMode: "system",
   density: "comfortable",
   overrides: { light: { brand: "#55b52d" } },
@@ -495,7 +493,7 @@ sdk.appearance.patch({
 
 export function Root() {
   return (
-    <Theme appearance={sdk.appearance}>
+    <Theme appearance={appearance}>
       <App />
     </Theme>
   );
@@ -538,6 +536,66 @@ export function Root() {
 
 Locale modules export flat key-value objects by default. Project messages take precedence over built-in messages. Missing messages fall back to `fallbackLocale`; if no fallback is available, the message key is returned. `useMiaixzLocale()` exposes the current snapshot and translation function.
 
+## Asynchronous content and nonvisual helpers
+
+Use the existing locale and stylesheet setup above. `Stage` presents loading, empty,
+error, or ready content. Copy, placeholders, data, and request recovery remain caller-owned;
+ready renders only its children. Errors use `presentation="region"` by default or `"inline"`.
+`loadingLabel` is required for errors; a retry button needs both `onRetry` and `retryLabel`.
+
+```tsx
+import type { ReactNode } from "react";
+import { Stage, StageLoading, useStageSettled } from "@miaixz/ui/stage";
+import { MiaixzErrorBoundary, mergeStyleModules } from "@miaixz/ui";
+
+function RetainedContent(props: {
+  active: boolean;
+  settled: boolean;
+  label: string;
+  children?: ReactNode;
+  placeholder?: ReactNode;
+}) {
+  const retained = useStageSettled(props.settled);
+  return (
+    <StageLoading active={props.active} label={props.label} placeholder={props.placeholder}>
+      {retained ? props.children : undefined}
+    </StageLoading>
+  );
+}
+
+<Stage
+  status="error"
+  title="Preview unavailable"
+  description="Retry this content request."
+  loadingLabel="Retrying content"
+  retryLabel="Retry content"
+  onRetry={retryRequest}
+/>;
+
+<MiaixzErrorBoundary
+  fallback={(retryRender) => <button onClick={retryRender}>Retry rendering</button>}
+>
+  {children}
+</MiaixzErrorBoundary>;
+
+const styleModules = mergeStyleModules(baseStyles, overrideStyles);
+```
+
+`StageLoading` preserves the existing Overlay nodes, interaction blocking, and focus restoration.
+It renders `children ?? placeholder`; either may be omitted. `useStageSettled(boolean)` only
+remembers completion within the current mount; the consumer maps its own request state and scope.
+Branches that render a root support Theme defaults, variants, native/data attributes, and owner-state
+slot callbacks. StageLoading exposes root/content/surface; Stage exposes the actual root,
+error-region wrapper, and Exception title/content/illustration slots. Page and drawer heights remain
+with the consumer.
+
+`MiaixzErrorBoundary` catches rendering failures, adds no DOM, and accepts only children and a
+caller-supplied `fallback(retry)`; retry resets the local boundary, while a changed key remounts its
+scope. Request failures are represented through explicit content state. `mergeStyleModules` only
+combines string class maps in order, retaining duplicates and empty strings and freezing the result.
+Both helpers are root exports and are not Theme components. The scoped JavaScript and CSS entries
+are listed in the public-entry table; the complete stylesheet already includes the new CSS.
+
 ## Error handling
 
 Component contract violations throw `MiaixzUiError`. Each error includes a stable `code`, a translatable `messageKey`, and optional sanitized `details`:
@@ -566,7 +624,7 @@ Every independently deployed service installs compatible UI and SDK versions ins
 2. Synchronizing non-sensitive context, locale, permissions, and appearance snapshots with modules.
 3. Ensuring that React, ReactDOM, and the SDK have only compatible instances within one runtime.
 
-Modules in the same runtime use `createMiaixzDirectHostBridge()`. Cross-origin iframes use `createMiaixzPostMessageHost()` and `createMiaixzPostMessageChildBridge()` with exact origins. A bridge writes each received snapshot to the module's `MiaixzAppearanceManager`; the mounted `Theme` applies it. A module must not create theme style nodes or read and modify the host DOM directly.
+Modules in the same runtime use `createMiaixzDirectHostBridge()`. Cross-origin iframes use `createMiaixzPostMessageHost()` and `createMiaixzPostMessageChildBridge()` with exact origins. Consumer integration code writes each permitted received snapshot to the module's `MiaixzAppearanceManager`; the mounted `Theme` applies it. A module must not create theme style nodes or read and modify the host DOM directly.
 
 ## Components
 
@@ -575,7 +633,7 @@ The public component collection includes:
 - Foundations and forms: Button, ButtonGroup, Input, NumberInput, Search, Textarea, Select, Combobox, Picker, Field, Checkbox, Radio, Rating, Slider, Switch, Calendar, DatePicker, TimePicker, Dropzone, and Upload.
 - Navigation and layout: Navigation, Breadcrumb, Tabs, Segmented, Toolbar, Shell, Page, View, Header, Grid, Masonry, Cluster, Split, Stack, Sidebar, Scroll, and Entry.
 - Data display: Panel, List, Table, Datagrid, Tree, Badge, Tag, Pagination, Avatar, AvatarGroup, Divider, and Status.
-- Feedback and overlays: Alert, Notice, Progress, Spinner, Overlay, Tooltip, Popover, Dropdown, Dialog, Confirm, Drawer, Disclosure, Toast, Skeleton, Empty, Exception, and Hidden.
+- Feedback and overlays: Alert, Notice, Progress, Spinner, Overlay, StageLoading, Stage, Tooltip, Popover, Dropdown, Dialog, Confirm, Drawer, Disclosure, Toast, Skeleton, Empty, Exception, and Hidden.
 
 Interactive components preserve native semantics, keyboard behavior, and visible focus. Icon-only buttons must provide an accessible name.
 
@@ -612,15 +670,15 @@ npm ci --package-lock=true --ignore-scripts --legacy-peer-deps
 npm run check
 ```
 
-Run `npm run check:package` from the repository root to validate both packed packages.
+Run `npm run check:package` from the repository root to validate all packed public packages.
 
 The package builds independently with npm and does not rely on implicit tools outside the repository.
 
-Publishing is coordinated by the repository release workflow. `@miaixz/ui` and `@miaixz/sdk` must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
+Publishing is coordinated by the repository release workflow. All public npm packages must share the exact version and are published together from an unprefixed semantic-version tag. Stable releases use the `latest` dist-tag, while prereleases use `next`.
 
 ## Security and notices
 
-- See the repository [security policy](../SECURITY.md) for vulnerability reporting instructions and supported release information.
+- See the repository [security policy](../../SECURITY.md) for vulnerability reporting instructions and supported release information.
 - See [NOTICE](./NOTICE) for package attribution notices.
 
 ## License

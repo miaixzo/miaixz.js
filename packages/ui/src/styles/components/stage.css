@@ -1,0 +1,107 @@
+/*
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+ ~                                                                           ~
+ ~ Copyright (c) 2015-2026 miaixz.org and other contributors.                ~
+ ~                                                                           ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");           ~
+ ~ you may not use this file except in compliance with the License.          ~
+ ~ You may obtain a copy of the License at                                   ~
+ ~                                                                           ~
+ ~      https://www.apache.org/licenses/LICENSE-2.0                          ~
+ ~                                                                           ~
+ ~ Unless required by applicable law or agreed to in writing, software       ~
+ ~ distributed under the License is distributed on an "AS IS" BASIS,         ~
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ~
+ ~ See the License for the specific language governing permissions and       ~
+ ~ limitations under the License.                                            ~
+ ~                                                                           ~
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+*/
+
+/**
+ * Defines neutral retained-content feedback and recovery presentation.
+ */
+
+.miaixz-stage-loading {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.miaixz-stage-loading-surface {
+  background: var(--miaixz-color-surface);
+}
+
+.miaixz-stage-region {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  align-content: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--miaixz-space-24) var(--miaixz-space-16) var(--miaixz-space-40);
+}
+
+.miaixz-stage-region > .miaixz-stage-error {
+  inline-size: min(480px, 100%);
+  padding: 0;
+}
+
+.miaixz-stage-content {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.miaixz-stage-region .miaixz-stage-illustration {
+  display: grid;
+  place-items: center;
+  inline-size: var(--miaixz-space-48);
+  block-size: var(--miaixz-space-48);
+  margin-block-end: var(--miaixz-space-4);
+  color: var(--miaixz-color-danger);
+  background: var(--miaixz-color-danger-soft);
+  border-radius: var(--miaixz-radius-round);
+}
+
+.miaixz-stage-region .miaixz-stage-title {
+  font-size: var(--miaixz-text-section-title-size);
+  line-height: var(--miaixz-text-section-title-line-height);
+  overflow-wrap: anywhere;
+}
+
+.miaixz-stage-recovery-message {
+  display: inline-flex;
+  gap: var(--miaixz-space-4);
+  align-items: center;
+  max-inline-size: 100%;
+  vertical-align: middle;
+}
+
+.miaixz-stage-recovery-text {
+  min-inline-size: 0;
+}
+
+.miaixz-stage-recovery-message > .miaixz-stage-retry {
+  display: inline-flex;
+  flex: none;
+  inline-size: var(--miaixz-space-32);
+  min-inline-size: var(--miaixz-space-32);
+  block-size: var(--miaixz-space-32);
+  min-block-size: var(--miaixz-space-32);
+  padding: 0;
+  vertical-align: middle;
+}
+
+@media (pointer: coarse) {
+  .miaixz-stage-recovery-message > .miaixz-stage-retry {
+    inline-size: var(--miaixz-control-min-target-size);
+    min-inline-size: var(--miaixz-control-min-target-size);
+    block-size: var(--miaixz-control-min-target-size);
+    min-block-size: var(--miaixz-control-min-target-size);
+  }
+}
+
+@media (height <= 540px) {
+  .miaixz-stage-region {
+    padding-block: var(--miaixz-space-16);
+  }
+}

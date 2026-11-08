@@ -26,7 +26,6 @@ import { VERSION } from "../../version.js";
 
 import type { MiaixzLocale } from "../../i18n/i18n.js";
 import type { MiaixzAppearancePayload } from "../../display/appearance.types.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
 import type { MiaixzSdkConfig } from "../config/config.types.js";
 
 export type {
@@ -73,10 +72,6 @@ export interface MiaixzSdkEventMap {
    * Contains a non-sensitive session invalidation signal.
    */
   readonly "session:changed": Readonly<MiaixzSessionStatusEvent>;
-  /**
-   * Contains the runtime-context snapshot after it changes.
-   */
-  readonly "context:changed": Readonly<MiaixzRuntimeContext>;
   /**
    * Contains the versioned appearance snapshot after it changes.
    */

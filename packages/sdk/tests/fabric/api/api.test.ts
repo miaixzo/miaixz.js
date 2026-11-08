@@ -36,7 +36,6 @@ import {
   hasContextHeader,
   isNativeBody,
   normalizeBaseUrl,
-  normalizeEnvelopeMode,
   normalizeRetry,
   normalizeTimeout,
   resolveRedirectMode,
@@ -47,9 +46,7 @@ import {
 } from "../../../src/fabric/api/request-options.js";
 import {
   createResponseInvalidError,
-  expectsJsonEnvelope,
   extractProblem,
-  isMiaixzApiFailureEnvelope,
   parseBody,
   parseJsonBody,
   parseResponseData,
@@ -61,10 +58,9 @@ import {
   retryDelay,
   wait,
 } from "../../../src/fabric/api/retry.js";
-import {
-  isMiaixzApiEnvelope,
-  isMiaixzApiSuccess,
-  unwrapMiaixzData,
+import type {
+  MiaixzHttpErrorDetails,
+  MiaixzHttpErrorMapper,
 } from "../../../src/fabric/api/response.js";
 import {
   emitErrorTelemetry,
@@ -74,7 +70,7 @@ import {
   isPlainTelemetryObject,
   normalizeSensitiveFieldName,
   resolveLogicalRequestId,
-  sanitizeTelemetryBody,
+  summarizeTelemetryBody,
   sanitizeTelemetryHeaders,
   sanitizeTelemetryUrl,
   sanitizeTelemetryValue,
@@ -99,7 +95,7 @@ afterEach(() => {
 });
 
 describe("API request option helpers", () => {
-  it("normalizes endpoint, timeout, retry, and envelope contracts", () => {
+  it("normalizes endpoint, timeout, and retry contracts", () => {
     expect(normalizeBaseUrl("https://api.example.test///", "production")).toBe(
       "https://api.example.test",
     );
@@ -130,14 +126,6 @@ describe("API request option helpers", () => {
     for (const retry of [-1, 1.5, 6]) {
       expect(() => normalizeRetry(retry)).toThrowError(
         expect.objectContaining({ code: "API_RETRY_INVALID" }),
-      );
-    }
-    expect(normalizeEnvelopeMode("auto", undefined)).toBe("required");
-    expect(normalizeEnvelopeMode("json", "optional")).toBe("optional");
-    for (const responseType of ["text", "blob", "arrayBuffer", "void"] as const) {
-      expect(normalizeEnvelopeMode(responseType, undefined)).toBe("none");
-      expect(() => normalizeEnvelopeMode(responseType, "required")).toThrowError(
-        expect.objectContaining({ code: "API_ENVELOPE_MODE_INVALID" }),
       );
     }
   });
@@ -233,13 +221,16 @@ describe("API request option helpers", () => {
       ["Proxy-Authorization", "Basic x"],
       ["X-Api-Key", "key"],
       ["X-CSRF-Token", "csrf"],
-      ["X-Miaixz-Locale", "zh-CN"],
-      ["X-Custom-Context", "one"],
     ] as const) {
       const headers = new Headers({ [name]: value });
+      expect(resolveRedirectMode(headers, "same-origin", false, new Set())).toBe("error");
+    }
+    for (const name of ["X-Demo-Context", "X-Custom-Context"]) {
+      const headers = new Headers({ [name]: "one" });
       expect(
         resolveRedirectMode(headers, "same-origin", false, new Set([name.toLowerCase()])),
       ).toBe("error");
+      expect(resolveRedirectMode(headers, "same-origin", false, new Set())).toBe("follow");
     }
     expect(resolveRedirectMode(empty, "include", false, new Set())).toBe("error");
     expect(resolveRedirectMode(empty, "same-origin", true, new Set())).toBe("error");
@@ -255,13 +246,6 @@ describe("API request option helpers", () => {
 
 describe("API response and retry helpers", () => {
   it("selects and parses every supported response representation", async () => {
-    expect(expectsJsonEnvelope(Response.json({}), "auto")).toBe(true);
-    expect(
-      expectsJsonEnvelope(new Response("x", { headers: { "content-type": "text/plain" } }), "auto"),
-    ).toBe(false);
-    expect(expectsJsonEnvelope(new Response(null, { status: 204 }), "json")).toBe(false);
-    expect(expectsJsonEnvelope(new Response("x"), "text")).toBe(false);
-
     expect(await parseBody(Response.json({ value: 1 }), "json")).toEqual({ value: 1 });
     expect(await parseBody(new Response("hello"), "text")).toBe("hello");
     expect(
@@ -285,24 +269,11 @@ describe("API response and retry helpers", () => {
     await expect(parseJsonBody(new Response("{"))).rejects.toBeInstanceOf(SyntaxError);
   });
 
-  it("recognizes envelopes and extracts stable problem details", () => {
-    expect(isMiaixzApiEnvelope({ errcode: "0", errmsg: "ok", data: 1 })).toBe(true);
-    expect(isMiaixzApiEnvelope({ errcode: "1", errmsg: "bad", data: null })).toBe(true);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: "ok", data: 1 })).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: "ok" })).toBe(false);
-    expect(isMiaixzApiEnvelope(null)).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: true, errmsg: "ok", data: 1 })).toBe(false);
-    expect(isMiaixzApiEnvelope({ errcode: 0, errmsg: 1, data: 1 })).toBe(false);
-    expect(isMiaixzApiFailureEnvelope({ errcode: "E_ONE", errmsg: "bad" })).toBe(true);
-    expect(isMiaixzApiFailureEnvelope({ errcode: 0, errmsg: "bad" })).toBe(false);
-
+  it("extracts only generic problem details and sanitizes diagnostic URLs", () => {
     const response = new Response(null, { status: 400 });
-    expect(extractProblem({ errcode: "8", errmsg: "business" }, response)).toEqual({
-      code: "8",
-      serverMessage: "business",
-    });
-    expect(extractProblem({ errcode: "0", errmsg: "ok", data: null }, response)).toEqual({
-      code: "HTTP_400",
+    expect(extractProblem({ code: "8", desc: "ignored" }, response)).toEqual({ code: "8" });
+    expect(extractProblem({ code: "0", desc: "ignored", data: null }, response)).toEqual({
+      code: "0",
     });
     expect(
       extractProblem({ code: "CUSTOM", requestId: "r1", message: "unsafe" }, response),
@@ -450,8 +421,8 @@ describe("API telemetry", () => {
     const many = Array.from({ length: telemetryMaximumCollectionSize + 1 }, (_, index) => index);
     expect(sanitizeTelemetryValue(many)).toHaveLength(telemetryMaximumCollectionSize);
     expect((sanitizeTelemetryValue(many) as unknown[]).at(-1)).toBe("[TRUNCATED]");
-    expect(sanitizeTelemetryBody("secret")).toEqual({ type: "string", bytes: 6 });
-    expect(sanitizeTelemetryBody(["safe"])).toEqual({ type: "JSON", bytes: undefined });
+    expect(summarizeTelemetryBody("secret")).toEqual({ type: "string", bytes: 6 });
+    expect(summarizeTelemetryBody(["safe"])).toEqual({ type: "JSON", bytes: undefined });
     expect(sanitizeTelemetryHeaders({ Authorization: "secret", Accept: "json" })).toEqual({
       accept: "json",
       authorization: "[REDACTED]",
@@ -573,14 +544,14 @@ describe("API client execution", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("executes facades, providers, interceptors, envelopes, and parsing", async () => {
+  it("executes facades, providers, interceptors, and parsing in order", async () => {
     const calls: Array<{ url: string; init: RequestInit }> = [];
     const client = createApiClient({
       baseUrl: "https://api.test/v1",
       headers: { "x-default": "one" },
       authorizationProvider: () => "Custom token",
       tokenProvider: () => "ignored",
-      contextHeadersProvider: () => ({ "x-miaixz-locale": "zh-CN" }),
+      contextHeadersProvider: () => ({ "x-demo-context": "zh-CN" }),
       requestInterceptors: [
         (request) => ({
           ...request,
@@ -599,10 +570,7 @@ describe("API client execution", () => {
       ],
       fetch: async (input, init) => {
         calls.push({ url: String(input), init: init ?? {} });
-        return Response.json(
-          { errcode: "0", errmsg: "ok", data: { answer: 42 } },
-          { headers: { "x-request-id": "response-id" } },
-        );
+        return Response.json({ answer: 42 }, { headers: { "x-request-id": "response-id" } });
       },
     });
     expect(client.baseUrl).toBe("https://api.test/v1");
@@ -611,20 +579,23 @@ describe("API client execution", () => {
       { name: "Ada" },
       {
         query: { page: 2 },
-        parse: (value) => (value as { answer: number; intercepted: boolean }).answer,
+        parse: (value) => {
+          expect(value).toEqual({ answer: 42, intercepted: true });
+          return (value as { answer: number }).answer;
+        },
       },
     );
     expect(response).toMatchObject({ data: 42, requestId: "response-id", status: 200 });
     expect(calls[0]?.url).toBe("https://api.test/v1/items?page=2&intercepted=1");
     const headers = new Headers(calls[0]?.init.headers);
     expect(headers.get("authorization")).toBe("Custom token");
-    expect(headers.get("x-miaixz-locale")).toBe("zh-CN");
+    expect(headers.get("x-demo-context")).toBe("zh-CN");
     expect(headers.get("x-interceptor")).toBe("yes");
     expect(calls[0]?.init.redirect).toBe("error");
     expect(calls[0]?.init.body).toBe('{"name":"Ada"}');
   });
 
-  it("supports all convenience methods and unwrapped response modes", async () => {
+  it("supports all convenience methods and explicit response modes", async () => {
     const methods: string[] = [];
     const client = createApiClient({
       baseUrl: "https://api.test",
@@ -647,23 +618,23 @@ describe("API client execution", () => {
     const client = createApiClient({
       baseUrl: "https://api.test",
       tokenProvider: () => "provider-token",
-      contextHeadersProvider: () => ({ "x-miaixz-locale": "provider-locale", "x-extra": "extra" }),
+      contextHeadersProvider: () => ({ "x-demo-context": "provider-locale", "x-extra": "extra" }),
       fetch: async (_input, init) => {
         captured.push(new Headers(init?.headers));
-        return Response.json({ errcode: "0", errmsg: "ok", data: true });
+        return Response.json(true);
       },
     });
     await client.get("/one");
     await client.get("/two", {
-      headers: { Authorization: "Caller token", "x-miaixz-locale": "caller-locale" },
+      headers: { Authorization: "Caller token", "x-demo-context": "caller-locale" },
     });
     expect(captured[0]?.get("authorization")).toBe("Bearer provider-token");
     expect(captured[0]?.get("x-extra")).toBe("extra");
     expect(captured[1]?.get("authorization")).toBe("Caller token");
-    expect(captured[1]?.get("x-miaixz-locale")).toBe("caller-locale");
+    expect(captured[1]?.get("x-demo-context")).toBe("caller-locale");
   });
 
-  it("retries retryable HTTP and network failures but not business failures", async () => {
+  it("retries HTTP and network failures without interpreting successful payloads", async () => {
     vi.useFakeTimers();
     const httpFetch = vi
       .fn<typeof fetch>()
@@ -673,48 +644,64 @@ describe("API client execution", () => {
           { status: 503, headers: { "retry-after": "0" } },
         ),
       )
-      .mockResolvedValueOnce(Response.json({ errcode: "0", errmsg: "ok", data: "done" }));
+      .mockResolvedValueOnce(Response.json("done"));
+    const mapper = vi.fn<MiaixzHttpErrorMapper>(() => ({ code: "MAPPED" }));
+    const onRequest = vi.fn();
+    const onResponse = vi.fn();
+    const onError = vi.fn();
     const pending = createApiClient({
       baseUrl: "https://api.test",
       fetch: httpFetch,
       retry: 1,
+      httpErrorMapper: mapper,
+      telemetry: { onRequest, onResponse, onError },
     }).get("/retry");
+    const result = expect(pending).resolves.toMatchObject({ data: "done" });
     await vi.runAllTimersAsync();
-    await expect(pending).resolves.toMatchObject({ data: "done" });
+    await result;
     expect(httpFetch).toHaveBeenCalledTimes(2);
+    expect(mapper).toHaveBeenCalledTimes(1);
+    expect(mapper.mock.calls[0]?.[1]).toEqual({ status: 503 });
+    expect(onResponse.mock.calls[0]?.[0]).toMatchObject({ status: 503 });
+    expect(onRequest).toHaveBeenCalledTimes(2);
+    expect(onResponse).toHaveBeenCalledTimes(2);
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0]?.[0]).toMatchObject({
+      error: { name: "MiaixzApiError", code: "MAPPED" },
+    });
 
     const networkFetch = vi
       .fn<typeof fetch>()
       .mockRejectedValueOnce(new TypeError("offline"))
-      .mockResolvedValueOnce(Response.json({ errcode: "0", errmsg: "ok", data: "online" }));
+      .mockResolvedValueOnce(Response.json("online"));
     const networkPending = createApiClient({
       baseUrl: "https://api.test",
       fetch: networkFetch,
       retry: 1,
     }).get("/network");
+    const networkResult = expect(networkPending).resolves.toMatchObject({ data: "online" });
     await vi.runAllTimersAsync();
-    await expect(networkPending).resolves.toMatchObject({ data: "online" });
+    await networkResult;
+    expect(networkFetch).toHaveBeenCalledTimes(2);
 
-    const business = createApiClient({
+    const successMapper = vi.fn<MiaixzHttpErrorMapper>(() => ({ code: "UNUSED" }));
+    const successFetch = vi.fn<typeof fetch>(async () =>
+      Response.json({ code: "NONZERO", desc: "opaque" }),
+    );
+    const success = createApiClient({
       baseUrl: "https://api.test",
-      fetch: async () => Response.json({ errcode: "DENIED", errmsg: "no" }),
+      fetch: successFetch,
+      retry: 2,
+      httpErrorMapper: successMapper,
     });
-    await expect(business.get("/business")).rejects.toMatchObject({
-      code: "DENIED",
-      retryable: false,
-      serverMessage: "no",
+    await expect(success.get("/opaque")).resolves.toMatchObject({
+      data: { code: "NONZERO", desc: "opaque" },
     });
+    expect(successFetch).toHaveBeenCalledTimes(1);
+    expect(successMapper).not.toHaveBeenCalled();
   });
 
-  it("rejects invalid envelopes, parser values, HTTP errors, and cross-origin interceptors", async () => {
-    const invalidEnvelope = createApiClient({
-      baseUrl: "https://api.test",
-      fetch: async () => Response.json({ value: 1 }),
-    });
-    await expect(invalidEnvelope.get("/invalid")).rejects.toMatchObject({
-      code: "API_ENVELOPE_INVALID",
-    });
-
+  it("rejects invalid JSON, HTTP errors, and cross-origin interceptors", async () => {
     const invalidJson = createApiClient({
       baseUrl: "https://api.test",
       fetch: async () => new Response("{", { headers: { "content-type": "application/json" } }),
@@ -732,7 +719,7 @@ describe("API client execution", () => {
     const crossOrigin = createApiClient({
       baseUrl: "https://api.test",
       requestInterceptors: [(request) => ({ ...request, url: "https://evil.test/steal" })],
-      fetch: async () => Response.json({ errcode: "0", errmsg: "ok", data: null }),
+      fetch: async () => Response.json(null),
     });
     await expect(crossOrigin.get("/safe")).rejects.toMatchObject({
       code: "API_REQUEST_ORIGIN_INVALID",
@@ -750,7 +737,7 @@ describe("API client execution", () => {
       {
         baseUrl: "https://api.test",
         authorizationProvider: () => "Bearer secret",
-        contextHeadersProvider: () => ({ "x-miaixz-user-id": "user" }),
+        contextHeadersProvider: () => ({ "x-demo-context": "user" }),
       },
       "https://api.test",
       async (_input, init) => {
@@ -762,15 +749,485 @@ describe("API client execution", () => {
     );
     const headers = new Headers(captured?.headers);
     expect(headers.has("authorization")).toBe(false);
-    expect(headers.has("x-miaixz-user-id")).toBe(false);
+    expect(headers.has("x-demo-context")).toBe(false);
     expect(captured?.redirect).toBe("follow");
   });
 
-  it("recognizes success codes and unwraps only valid envelopes", () => {
-    expect(isMiaixzApiSuccess({ errcode: 0 } as never)).toBe(false);
-    expect(isMiaixzApiSuccess({ errcode: "0" })).toBe(true);
-    expect(isMiaixzApiSuccess({ errcode: "1" })).toBe(false);
-    expect(unwrapMiaixzData({ errcode: "0", errmsg: "ok", data: "value" })).toBe("value");
-    expect(unwrapMiaixzData("plain")).toBe("plain");
+  it.each([
+    { payload: null },
+    { payload: [1, "two"] },
+    { payload: "plain" },
+    { payload: { value: 1 } },
+    { payload: { code: "0", desc: "opaque", data: "nested" } },
+    { payload: { code: "NONZERO", desc: "opaque", data: null } },
+    { payload: { code: 7, desc: false, extra: true } },
+  ])(
+    "preserves successful JSON payloads without shape inference: $payload",
+    async ({ payload }) => {
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        fetch: async () => Response.json(payload),
+      });
+      const response = await client.get("/payload");
+      expect(response.data).toEqual(payload);
+    },
+  );
+
+  it.each([204, 205])("preserves empty HTTP %i responses", async (status) => {
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      fetch: async () => new Response(null, { status }),
+    });
+    await expect(client.get("/empty")).resolves.toMatchObject({ data: undefined, status });
+  });
+
+  it("returns undefined for an empty JSON HEAD response", async () => {
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      fetch: async () => new Response(null, { headers: { "content-type": "application/json" } }),
+    });
+    await expect(client.request("/empty", { method: "HEAD" })).resolves.toMatchObject({
+      data: undefined,
+      status: 200,
+    });
+  });
+});
+
+describe("API HTTP error mapping", () => {
+  const body = { code: "BODY", requestId: "body-id", message: "body-message" };
+  const replacementCases: ReadonlyArray<{
+    readonly name: string;
+    readonly mapped: MiaixzHttpErrorDetails;
+    readonly code: string;
+    readonly requestId: string;
+    readonly serverMessage?: string;
+  }> = [
+    { name: "one field", mapped: { code: "MAPPED" }, code: "MAPPED", requestId: "header-id" },
+    { name: "empty object", mapped: {}, code: "HTTP_400", requestId: "header-id" },
+    {
+      name: "correlation and message only",
+      mapped: { requestId: "mapped-id", serverMessage: "mapped-message" },
+      code: "HTTP_400",
+      requestId: "mapped-id",
+      serverMessage: "mapped-message",
+    },
+  ];
+
+  it.each(replacementCases)("replaces all generic details with $name", async (testCase) => {
+    const mapper = vi.fn<MiaixzHttpErrorMapper>(() => testCase.mapped);
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      httpErrorMapper: mapper,
+      fetch: async () =>
+        Response.json(body, {
+          status: 400,
+          headers: { "x-request-id": "header-id" },
+        }),
+    });
+    const error: unknown = await client.get("/problem").catch((cause: unknown) => cause);
+    expect(error).toBeInstanceOf(MiaixzApiError);
+    const apiError = error as MiaixzApiError;
+    expect(apiError.code).toBe(testCase.code);
+    expect(apiError.requestId).toBe(testCase.requestId);
+    expect(apiError.serverMessage).toBe(testCase.serverMessage);
+    expect(apiError.status).toBe(400);
+    expect(apiError.retryable).toBe(false);
+    expect(mapper).toHaveBeenCalledTimes(1);
+    expect(mapper.mock.calls[0]?.[0]).toEqual(body);
+    const status = mapper.mock.calls[0]?.[1];
+    expect(status).toEqual({ status: 400 });
+    expect(Object.isFrozen(status)).toBe(true);
+    expect(Reflect.ownKeys(status ?? {})).toEqual(["status"]);
+  });
+
+  it("accepts null-prototype details and treats omitted known fields as a replacement", () => {
+    const response = new Response(null, { status: 400 });
+    const mapped: unknown = Object.assign(Object.create(null) as object, {
+      code: "MAPPED",
+      requestId: "mapped-id",
+      serverMessage: "mapped-message",
+    });
+    expect(extractProblem(body, response, (() => mapped) as MiaixzHttpErrorMapper)).toEqual({
+      code: "MAPPED",
+      requestId: "mapped-id",
+      serverMessage: "mapped-message",
+    });
+    const omitted = (() => ({
+      code: undefined,
+      requestId: undefined,
+      serverMessage: undefined,
+    })) as unknown as MiaixzHttpErrorMapper;
+    expect(extractProblem(body, response, omitted)).toEqual({});
+  });
+
+  const fallbackCases: ReadonlyArray<{
+    readonly name: string;
+    readonly mapper: () => unknown;
+  }> = [
+    { name: "undefined", mapper: () => undefined },
+    { name: "null", mapper: () => null },
+    { name: "array", mapper: () => [] },
+    { name: "primitive", mapper: () => "MAPPED" },
+    { name: "numeric code", mapper: () => ({ code: 1 }) },
+    { name: "numeric request ID", mapper: () => ({ requestId: 1 }) },
+    { name: "numeric message", mapper: () => ({ serverMessage: 1 }) },
+    { name: "status override", mapper: () => ({ code: "MAPPED", status: 200 }) },
+    { name: "retry override", mapper: () => ({ code: "MAPPED", retryable: true }) },
+    { name: "unknown field", mapper: () => ({ code: "MAPPED", extra: true }) },
+    { name: "symbol field", mapper: () => ({ [Symbol("extra")]: true }) },
+    { name: "promise", mapper: () => Promise.resolve({ code: "MAPPED" }) },
+    { name: "thenable", mapper: () => ({ then: () => undefined }) },
+    { name: "non-plain object", mapper: () => new Date(0) },
+    {
+      name: "reflection failure",
+      mapper: () =>
+        new Proxy(
+          {},
+          {
+            getPrototypeOf: () => {
+              throw new Error("private reflection failure");
+            },
+          },
+        ),
+    },
+    {
+      name: "mapper exception",
+      mapper: () => {
+        throw new Error("private mapper failure");
+      },
+    },
+  ];
+
+  it.each(fallbackCases)(
+    "falls back safely for $name without network retries",
+    async ({ mapper }) => {
+      const mapError = vi.fn(mapper);
+      const fetchImplementation = vi.fn<typeof fetch>(async () =>
+        Response.json(body, {
+          status: 400,
+          headers: { "x-request-id": "header-id" },
+        }),
+      );
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        httpErrorMapper: mapError as unknown as MiaixzHttpErrorMapper,
+        fetch: fetchImplementation,
+        retry: 2,
+      });
+      const error: unknown = await client.get("/problem").catch((cause: unknown) => cause);
+      expect(error).toBeInstanceOf(MiaixzApiError);
+      expect(error).toMatchObject({
+        code: "BODY",
+        status: 400,
+        requestId: "body-id",
+        serverMessage: "body-message",
+        retryable: false,
+      });
+      expect((error as MiaixzApiError).cause).toBeUndefined();
+      expect((error as MiaixzApiError).message).not.toContain("private");
+      expect(fetchImplementation).toHaveBeenCalledTimes(1);
+      expect(mapError).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("rejects accessor results without invoking their getters", () => {
+    const getter = vi.fn(() => "private getter value");
+    const mapped: Record<string, unknown> = {};
+    Object.defineProperty(mapped, "code", { enumerable: true, get: getter });
+    const mapper = (() => mapped) as unknown as MiaixzHttpErrorMapper;
+    expect(extractProblem(body, new Response(null, { status: 400 }), mapper)).toEqual({
+      code: "BODY",
+      requestId: "body-id",
+      serverMessage: "body-message",
+    });
+    expect(getter).not.toHaveBeenCalled();
+  });
+
+  it("preserves generic details when no mapper is installed", async () => {
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      fetch: async () =>
+        Response.json(body, {
+          status: 400,
+          headers: { "x-request-id": "header-id" },
+        }),
+    });
+    await expect(client.get("/problem")).rejects.toMatchObject({
+      code: "BODY",
+      status: 400,
+      requestId: "body-id",
+      serverMessage: "body-message",
+      retryable: false,
+    });
+  });
+
+  it("uses HTTP status and an absent correlation ID when no details exist", async () => {
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      httpErrorMapper: () => ({}),
+      fetch: async () => Response.json(body, { status: 418 }),
+    });
+    const error: unknown = await client.get("/problem").catch((cause: unknown) => cause);
+    expect(error).toBeInstanceOf(MiaixzApiError);
+    expect(error).toMatchObject({ code: "HTTP_418", status: 418, retryable: false });
+    expect((error as MiaixzApiError).requestId).toBeUndefined();
+    expect((error as MiaixzApiError).serverMessage).toBeUndefined();
+  });
+
+  it.each([
+    { name: "text", text: "unavailable", contentType: "text/plain", parsed: "unavailable" },
+    {
+      name: "HTML",
+      text: "<h1>unavailable</h1>",
+      contentType: "text/html",
+      parsed: "<h1>unavailable</h1>",
+    },
+    { name: "malformed JSON", text: "{", contentType: "application/json", parsed: undefined },
+  ])("keeps $name failures in the HTTP branch", async ({ text, contentType, parsed }) => {
+    const mapper = vi.fn<MiaixzHttpErrorMapper>(() => undefined);
+    const fetchImplementation = vi.fn<typeof fetch>(
+      async () =>
+        new Response(text, {
+          status: 400,
+          headers: { "content-type": contentType, "x-request-id": "header-id" },
+        }),
+    );
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      fetch: fetchImplementation,
+      httpErrorMapper: mapper,
+      retry: 2,
+    });
+    await expect(client.get("/problem", { responseType: "void" })).rejects.toMatchObject({
+      code: "HTTP_400",
+      status: 400,
+      requestId: "header-id",
+      retryable: false,
+    });
+    expect(mapper).toHaveBeenCalledWith(parsed, { status: 400 });
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([401, 403, 404, 408, 429, 500, 502, 503, 504])(
+    "keeps HTTP %i authoritative over mapped details",
+    async (status) => {
+      const fetchImplementation = vi.fn<typeof fetch>(async () =>
+        Response.json({ code: "0", data: true }, { status }),
+      );
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        httpErrorMapper: () => ({ code: "MAPPED" }),
+        fetch: fetchImplementation,
+        retry: [401, 403, 404].includes(status) ? 2 : 0,
+      });
+      await expect(client.get("/problem")).rejects.toMatchObject({
+        code: "MAPPED",
+        status,
+        retryable: [408, 429, 500, 502, 503, 504].includes(status),
+      });
+      expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(["POST", "PATCH", "OPTIONS"] as const)(
+    "does not retry %s despite a retryable HTTP status",
+    async (method) => {
+      const fetchImplementation = vi.fn<typeof fetch>(async () =>
+        Response.json(
+          {},
+          {
+            status: 503,
+            headers: { "retry-after": "0" },
+          },
+        ),
+      );
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        fetch: fetchImplementation,
+        httpErrorMapper: () => ({}),
+        retry: 1,
+      });
+      await expect(client.request("/problem", { method })).rejects.toMatchObject({
+        code: "HTTP_503",
+        status: 503,
+        retryable: true,
+      });
+      expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(["GET", "HEAD", "PUT", "DELETE"] as const)(
+    "retains status-based retries for %s",
+    async (method) => {
+      vi.useFakeTimers();
+      const fetchImplementation = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(Response.json({}, { status: 503, headers: { "retry-after": "0" } }))
+        .mockResolvedValueOnce(new Response(null, { status: 204 }));
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        fetch: fetchImplementation,
+        httpErrorMapper: () => ({ code: "MAPPED" }),
+        retry: 1,
+      });
+      const result = expect(client.request("/retry", { method })).resolves.toMatchObject({
+        data: undefined,
+        status: 204,
+      });
+      await vi.runAllTimersAsync();
+      await result;
+      expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    },
+  );
+});
+
+describe("API context header protection", () => {
+  it.each([
+    { names: null },
+    { names: "x-demo-context" },
+    { names: [1] },
+    { names: [""] },
+    { names: ["bad name"] },
+    { names: ["bad:name"] },
+    { names: ["bad\r\nname"] },
+  ])("rejects invalid configured header names: $names", ({ names }) => {
+    expect(() =>
+      createApiClient({
+        baseUrl: "https://api.test",
+        contextHeaderNames: names as unknown as readonly string[],
+        fetch: async () => Response.json(null),
+      }),
+    ).toThrowError(TypeError);
+  });
+
+  it("copies and normalizes configured names at construction", async () => {
+    const names = ["X-Demo-Context", "x-demo-context"];
+    const captured: RequestInit[] = [];
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      credentials: "omit",
+      contextHeaderNames: names,
+      fetch: async (_input, init) => {
+        captured.push(init ?? {});
+        return Response.json(null);
+      },
+    });
+    names.splice(0, names.length, "X-Other");
+    await client.get("/protected", {
+      authenticate: false,
+      includeContext: false,
+      headers: { "x-demo-context": "manual" },
+    });
+    await client.get("/unprotected", {
+      authenticate: false,
+      includeContext: false,
+      headers: { "x-other": "later" },
+    });
+    await client.get("/empty", { authenticate: false, includeContext: false });
+    expect(captured.map((init) => init.redirect)).toEqual(["error", "follow", "follow"]);
+    expect(new Headers(captured[0]?.headers).get("x-demo-context")).toBe("manual");
+    expect(new Headers(captured[1]?.headers).get("x-other")).toBe("later");
+  });
+
+  it("protects actual provider names without a configured list", async () => {
+    let captured: RequestInit | undefined;
+    const provider = vi.fn(() => ({ "x-provider-context": "provided" }));
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      credentials: "omit",
+      contextHeadersProvider: provider,
+      fetch: async (_input, init) => {
+        captured = init;
+        return Response.json(null);
+      },
+    });
+    await client.get("/provided", { authenticate: false });
+    expect(provider).toHaveBeenCalledTimes(1);
+    expect(new Headers(captured?.headers).get("x-provider-context")).toBe("provided");
+    expect(captured?.redirect).toBe("error");
+  });
+
+  it.each([true, false])(
+    "protects manual configured headers when includeContext is %s",
+    async (includeContext) => {
+      let captured: RequestInit | undefined;
+      const provider = vi.fn(() => undefined);
+      const client = createApiClient({
+        baseUrl: "https://api.test",
+        credentials: "omit",
+        contextHeaderNames: ["x-demo-context"],
+        contextHeadersProvider: provider,
+        fetch: async (_input, init) => {
+          captured = init;
+          return Response.json(null);
+        },
+      });
+      await client.get("/manual", {
+        authenticate: false,
+        includeContext,
+        headers: { "x-demo-context": "manual" },
+      });
+      expect(provider).toHaveBeenCalledTimes(includeContext ? 1 : 0);
+      expect(new Headers(captured?.headers).get("x-demo-context")).toBe("manual");
+      expect(captured?.redirect).toBe("error");
+    },
+  );
+
+  it("overrides a final interceptor's follow mode after it adds a protected header", async () => {
+    let captured: RequestInit | undefined;
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      credentials: "omit",
+      contextHeaderNames: ["x-final-context"],
+      requestInterceptors: [
+        (request) => ({ ...request, init: { ...request.init, redirect: "follow" } }),
+        (request) => {
+          const headers = new Headers(request.init.headers);
+          headers.set("x-final-context", "intercepted");
+          return { ...request, init: { ...request.init, headers, redirect: "follow" } };
+        },
+      ],
+      fetch: async (_input, init) => {
+        captured = init;
+        return Response.json(null);
+      },
+    });
+    await client.get("/intercepted", { authenticate: false, includeContext: false });
+    expect(new Headers(captured?.headers).get("x-final-context")).toBe("intercepted");
+    expect(captured?.credentials).toBe("omit");
+    expect(captured?.redirect).toBe("error");
+  });
+
+  it("follows after a later interceptor removes the last protected header", async () => {
+    let captured: RequestInit | undefined;
+    const client = createApiClient({
+      baseUrl: "https://api.test",
+      credentials: "omit",
+      contextHeaderNames: ["x-final-context"],
+      contextHeadersProvider: () => ({ "x-provider-context": "provided" }),
+      requestInterceptors: [
+        (request) => {
+          const headers = new Headers(request.init.headers);
+          headers.set("x-final-context", "intermediate");
+          return { ...request, init: { ...request.init, headers, redirect: "error" } };
+        },
+        (request) => {
+          const headers = new Headers(request.init.headers);
+          headers.delete("x-final-context");
+          headers.delete("x-provider-context");
+          return { ...request, init: { ...request.init, headers, redirect: "error" } };
+        },
+      ],
+      fetch: async (_input, init) => {
+        captured = init;
+        return Response.json(null);
+      },
+    });
+    await client.get("/removed", { authenticate: false });
+    const headers = new Headers(captured?.headers);
+    expect(headers.has("x-final-context")).toBe(false);
+    expect(headers.has("x-provider-context")).toBe(false);
+    expect(captured?.credentials).toBe("omit");
+    expect(captured?.redirect).toBe("follow");
   });
 });

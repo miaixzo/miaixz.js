@@ -38,7 +38,7 @@ import type { SpreadsheetViewOptions } from "../file/file-view.types.js";
  * @param root0.document - Format-neutral document model to render.
  * @param root0.scale - Current visual scale applied by the shell.
  * @param root0.spreadsheetOptions - Workbook-specific view configuration.
- * @param root0.maxTileCacheBytes - Maximum spreadsheet Canvas backing-store bytes.
+ * @param root0.maxSpreadsheetCanvasBytes - Maximum spreadsheet Canvas backing-store bytes.
  * @param root0.spreadsheetDiagnostics - Parser diagnostics forwarded to the workbook host.
  * @returns Rendered React element for the document model.
  */
@@ -46,13 +46,13 @@ export function ModelView({
   document,
   scale,
   spreadsheetOptions,
-  maxTileCacheBytes,
+  maxSpreadsheetCanvasBytes,
   spreadsheetDiagnostics,
 }: {
   readonly document: ViewerDocument;
   readonly scale: number;
   readonly spreadsheetOptions?: SpreadsheetViewOptions;
-  readonly maxTileCacheBytes?: number;
+  readonly maxSpreadsheetCanvasBytes?: number;
   readonly spreadsheetDiagnostics?: readonly ViewerWarning[];
 }): React.ReactElement {
   const style = { transform: `scale(${scale})`, transformOrigin: "top center" };
@@ -163,7 +163,7 @@ export function ModelView({
               : { diagnostics: spreadsheetDiagnostics })}
             {...(spreadsheetOptions === undefined ? {} : { options: spreadsheetOptions })}
             key={`${document.id}:${String(spreadsheetOptions?.initialSheet ?? "active")}`}
-            {...(maxTileCacheBytes === undefined ? {} : { maxTileCacheBytes })}
+            {...(maxSpreadsheetCanvasBytes === undefined ? {} : { maxSpreadsheetCanvasBytes })}
             scale={scale}
           />
         );

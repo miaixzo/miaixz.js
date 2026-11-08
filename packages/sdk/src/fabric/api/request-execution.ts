@@ -24,7 +24,7 @@
 
 import { miaixzDefaultRequestTimeoutMs, miaixzHeaders } from "./constants.js";
 import { MiaixzAbortError, MiaixzApiError, MiaixzSdkError } from "../../errors/errors.js";
-import { isMiaixzApiEnvelope, type MiaixzHttpResponse } from "./response.js";
+import type { MiaixzHttpResponse } from "./response.js";
 import type {
   MiaixzHttpMethod,
   MiaixzPreparedRequest,
@@ -35,7 +35,6 @@ import {
   appendMiaixzQuery,
   csrfProtectedMethods,
   getRequestId,
-  normalizeEnvelopeMode,
   normalizeRetry,
   normalizeTimeout,
   resolveRedirectMode,
@@ -49,9 +48,7 @@ import {
 } from "./request-options.js";
 import {
   createResponseInvalidError,
-  expectsJsonEnvelope,
   extractProblem,
-  isMiaixzApiFailureEnvelope,
   parseBody,
   parseResponseData,
   sanitizeErrorUrl,
@@ -148,9 +145,8 @@ export async function executeMiaixzApiRequest<
   );
   const maximumRetries = normalizeRetry(requestOptions.retry ?? options.retry ?? 0);
   const responseType = requestOptions.responseType ?? "auto";
-  const envelopeMode = normalizeEnvelopeMode(responseType, requestOptions.envelope);
   const headers = new Headers(options.headers);
-  const providedContextHeaderNames = new Set<string>();
+  const protectedContextHeaderNames = new Set(options.contextHeaderNames);
   new Headers(requestOptions.headers).forEach((value, key) => headers.set(key, value));
   const authenticationEnabled =
     requestOptions.authenticate !== false &&
@@ -168,7 +164,7 @@ export async function executeMiaixzApiRequest<
   if (requestOptions.includeContext !== false) {
     const contextHeaders = await options.contextHeadersProvider?.();
     new Headers(contextHeaders).forEach((value, key) => {
-      providedContextHeaderNames.add(key.toLowerCase());
+      protectedContextHeaderNames.add(key.toLowerCase());
       if (!headers.has(key)) headers.set(key, value);
     });
   }
@@ -208,7 +204,7 @@ export async function executeMiaixzApiRequest<
         preparedHeaders,
         prepared.init.credentials,
         authenticationEnabled,
-        providedContextHeaderNames,
+        protectedContextHeaderNames,
       );
       prepared = {
         ...prepared,
@@ -243,7 +239,7 @@ export async function executeMiaixzApiRequest<
         parsedBody = undefined;
       }
       if (!rawResponse.ok) {
-        const problem = extractProblem(parsedBody, rawResponse);
+        const problem = extractProblem(parsedBody, rawResponse, options.httpErrorMapper);
         const responseRequestId = problem.requestId ?? getRequestId(rawResponse.headers);
         const httpError = new MiaixzApiError({
           status: rawResponse.status,
@@ -273,49 +269,9 @@ export async function executeMiaixzApiRequest<
         }
         throw httpError;
       }
-      const envelope = isMiaixzApiEnvelope(parsedBody) ? parsedBody : undefined;
-      const failureEnvelope = isMiaixzApiFailureEnvelope(parsedBody) ? parsedBody : undefined;
-      const effectiveEnvelopeMode =
-        responseType === "auto" && !expectsJsonEnvelope(rawResponse, responseType)
-          ? "none"
-          : envelopeMode;
-      if (
-        effectiveEnvelopeMode === "required" &&
-        expectsJsonEnvelope(rawResponse, responseType) &&
-        envelope === undefined &&
-        failureEnvelope === undefined
-      ) {
-        const invalidEnvelopeRequestId = getRequestId(rawResponse.headers);
-        throw new MiaixzApiError({
-          status: rawResponse.status,
-          method,
-          url: sanitizeErrorUrl(prepared.url),
-          code: "API_ENVELOPE_INVALID",
-          ...(invalidEnvelopeRequestId === undefined
-            ? {}
-            : { requestId: invalidEnvelopeRequestId }),
-          retryable: false,
-        });
-      }
-      if (effectiveEnvelopeMode !== "none" && failureEnvelope !== undefined) {
-        const businessRequestId = getRequestId(rawResponse.headers);
-        const businessCode = failureEnvelope.errcode;
-        throw new MiaixzApiError({
-          status: rawResponse.status,
-          method,
-          url: sanitizeErrorUrl(prepared.url),
-          code: businessCode,
-          ...(businessRequestId === undefined ? {} : { requestId: businessRequestId }),
-          retryable: false,
-          ...(typeof failureEnvelope.errmsg === "string"
-            ? { serverMessage: failureEnvelope.errmsg }
-            : {}),
-        });
-      }
       const requestId = getRequestId(rawResponse.headers);
       let result: MiaixzHttpResponse<unknown> = {
-        data:
-          effectiveEnvelopeMode !== "none" && envelope !== undefined ? envelope.data : parsedBody,
+        data: parsedBody,
         status: rawResponse.status,
         statusText: rawResponse.statusText,
         headers: rawResponse.headers,

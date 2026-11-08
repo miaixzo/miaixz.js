@@ -124,10 +124,6 @@
   clip-path: inset(50%);
 }
 
-.miaixz-action-text[data-label-visibility="responsive"] .miaixz-button-icon {
-  display: none;
-}
-
 .miaixz-action-text[data-priority="primary"] {
   min-width: max-content;
   padding-inline: var(--miaixz-space-12);
@@ -325,7 +321,8 @@
 
 .miaixz-action-bar {
   width: 100%;
-  overflow-x: auto;
+  min-width: 0;
+  overflow: visible;
 }
 
 .miaixz-action-measurements {
@@ -334,23 +331,74 @@
   display: flex;
   visibility: hidden;
   gap: inherit;
-  width: max-content;
+  width: 100%;
+  overflow: clip;
   pointer-events: none;
 }
 
+/**
+ * Measure intrinsic recipes without adding invisible scrollable overflow.
+ */
+.miaixz-action-measurements > span {
+  flex: none;
+}
+
 .miaixz-form-actions {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
   width: 100%;
 }
 
+/**
+ * Cancellation glyphs have fuller ink bounds than the standard submit icons.
+ */
+.miaixz-form-actions-cancel-icon {
+  --miaixz-form-actions-cancel-icon-scale: 0.95;
+
+  width: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
+  height: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
+}
+
+.miaixz-form-actions-cancel-icon > [data-miaixz-icon-glyph] {
+  font-size: calc(1em * var(--miaixz-form-actions-cancel-icon-scale));
+  font-variation-settings:
+    "FILL" var(--miaixz-icon-fill),
+    "opsz" 14;
+}
+
 .miaixz-form-actions-trailing {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--miaixz-space-8);
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
   margin-inline-start: auto;
+}
+
+/**
+ * Keep dismissal and submission targets stable while auxiliary action bars share footer space.
+ */
+.miaixz-form-actions > .miaixz-button,
+.miaixz-form-actions-trailing > .miaixz-button {
+  flex: none;
+}
+
+.miaixz-form-actions-trailing > :is(.miaixz-action-bar, .miaixz-cluster) {
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  width: auto;
+}
+
+/**
+ * Measured overflow groups need the remaining row width; primary-only groups remain intrinsic.
+ */
+.miaixz-form-actions-trailing:has(> .miaixz-action-bar[data-has-actions="true"]) {
+  flex: 1;
+}
+
+.miaixz-form-actions-trailing > .miaixz-action-bar[data-has-actions="true"] {
+  flex: 1;
 }
 
 .miaixz-form-actions[data-submit-only="true"] {

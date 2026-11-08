@@ -33,7 +33,6 @@ import type { MiaixzPostMessageHostLimits } from "../contracts/post-message.js";
 import type { MiaixzHostAdapter, MiaixzNavigationRequest } from "../contracts/host-context.js";
 import { isMiaixzModulePermission } from "../contracts/permission.js";
 import type { MiaixzMessageCatalog } from "../../i18n/i18n.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
 import { defaultPostMessageHostLimits } from "./bridge-limits.js";
 import { assertBridgePayloadWithinLimits } from "./payload-budget.js";
 
@@ -135,20 +134,6 @@ export const allowedMethods = new Set([
   "i18n.register",
   "navigation.navigate",
   "permissions.has",
-]);
-
-/**
- * Exact runtime-context property allow-list.
- */
-export const contextKeys = new Set([
-  "departmentId",
-  "locale",
-  "organizationId",
-  "spaceId",
-  "tenantId",
-  "timezone",
-  "traceId",
-  "userId",
 ]);
 
 /**
@@ -449,23 +434,32 @@ export function parsePermissions(
 }
 
 /**
- * Validates and freezes a non-sensitive runtime Context payload.
+ * Applies the caller's synchronous context projection without exposing parser failures.
  *
+ * @typeParam Context - Caller-defined context accepted by the parser.
  * @param value - Context payload to validate.
- * @returns Frozen Context containing only registered string fields.
- * @throws MiaixzSdkError When the Context contains unknown or non-string fields.
+ * @param parser - Caller-owned projection, validation, and immutable-copy boundary.
+ * @returns The context selected and validated by the caller.
+ * @throws MiaixzSdkError When the parser is absent, rejects the value, or returns a thenable.
  */
-export function parseRuntimeContext(value: unknown): Readonly<MiaixzRuntimeContext> {
-  if (
-    !isPlainRecord(value) ||
-    !hasOnlyKeys(value, contextKeys) ||
-    Object.values(value).some((entry) => entry !== undefined && typeof entry !== "string")
-  ) {
+export function parseBridgeContext<Context = unknown>(
+  value: unknown,
+  parser: ((value: unknown) => Readonly<Context>) | undefined,
+): Readonly<Context> {
+  if (typeof parser !== "function") throw bridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
+  try {
+    const parsed = parser(value);
+    if (
+      ((typeof parsed === "object" && parsed !== null) || typeof parsed === "function") &&
+      typeof (parsed as { readonly then?: unknown }).then === "function"
+    ) {
+      void Promise.resolve(parsed).catch(() => undefined);
+      throw bridgeError("BRIDGE_MESSAGE_INVALID");
+    }
+    return parsed;
+  } catch {
     throw bridgeError("BRIDGE_MESSAGE_INVALID");
   }
-  return Object.freeze(
-    Object.fromEntries(Object.entries(value).filter((entry) => entry[1] !== undefined)),
-  ) as Readonly<MiaixzRuntimeContext>;
 }
 
 /**
@@ -563,12 +557,17 @@ export function parseEventType(moduleId: string, value: unknown): string {
 /**
  * Determines the sorted capabilities actually present on one Host Adapter.
  *
+ * @typeParam Context - Caller-defined context validated by the optional parser.
  * @param adapter - Host Adapter to inspect.
+ * @param parseContext - Parser required before exposing the context capability.
  * @returns Sorted capability names.
  */
-export function getCapabilities(adapter: MiaixzHostAdapter): readonly string[] {
+export function getCapabilities<Context = unknown>(
+  adapter: MiaixzHostAdapter<Context>,
+  parseContext?: (value: unknown) => Readonly<Context>,
+): readonly string[] {
   const capabilities = [
-    ["context", adapter.getContext],
+    ["context", typeof parseContext === "function" && adapter.getContext],
     ["events", adapter.emit && adapter.subscribe],
     ["i18n", adapter.registerMessages],
     ["navigation", adapter.navigate],

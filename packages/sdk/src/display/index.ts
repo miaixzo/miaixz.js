@@ -28,11 +28,7 @@ export {
   miaixzAppearanceSchemaVersion,
 } from "./appearance.js";
 export type { MiaixzAppearanceManagerOptions } from "./appearance.js";
-export {
-  miaixzAppearanceMigration,
-  miaixzAppearanceMigrationV1ToV2,
-  migrateMiaixzAppearanceV1,
-} from "./migration.js";
+export { miaixzAppearanceMigration, migrateMiaixzAppearanceV1 } from "./migration.js";
 export {
   isMiaixzAppearanceSettings,
   isMiaixzBaseFontSize,

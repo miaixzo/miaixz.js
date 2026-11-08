@@ -19,41 +19,25 @@
 */
 
 /**
- * Defines tenant identity and lifecycle metadata at the security boundary.
- */
-
-import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
-
-/**
- * Represents the lifecycle state of a platform tenant.
+ * Combines split CSS Modules without discarding same-name classes.
  *
+ * @param modules - CSS Module maps in source order.
+ * @returns A frozen class map preserving class order, duplicates, and empty strings.
  * @public
  */
-export type MiaixzTenantState = "active" | "suspended" | "disabled";
-
-/**
- * Platform tenant and security-boundary summary.
- *
- * @public
- */
-export interface MiaixzTenantSummary {
-  /**
-   * Unique identifier of the tenant.
-   */
-  id: MiaixzIdentifier;
-
-  /**
-   * Display name of the tenant.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable tenant code.
-   */
-  code?: string;
-
-  /**
-   * Current lifecycle state of the tenant.
-   */
-  state: MiaixzTenantState;
+export function mergeStyleModules(
+  ...modules: readonly Readonly<Record<string, string>>[]
+): Readonly<Record<string, string>> {
+  const keys = new Set(modules.flatMap((module) => Object.keys(module)));
+  return Object.freeze(
+    Object.fromEntries(
+      [...keys].map((key) => [
+        key,
+        modules
+          .map((module) => module[key])
+          .filter((className): className is string => className !== undefined)
+          .join(" "),
+      ]),
+    ),
+  );
 }

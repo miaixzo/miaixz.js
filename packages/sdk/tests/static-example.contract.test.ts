@@ -40,19 +40,60 @@ if (exampleProject === undefined) throw new Error("The examples project is requi
 const exampleRoot = resolve(exampleProject.rootPath, "src/module/sdk");
 
 describe("SDK example module", () => {
-  it("exercises the real context, grants, API, appearance, i18n, and events APIs", async () => {
+  it("exercises independent configuration, session, HTTP, grants, appearance, i18n, and events", async () => {
     const source = await readFile(resolve(exampleRoot, "sdk-guide.tsx"), "utf8");
     for (const token of [
-      "createMiaixzSdk",
-      "sdk.context.patch",
-      "sdk.grants.can",
-      "sdk.api.get",
-      "sdk.appearance.setColorMode",
-      "sdk.i18n.changeLocale",
+      "MiaixzConfigStore",
+      "createMiaixzSessionManager",
+      "createApiClient",
+      "createMiaixzGrantSet",
+      "createMiaixzAppearanceManager",
+      "createMiaixzI18n",
+      "createMiaixzEventBus",
+      "config.set",
+      "session.setSession",
+      "grants.can",
+      "api.get",
+      "appearance.setColorMode",
+      "i18n.changeLocale",
       "normalizeMiaixzError",
-      "typed event stream",
+      "typed event: config:changed",
+      "typed event: session:changed",
+      "typed event: appearance:changed",
     ]) {
       expect(source.toLowerCase()).toContain(token.toLowerCase());
+    }
+  });
+
+  it("owns language initialization and cleanup without the retired project runtime", async () => {
+    const source = await readFile(resolve(exampleRoot, "sdk-guide.tsx"), "utf8");
+    for (const token of [
+      'instance.i18n.initialize(["demo"])',
+      "onLoadError",
+      "instance.config.subscribe",
+      "instance.i18n.subscribe",
+      "instance.events.on",
+      "for (const stop of unsubscribe) stop()",
+      "instance.config.destroy()",
+      "instance.session.destroy()",
+      "instance.appearance.destroy()",
+      "instance.events.close()",
+      "fetch: localFetch",
+      "result.data",
+    ]) {
+      expect(source).toContain(token);
+    }
+    for (const token of [
+      "createMiaixzSdk",
+      "context.patch",
+      "MiaixzRuntimeContext",
+      "RestGatewayClient",
+      "RestSigner",
+      "unwrapMiaixzData",
+      "isMiaixzApiEnvelope",
+      "envelopeMode",
+    ]) {
+      expect(source).not.toContain(token);
     }
   });
 });

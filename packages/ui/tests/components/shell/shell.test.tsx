@@ -38,7 +38,7 @@ describe("Shell", () => {
         desktopNavigation={{ mode: "rail", expanded: true }}
         header={<span>Header</span>}
         headerBehavior="scroll"
-        sidebar={<nav aria-label="桌面导航" />}
+        primaryNavigation={<nav aria-label="桌面导航" />}
         sidebarOverflow="contained"
       >
         Content
@@ -57,7 +57,7 @@ describe("Shell", () => {
       <Shell
         header={<span>Header</span>}
         mobileNavigation={{ mode: "bottom", content: <nav aria-label="移动导航" /> }}
-        sidebar={<nav aria-label="桌面导航" />}
+        primaryNavigation={<nav aria-label="桌面导航" />}
       >
         Content
       </Shell>,
@@ -67,7 +67,11 @@ describe("Shell", () => {
 
   it("can use a non-landmark main container when embedded in another page", () => {
     const { container } = renderWithLocale(
-      <Shell header={<span>Header</span>} mainComponent="div" sidebar={<span>Sidebar</span>}>
+      <Shell
+        header={<span>Header</span>}
+        mainComponent="div"
+        primaryNavigation={<span>Sidebar</span>}
+      >
         Embedded content
       </Shell>,
     );

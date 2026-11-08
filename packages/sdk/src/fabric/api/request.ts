@@ -33,13 +33,6 @@ export type MiaixzHttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HE
 export type MiaixzResponseType = "auto" | "json" | "text" | "blob" | "arrayBuffer" | "void";
 
 /**
- * Selects how the API client handles a Miaixz response envelope.
- *
- * @public
- */
-export type MiaixzEnvelopeMode = "required" | "optional" | "none";
-
-/**
  * Converts an untrusted API response value into a verified application value.
  *
  * @typeParam T - Verified value returned by the parser.
@@ -157,11 +150,6 @@ export interface MiaixzRequestOptions<
   readonly responseType?: MiaixzResponseType;
 
   /**
-   * JSON responses use the Miaixz errcode/errmsg/data envelope by default.
-   */
-  readonly envelope?: MiaixzEnvelopeMode;
-
-  /**
    * Indicates whether authentication headers should be attached.
    */
   readonly authenticate?: boolean;
@@ -177,7 +165,7 @@ export interface MiaixzRequestOptions<
   readonly retry?: number;
 
   /**
-   * Optional runtime parser applied after envelope handling and response interceptors.
+   * Optional runtime parser applied after response interceptors.
    */
   readonly parse?: MiaixzResponseParser<TResponse>;
 }

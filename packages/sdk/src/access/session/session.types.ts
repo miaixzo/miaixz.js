@@ -24,7 +24,7 @@
 
 import type { MiaixzUserSummary } from "../../models/user.js";
 import type { MiaixzTimestamp } from "../../fabric/api/api.types.js";
-import type { MiaixzEventBusPort, MiaixzSdkEventMap } from "../../runtime/events/event-types.js";
+import type { MiaixzEventBusPort } from "../../runtime/events/event-port.js";
 import type { MiaixzKeyValueStorage } from "../../runtime/storage/storage.js";
 
 /**
@@ -119,5 +119,7 @@ export interface MiaixzSessionManagerOptions {
   /**
    * Optional event bus used to synchronize service instances.
    */
-  readonly eventBus?: MiaixzEventBusPort<MiaixzSdkEventMap>;
+  readonly eventBus?: MiaixzEventBusPort<{
+    readonly "session:changed": Readonly<{ status: MiaixzSessionStatus }>;
+  }>;
 }

@@ -52,7 +52,7 @@ import {
   parseMessageCatalog,
   parseNavigation,
   parsePermissions,
-  parseRuntimeContext,
+  parseBridgeContext,
   parseTargetOrigin,
   parseTargetWindow,
   parseTimeout,
@@ -63,14 +63,17 @@ import {
 
 /**
  * Implements the Host half of a postMessage Bridge.
+ *
+ * @typeParam Context - Caller-defined context selected before crossing the transport.
  */
-export class PostMessageHost implements MiaixzPostMessageHost {
+export class PostMessageHost<Context = unknown> implements MiaixzPostMessageHost {
   readonly ready: Promise<void>;
   readonly #runtimeWindow: Window;
   readonly #targetWindow: Window;
   readonly #targetOrigin: string;
   readonly #manifest: Readonly<MiaixzModuleManifest>;
-  readonly #adapter: MiaixzHostAdapter;
+  readonly #adapter: MiaixzHostAdapter<Context>;
+  readonly #parseContext: ((value: unknown) => Readonly<Context>) | undefined;
   readonly #capabilities: readonly string[];
   readonly #limits: Readonly<MiaixzPostMessageHostLimits>;
   readonly #incoming = new MiaixzBridgeMessageCache();
@@ -88,7 +91,7 @@ export class PostMessageHost implements MiaixzPostMessageHost {
    *
    * @param options - Validated Host construction options.
    */
-  constructor(options: MiaixzPostMessageHostOptions) {
+  constructor(options: MiaixzPostMessageHostOptions<Context>) {
     this.#runtimeWindow = getRuntimeWindow();
     this.#targetWindow = parseTargetWindow(options.targetWindow);
     this.#targetOrigin = parseTargetOrigin(options.targetOrigin);
@@ -103,7 +106,8 @@ export class PostMessageHost implements MiaixzPostMessageHost {
     if (entryOrigin !== this.#targetOrigin) throw bridgeError("BRIDGE_ORIGIN_INVALID");
     if (!isPlainRecord(options.adapter)) throw bridgeError("BRIDGE_MESSAGE_INVALID");
     this.#adapter = options.adapter;
-    this.#capabilities = getCapabilities(this.#adapter);
+    this.#parseContext = options.parseContext;
+    this.#capabilities = getCapabilities(this.#adapter, this.#parseContext);
     this.#limits = resolvePostMessageHostLimits(options.limits);
     const timeoutMs = parseTimeout(options.timeoutMs);
     let resolveReady!: () => void;
@@ -225,9 +229,17 @@ export class PostMessageHost implements MiaixzPostMessageHost {
     switch (envelope.method) {
       case "bridge.handshake":
         return this.#handleHandshake(envelope.payload);
-      case "context.get":
+      case "context.get": {
         if (envelope.payload !== undefined) throw bridgeError("BRIDGE_MESSAGE_INVALID");
-        return parseRuntimeContext(await this.#requireCapability("getContext")());
+        if (
+          typeof this.#parseContext !== "function" ||
+          typeof this.#adapter.getContext !== "function"
+        ) {
+          throw bridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
+        }
+        const context: unknown = await this.#requireCapability("getContext")();
+        return parseBridgeContext(context, this.#parseContext);
+      }
       case "navigation.navigate":
         await this.#requireCapability("navigate")(parseNavigation(envelope.payload, this.#limits));
         return undefined;
@@ -510,11 +522,11 @@ export class PostMessageHost implements MiaixzPostMessageHost {
    * @param name - Capability to resolve.
    * @returns Injected Adapter function.
    */
-  #requireCapability<Name extends keyof MiaixzHostAdapter>(
+  #requireCapability<Name extends keyof MiaixzHostAdapter<Context>>(
     name: Name,
-  ): NonNullable<MiaixzHostAdapter[Name]> {
+  ): NonNullable<MiaixzHostAdapter<Context>[Name]> {
     const capability = this.#adapter[name];
     if (capability === undefined) throw bridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
-    return capability as NonNullable<MiaixzHostAdapter[Name]>;
+    return capability as NonNullable<MiaixzHostAdapter<Context>[Name]>;
   }
 }

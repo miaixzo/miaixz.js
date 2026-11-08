@@ -24,6 +24,7 @@
 
 import { render } from "@testing-library/react";
 import { createElement } from "react";
+import { resolveResourceBudget } from "../../../src/runtime/resource-budget.js";
 import type {
   SpreadsheetRenderSheet,
   SpreadsheetStyleTable,
@@ -146,7 +147,7 @@ describe("SpreadsheetCellCanvas", () => {
     expect(fillRect).toHaveBeenCalledWith(0, 0, 40, 40);
   });
 
-  it("caps the Canvas backing store at the configured tile byte budget", () => {
+  it("caps the Canvas backing store at the configured spreadsheet byte budget", () => {
     const context = {
       beginPath: vi.fn(),
       fillRect: vi.fn(),
@@ -162,7 +163,8 @@ describe("SpreadsheetCellCanvas", () => {
 
     const rendered = render(
       createElement(SpreadsheetCellCanvas, {
-        maxTileCacheBytes: 400,
+        maxSpreadsheetCanvasBytes: resolveResourceBudget({ maxSpreadsheetCanvasBytes: 400 })
+          .maxSpreadsheetCanvasBytes,
         sheet,
         styles,
         viewport: { x: 0, y: 0, width: 40, height: 40 },

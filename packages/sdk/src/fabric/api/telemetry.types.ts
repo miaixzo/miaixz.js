@@ -106,13 +106,6 @@ export interface MiaixzRequestEvent {
   readonly bodySummary?: Readonly<MiaixzRequestBodySummary>;
 
   /**
-   * Request bodies are intentionally unavailable to telemetry observers.
-   *
-   * @deprecated Use bodySummary. This property is never emitted.
-   */
-  readonly body?: never;
-
-  /**
    * Contains the attempt start time as Unix epoch milliseconds.
    */
   readonly started: MiaixzTimestamp;

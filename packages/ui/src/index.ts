@@ -25,6 +25,9 @@
 export {
   ActionBar,
   ActionText,
+  Stage,
+  StageLoading,
+  useStageSettled,
   Alert,
   Avatar,
   AvatarGroup,
@@ -162,9 +165,18 @@ export {
   parseIsoTime,
   stepIsoTime,
 } from "./components/index.js";
+export { MiaixzErrorBoundary } from "./shared/error-boundary.js";
+export type { MiaixzErrorBoundaryProps } from "./shared/error-boundary.js";
+export { mergeStyleModules } from "./shared/class-map.js";
 export { MiaixzLinkProvider } from "./shared/anchor.js";
 export type { MiaixzLinkProviderProps, LinkRefreshMode } from "./shared/anchor.js";
 export type {
+  StageOwnerState,
+  StageProps,
+  StageSlotProps,
+  StageLoadingOwnerState,
+  StageLoadingProps,
+  StageLoadingSlotProps,
   ActionBarOwnerState,
   ActionBarProps,
   ActionBarSlotProps,

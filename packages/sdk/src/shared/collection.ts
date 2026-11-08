@@ -19,10 +19,20 @@
 */
 
 /**
- * Exposes the public runtime-context contract.
+ * Resolves an untrusted collection value against the collection's only value source.
+ *
+ * @typeParam Value - Literal values supplied by the collection.
+ * @param items - Collection items.
+ * @param value - Candidate value.
+ * @returns The matching typed value.
+ * @throws TypeError When the candidate is absent from the collection.
+ * @public
  */
-
-export { createMiaixzContextStore, MiaixzContextStore } from "./context-store.js";
-export { miaixzContextToHeaders } from "./context-headers.js";
-export { isMiaixzRuntimeContext } from "./context-validation.js";
-export type { MiaixzContextStoreOptions, MiaixzRuntimeContext } from "./context.types.js";
+export function resolveCollectionValue<const Value extends string>(
+  items: readonly { readonly value: Value }[],
+  value: string,
+): Value {
+  const match = items.find((item) => item.value === value);
+  if (match === undefined) throw new TypeError(`Unknown collection value "${value}".`);
+  return match.value;
+}

@@ -80,14 +80,6 @@ export const miaixzAppearanceMigration: Readonly<MiaixzStorageMigration> = Objec
 });
 
 /**
- * Preserves the historical API name; its target always follows VERSION.
- *
- * @deprecated Use miaixzAppearanceMigration.
- * @public
- */
-export const miaixzAppearanceMigrationV1ToV2 = miaixzAppearanceMigration;
-
-/**
  * Describes the private v1 settings shape accepted by the migration boundary.
  */
 interface MiaixzLegacyAppearanceSettings {

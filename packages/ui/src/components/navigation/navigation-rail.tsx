@@ -22,6 +22,7 @@
  * Measures and renders navigation-rail content with responsive overflow handling.
  */
 
+import { isIconName } from "@miaixz/icons";
 import { forwardRef, useId, useMemo, useRef, useState } from "react";
 
 import { useMiaixzLocale } from "../../i18n/i18n.js";
@@ -49,7 +50,8 @@ export const NavigationRail = withMiaixzThemeComponent(
     {
       brand,
       toggle,
-      groups,
+      groups: suppliedGroups,
+      defaultIcon,
       utility,
       expanded = false,
       variant = "default",
@@ -61,6 +63,17 @@ export const NavigationRail = withMiaixzThemeComponent(
     },
     ref,
   ) {
+    const groups = useMemo(() => {
+      const fallback =
+        typeof defaultIcon === "string" && isIconName(defaultIcon) ? defaultIcon : undefined;
+      return suppliedGroups.map((group) => ({
+        ...group,
+        items: group.items.map(({ icon, ...item }) => {
+          const resolvedIcon = typeof icon === "string" && isIconName(icon) ? icon : fallback;
+          return resolvedIcon === undefined ? item : { ...item, icon: resolvedIcon };
+        }),
+      }));
+    }, [defaultIcon, suppliedGroups]);
     validateRail(groups);
     const { t } = useMiaixzLocale();
     const instanceId = useId();

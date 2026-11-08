@@ -60,6 +60,14 @@ export {
   resolveResourceBudget,
 } from "./runtime/resource-budget.js";
 export type { ResourceBudget } from "./shared/contracts/resource-budget.js";
+export { inspectZipArchive, readZipEntry, ZipArchiveError } from "./codecs/archive/zip-codec.js";
+export type {
+  ZipArchiveBudget,
+  ZipArchiveEntry,
+  ZipArchiveErrorReason,
+  ZipArchiveInspectOptions,
+  ZipEntryReadOptions,
+} from "./codecs/archive/zip-codec.js";
 export { ViewerController, openViewerDocument } from "./runtime/viewer-controller.js";
 export type {
   OpenDocumentOptions,

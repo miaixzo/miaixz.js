@@ -39,7 +39,7 @@ import {
   parseMessageCatalog,
   parseNavigation,
   parsePermissions,
-  parseRuntimeContext,
+  parseBridgeContext,
   parseTargetOrigin,
   parseTargetWindow,
   parseTimeout,
@@ -48,9 +48,82 @@ import {
 
 const messageId = "123e4567-e89b-42d3-a456-426614174000";
 
+/**
+ * Defines one neutral caller-owned context used only by these protocol fixtures.
+ */
+interface FixtureContext {
+  readonly label: string;
+}
+
+/**
+ * Projects and freezes the only field selected by this fixture's caller.
+ *
+ * @param value - Untrusted caller context.
+ * @returns Independently owned neutral context snapshot.
+ */
+function parseFixtureContext(value: unknown): Readonly<FixtureContext> {
+  if (!isPlainRecord(value) || typeof value.label !== "string") {
+    throw new TypeError("Invalid fixture context.");
+  }
+  return Object.freeze({ label: value.label });
+}
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe("postMessage protocol primitives", () => {
+  it("delegates context validation, projection, and ownership to the caller parser", () => {
+    const source = { label: "neutral", privateValue: "synthetic marker" };
+    const parser = vi.fn(parseFixtureContext);
+    const snapshot = parseBridgeContext(source, parser);
+    expect(snapshot).toEqual({ label: "neutral" });
+    expect(snapshot).not.toBe(source);
+    expect(snapshot).toBe(parser.mock.results[0]?.value);
+    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(parser).toHaveBeenCalledExactlyOnceWith(source);
+    for (const value of [null, {}, { label: 1 }]) {
+      expect(() => parseBridgeContext(value, parseFixtureContext)).toThrowError(
+        expect.objectContaining({ code: "BRIDGE_MESSAGE_INVALID" }),
+      );
+    }
+  });
+
+  it("does not expose context capability without an injected parser", () => {
+    expect(() => parseBridgeContext({ label: "neutral" }, undefined)).toThrowError(
+      expect.objectContaining({ code: "BRIDGE_CAPABILITY_UNAVAILABLE" }),
+    );
+  });
+
+  it("normalizes parser exceptions without retaining their private details", () => {
+    const parser = () => {
+      throw new Error("synthetic private parser failure");
+    };
+    let failure: unknown;
+    try {
+      parseBridgeContext({}, parser);
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(MiaixzSdkError);
+    expect(failure).toMatchObject({ code: "BRIDGE_MESSAGE_INVALID" });
+    expect((failure as MiaixzSdkError).cause).toBeUndefined();
+    expect((failure as MiaixzSdkError).details).toBeUndefined();
+    expect((failure as MiaixzSdkError).message).not.toContain("synthetic private");
+  });
+
+  it("rejects asynchronous parser results instead of awaiting them", async () => {
+    for (const result of [
+      Promise.resolve({ label: "neutral" }),
+      Promise.reject(new Error("synthetic private async failure")),
+      { then: (resolve: (value: FixtureContext) => void) => resolve({ label: "neutral" }) },
+    ]) {
+      const parser = (() => result) as unknown as (value: unknown) => Readonly<FixtureContext>;
+      expect(() => parseBridgeContext({}, parser)).toThrowError(
+        expect.objectContaining({ code: "BRIDGE_MESSAGE_INVALID" }),
+      );
+    }
+    await Promise.resolve();
+  });
+
   it("accepts only plain records and exact registered fields", () => {
     expect(isPlainRecord({ value: 1 })).toBe(true);
     expect(isPlainRecord(Object.create(null))).toBe(true);
@@ -161,7 +234,7 @@ describe("postMessage protocol primitives", () => {
     expect(bridgeError("BRIDGE_DISPOSED")).toMatchObject({ code: "BRIDGE_DISPOSED" });
   });
 
-  it("validates navigation, permissions, context, catalogs, events, and capabilities", () => {
+  it("validates navigation, permissions, catalogs, events, and capabilities", () => {
     const state = { nested: [1] };
     const navigation = parseNavigation({ path: "/settings", replace: true, state });
     expect(navigation).toEqual({ path: "/settings", replace: true, state });
@@ -186,14 +259,6 @@ describe("postMessage protocol primitives", () => {
     expect(parsePermissions(["module:document:read"])).toEqual(["module:document:read"]);
     for (const value of ["module:document:read", ["*"], [1]]) {
       expect(() => parsePermissions(value)).toThrowError(
-        expect.objectContaining({ code: "BRIDGE_MESSAGE_INVALID" }),
-      );
-    }
-    expect(parseRuntimeContext({ tenantId: "tenant", locale: undefined })).toEqual({
-      tenantId: "tenant",
-    });
-    for (const value of [null, { unknown: "x" }, { tenantId: 1 }]) {
-      expect(() => parseRuntimeContext(value)).toThrowError(
         expect.objectContaining({ code: "BRIDGE_MESSAGE_INVALID" }),
       );
     }
@@ -227,13 +292,18 @@ describe("postMessage protocol primitives", () => {
       navigate: vi.fn(),
       hasPermissions: vi.fn(),
     };
-    expect(getCapabilities(adapter)).toEqual([
+    const parser = vi.fn(parseFixtureContext);
+    expect(getCapabilities(adapter)).toEqual(["events", "i18n", "navigation", "permissions"]);
+    expect(getCapabilities(adapter, parser)).toEqual([
       "context",
       "events",
       "i18n",
       "navigation",
       "permissions",
     ]);
-    expect(getCapabilities({ emit: vi.fn() })).toEqual([]);
+    expect(getCapabilities({}, parser)).toEqual([]);
+    expect(getCapabilities({ emit: vi.fn() }, parser)).toEqual([]);
+    expect(adapter.getContext).not.toHaveBeenCalled();
+    expect(parser).not.toHaveBeenCalled();
   });
 });

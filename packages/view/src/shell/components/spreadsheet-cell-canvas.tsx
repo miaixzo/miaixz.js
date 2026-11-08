@@ -121,7 +121,7 @@ function strokeSide(
  * @param root0.styles - Resolved workbook styles.
  * @param root0.viewport - Visible unscaled worksheet rectangle.
  * @param root0.showGridLines - Optional host override for saved grid visibility.
- * @param root0.maxTileCacheBytes - Maximum backing-store bytes for the visible tile.
+ * @param root0.maxSpreadsheetCanvasBytes - Maximum backing-store bytes for the visible tile.
  * @returns Positioned canvas element.
  */
 export function SpreadsheetCellCanvas({
@@ -130,14 +130,14 @@ export function SpreadsheetCellCanvas({
   viewport,
   showGridLines,
   pageBreakPreview = false,
-  maxTileCacheBytes = defaultResourceBudget.maxTileCacheBytes,
+  maxSpreadsheetCanvasBytes = defaultResourceBudget.maxSpreadsheetCanvasBytes,
 }: {
   readonly sheet: SpreadsheetRenderSheet;
   readonly styles: SpreadsheetStyleTable;
   readonly viewport: SpreadsheetViewportRect;
   readonly showGridLines?: boolean;
   readonly pageBreakPreview?: boolean;
-  readonly maxTileCacheBytes?: number;
+  readonly maxSpreadsheetCanvasBytes?: number;
 }): React.ReactElement {
   const reference = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -146,7 +146,7 @@ export function SpreadsheetCellCanvas({
     const width = Math.max(1, Math.ceil(viewport.width));
     const height = Math.max(1, Math.ceil(viewport.height));
     const desiredRatio = Math.max(1, globalThis.devicePixelRatio || 1);
-    const budgetRatio = Math.sqrt(maxTileCacheBytes / Math.max(1, width * height * 4));
+    const budgetRatio = Math.sqrt(maxSpreadsheetCanvasBytes / Math.max(1, width * height * 4));
     const ratio = Math.max(0.01, Math.min(desiredRatio, budgetRatio));
     canvas.width = Math.ceil(width * ratio);
     canvas.height = Math.ceil(height * ratio);
@@ -232,7 +232,7 @@ export function SpreadsheetCellCanvas({
       strokeSide(context, style?.border.left, left, top, left, bottom);
     }
     if (pageBreakPreview) context.restore();
-  }, [maxTileCacheBytes, pageBreakPreview, sheet, showGridLines, styles, viewport]);
+  }, [maxSpreadsheetCanvasBytes, pageBreakPreview, sheet, showGridLines, styles, viewport]);
   return (
     <canvas
       aria-hidden="true"

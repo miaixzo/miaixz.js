@@ -19,7 +19,7 @@
 */
 
 /**
- * Locks the supplied production workbook to its saved browser rendering state.
+ * Locks the neutral synthetic workbook to its saved browser rendering state.
  */
 
 import { expect, test } from "@playwright/test";
@@ -37,7 +37,7 @@ test("matches the saved page-break and frozen-pane view", async ({ browserName, 
     timeout: 20_000,
   });
   await expect(page.locator(".miaixz-preview-workbook-page")).toHaveCount(1);
-  await expect(page.getByRole("tab", { selected: true })).toHaveText("06.カード情報変更");
+  await expect(page.getByRole("tab", { selected: true })).toHaveText("Transform Atlas");
   await expect(page.getByRole("tab", { selected: true })).toHaveAttribute(
     "data-tab-color",
     "#FF0000",
@@ -117,7 +117,7 @@ test("matches the saved page-break and frozen-pane view", async ({ browserName, 
     .poll(async () => (await frozenHeaders.boundingBox())?.y)
     .toBeCloseTo(headersBefore?.y ?? 0, 0);
 
-  await page.getByRole("tab", { name: "05.カード情報照会" }).click();
+  await page.getByRole("tab", { name: "Geometry Atlas" }).click();
   await expect(page.locator('[role="tabpanel"] .miaixz-preview-sheet-active-cell')).toHaveAttribute(
     "data-selection-range",
     "BH12:CB13",

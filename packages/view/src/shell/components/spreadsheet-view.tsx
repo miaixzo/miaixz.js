@@ -271,7 +271,7 @@ function SpreadsheetSurface({
   selectedCellAddress,
   selectedRange,
   onSelectCell,
-  maxTileCacheBytes,
+  maxSpreadsheetCanvasBytes,
   showGridLines,
   pageBreakPreview,
   instanceId,
@@ -283,7 +283,7 @@ function SpreadsheetSurface({
   readonly selectedCellAddress?: string | undefined;
   readonly selectedRange?: string | undefined;
   readonly onSelectCell?: ((address: string) => void) | undefined;
-  readonly maxTileCacheBytes?: number | undefined;
+  readonly maxSpreadsheetCanvasBytes?: number | undefined;
   readonly showGridLines?: boolean | undefined;
   readonly pageBreakPreview: boolean;
   readonly instanceId: string;
@@ -293,7 +293,7 @@ function SpreadsheetSurface({
     <>
       <SpreadsheetCellCanvas
         sheet={sheet}
-        {...(maxTileCacheBytes === undefined ? {} : { maxTileCacheBytes })}
+        {...(maxSpreadsheetCanvasBytes === undefined ? {} : { maxSpreadsheetCanvasBytes })}
         pageBreakPreview={pageBreakPreview}
         {...(showGridLines === undefined ? {} : { showGridLines })}
         styles={styles}
@@ -337,7 +337,7 @@ function SpreadsheetSurface({
  * @param root0.document - Complete spreadsheet render model.
  * @param root0.scale - Current shell zoom ratio.
  * @param root0.options - Workbook-specific view configuration.
- * @param root0.maxTileCacheBytes - Maximum visible Canvas backing-store bytes.
+ * @param root0.maxSpreadsheetCanvasBytes - Maximum visible Canvas backing-store bytes.
  * @param root0.diagnostics - Parser diagnostics already attached to the workbook outcome.
  * @returns Workbook viewer containing one active sheet.
  */
@@ -345,13 +345,13 @@ export function SpreadsheetView({
   document,
   scale,
   options = {},
-  maxTileCacheBytes,
+  maxSpreadsheetCanvasBytes,
   diagnostics = emptyDiagnostics,
 }: {
   readonly document: SpreadsheetRenderDocument;
   readonly scale: number;
   readonly options?: SpreadsheetViewOptions;
-  readonly maxTileCacheBytes?: number;
+  readonly maxSpreadsheetCanvasBytes?: number;
   readonly diagnostics?: readonly ViewerWarning[];
 }): React.ReactElement {
   const {
@@ -584,7 +584,7 @@ export function SpreadsheetView({
     selectedCellAddress,
     selectedRange,
     onSelectCell: setSelectedCellAddress,
-    maxTileCacheBytes,
+    maxSpreadsheetCanvasBytes,
     showGridLines,
     pageBreakPreview,
   };

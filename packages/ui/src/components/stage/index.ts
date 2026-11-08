@@ -19,56 +19,17 @@
 */
 
 /**
- * Defines workspace identity, tenant association, and lifecycle status.
+ * Exposes neutral asynchronous presentation through the scoped public entry.
  */
 
-import type { MiaixzIdentifier } from "../fabric/api/api.types.js";
-
-/**
- * Represents the lifecycle state of a workspace.
- *
- * @public
- */
-export type MiaixzSpaceState = "active" | "disabled" | "archived";
-
-/**
- * Describes a workspace available within a tenant.
- *
- * @public
- */
-export interface MiaixzSpaceSummary {
-  /**
-   * Unique identifier of the workspace.
-   */
-  id: MiaixzIdentifier;
-
-  /**
-   * Identifier of the tenant that owns the workspace.
-   */
-  tenantId: MiaixzIdentifier;
-
-  /**
-   * Display name of the workspace.
-   */
-  name: string;
-
-  /**
-   * Optional human-readable workspace code.
-   */
-  code?: string;
-
-  /**
-   * Optional description of the workspace purpose.
-   */
-  description?: string;
-
-  /**
-   * Current lifecycle state of the workspace.
-   */
-  state: MiaixzSpaceState;
-
-  /**
-   * Optional identifier of the user responsible for the workspace.
-   */
-  ownerId?: MiaixzIdentifier;
-}
+export { Stage } from "./stage.js";
+export { StageLoading } from "./stage-loading.js";
+export { useStageSettled } from "./use-stage-settled.js";
+export type {
+  StageOwnerState,
+  StageProps,
+  StageSlotProps,
+  StageLoadingOwnerState,
+  StageLoadingProps,
+  StageLoadingSlotProps,
+} from "./stage.types.js";

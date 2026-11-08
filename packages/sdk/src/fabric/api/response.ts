@@ -19,12 +19,7 @@
 */
 
 /**
- * Defines normalized HTTP success envelopes and response-error handling.
- */
-
-import type { MiaixzApiEnvelope } from "./api.types.js";
-
-/**
+ * Defines parsed HTTP responses and caller-provided error details.
  * Describes a successful HTTP response returned by the Miaixz API client.
  *
  * @typeParam T - Type of the normalized response payload.
@@ -32,7 +27,7 @@ import type { MiaixzApiEnvelope } from "./api.types.js";
  */
 export interface MiaixzHttpResponse<T> {
   /**
-   * Normalized response payload.
+   * Parsed response payload after response interception and validation.
    */
   readonly data: T;
 
@@ -72,50 +67,35 @@ export type MiaixzResponseInterceptor = (
 ) => MiaixzHttpResponse<unknown> | Promise<MiaixzHttpResponse<unknown>>;
 
 /**
- * Validates the standard `{ errcode, errmsg, data }` response shape.
- *
- * @param value - Parsed response body.
- * @returns Whether the body is a Miaixz API envelope.
+ * Describes optional application-provided details for an unsuccessful HTTP response.
+ * The transport retains ownership of status, retry policy, and authentication.
  * @public
  */
-export function isMiaixzApiEnvelope<T = unknown>(value: unknown): value is MiaixzApiEnvelope<T> {
-  const record = value as Record<string, unknown>;
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "errcode" in value &&
-    typeof record.errcode === "string" &&
-    "errmsg" in value &&
-    typeof record.errmsg === "string" &&
-    "data" in value
-  );
+export interface MiaixzHttpErrorDetails {
+  /**
+   * Optional machine-readable error code.
+   */
+  readonly code?: string;
+  /**
+   * Optional request identifier supplied by the caller's response protocol.
+   */
+  readonly requestId?: string;
+  /**
+   * Optional untrusted server message sanitized by the HTTP error class.
+   */
+  readonly serverMessage?: string;
 }
 
 /**
- * Determines whether an API result code represents success.
+ * Supplies synchronous error details without changing HTTP transport decisions.
+ * A valid object replaces the default details; undefined declines the mapping.
  *
- * @param value - API result code to inspect.
- * @returns Whether an API envelope has the success code `0`.
+ * @param body - Parsed unsuccessful response body.
+ * @param response - Immutable HTTP status without headers or request credentials.
+ * @returns Replacement error details, or undefined to use generic problem details.
  * @public
  */
-export function isMiaixzApiSuccess(value: {
-  /**
-   * Business result code returned by the API.
-   */
-  errcode: string;
-}): boolean {
-  return value.errcode === "0";
-}
-/**
- * Returns an envelope's `data` value and leaves non-envelope values unchanged.
- *
- * @param value - Envelope or already-unwrapped value.
- * @returns Unwrapped envelope data or the original non-envelope value.
- * @public
- */
-export function unwrapMiaixzData<T>(value: T | MiaixzApiEnvelope<T>): T {
-  if (isMiaixzApiEnvelope<T>(value)) {
-    return value.data;
-  }
-  return value;
-}
+export type MiaixzHttpErrorMapper = (
+  body: unknown,
+  response: Readonly<{ status: number }>,
+) => MiaixzHttpErrorDetails | undefined;

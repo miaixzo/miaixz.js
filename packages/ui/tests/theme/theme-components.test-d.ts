@@ -61,6 +61,8 @@ type ExpectedComponentName =
   | "Picker"
   | "Alert"
   | "Notice"
+  | "Stage"
+  | "StageLoading"
   | "Overlay"
   | "Toast"
   | "Toaster"
@@ -174,6 +176,74 @@ const buttonTheme: NonNullable<ThemeComponents["Button"]> = {
   slotClassNames: { label: "label" },
 };
 
+/**
+ * Keeps all asynchronous presentation slots and actual retry owner-state selectors typed.
+ */
+const asyncContentTheme: NonNullable<ThemeComponents["Stage"]> = {
+  defaultProps: { status: "error", retryLabel: "Retry", onRetry: () => undefined },
+  slotClassNames: {
+    root: "state-root",
+    region: "state-region",
+    title: "state-title",
+    content: "state-content",
+    illustration: "state-illustration",
+  },
+  variants: [
+    {
+      props: { status: "error", presentation: "region", pending: true },
+      slotClassNames: { root: "pending-root", region: "pending-region" },
+    },
+  ],
+};
+
+/**
+ * Keeps loading defaults partial and its three slots tied to resolved retained-content state.
+ */
+const contentLoadingTheme: NonNullable<ThemeComponents["StageLoading"]> = {
+  defaultProps: { placeholder: "Preview" },
+  slotClassNames: { root: "loading-root", content: "loading-content", surface: "loading-surface" },
+  variants: [
+    {
+      props: { active: true, hasContent: true },
+      slotClassNames: { root: "retained-root", surface: "retained-surface" },
+    },
+  ],
+};
+
+const invalidAsyncSlot: NonNullable<ThemeComponents["Stage"]> = {
+  /**
+   * @ts-expect-error Retry is not a public asynchronous presentation slot. */
+  slotClassNames: { retry: "invalid" },
+};
+
+const invalidStageLoadingSlot: NonNullable<ThemeComponents["StageLoading"]> = {
+  /**
+   * @ts-expect-error Indicator is not a public StageLoading slot. */
+  slotClassNames: { indicator: "invalid" },
+};
+
+const invalidAsyncOwner: NonNullable<ThemeComponents["Stage"]> = {
+  variants: [
+    {
+      /**
+       * @ts-expect-error External retrying is not the local pending owner-state field. */
+      props: { retrying: true },
+      slotClassNames: { root: "invalid" },
+    },
+  ],
+};
+
+const invalidStageLoadingOwner: NonNullable<ThemeComponents["StageLoading"]> = {
+  variants: [
+    {
+      /**
+       * @ts-expect-error Loading variants select active/hasContent rather than pending. */
+      props: { pending: true },
+      slotClassNames: { root: "invalid" },
+    },
+  ],
+};
+
 const invalidComponent: ThemeComponents = {
   /**
    * @ts-expect-error Unknown component names are not accepted. */
@@ -218,6 +288,12 @@ const invalidTreeTheme: NonNullable<ThemeComponents["Tree"]> = {
   ],
 };
 
+void asyncContentTheme;
+void contentLoadingTheme;
+void invalidAsyncSlot;
+void invalidStageLoadingSlot;
+void invalidAsyncOwner;
+void invalidStageLoadingOwner;
 void buttonTheme;
 void treeTheme;
 void invalidTreeTheme;

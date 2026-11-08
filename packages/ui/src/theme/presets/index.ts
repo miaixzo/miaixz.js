@@ -23,8 +23,24 @@
  */
 
 import { MiaixzThemeError } from "../error.js";
-import type { MiaixzThemeDefinition, MiaixzThemeLoader } from "../types.js";
-import { presetBuiltInThemes, presetThemeDescriptors, presetThemeImports } from "./manifest.js";
+import type { MiaixzThemeDefinition, MiaixzThemeDescriptor, MiaixzThemeLoader } from "../types.js";
+import {
+  presetBuiltInThemes as builtInDefinitions,
+  presetThemeDescriptors as generatedDescriptors,
+  presetThemeImports,
+} from "./manifest.js";
+
+/**
+ * Exposes built-in definitions with the stable public theme contract.
+ * @public
+ */
+export const presetBuiltInThemes: readonly MiaixzThemeDefinition[] = builtInDefinitions;
+
+/**
+ * Exposes generated catalog metadata with the stable public descriptor contract.
+ * @public
+ */
+export const presetThemeDescriptors: readonly MiaixzThemeDescriptor[] = generatedDescriptors;
 
 const lazyPresetNames = new Set(Object.keys(presetThemeImports));
 
@@ -33,7 +49,7 @@ const lazyPresetNames = new Set(Object.keys(presetThemeImports));
  *
  * @public
  */
-export const themePresets = presetThemeDescriptors;
+export const themePresets: readonly MiaixzThemeDescriptor[] = presetThemeDescriptors;
 
 /**
  * Reports whether a theme can be loaded from the generated preset catalog.
@@ -77,5 +93,3 @@ export async function loadThemePresets(
     names.map(async (name) => (await loadThemePreset(name, { signal })) as MiaixzThemeDefinition),
   );
 }
-
-export { presetBuiltInThemes, presetThemeDescriptors };

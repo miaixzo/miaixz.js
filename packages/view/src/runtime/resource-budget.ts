@@ -46,7 +46,6 @@ export const defaultResourceBudget: ResourceBudget = Object.freeze({
   maxNoProgressMilliseconds: 30_000,
   maxTaskMilliseconds: 120_000,
   maxEstimatedMemoryBytes: 512 * 1024 * 1024,
-  maxPasswordAttempts: 5,
   maxSpreadsheetSheets: 256,
   maxSpreadsheetRows: 1_048_576,
   maxSpreadsheetColumns: 16_384,
@@ -54,7 +53,7 @@ export const defaultResourceBudget: ResourceBudget = Object.freeze({
   maxSpreadsheetStyles: 65_536,
   maxDrawingObjects: 100_000,
   maxVectorRecords: 1_000_000,
-  maxTileCacheBytes: 128 * 1024 * 1024,
+  maxSpreadsheetCanvasBytes: 128 * 1024 * 1024,
 });
 
 /**
@@ -71,7 +70,7 @@ export const hardResourceBudget: ResourceBudget = Object.freeze({
   maxSpreadsheetCells: 10_000_000,
   maxDrawingObjects: 500_000,
   maxVectorRecords: 5_000_000,
-  maxTileCacheBytes: 512 * 1024 * 1024,
+  maxSpreadsheetCanvasBytes: 512 * 1024 * 1024,
 });
 
 /**
@@ -109,7 +108,6 @@ export function resolveResourceBudget(overrides?: Partial<ResourceBudget>): Reso
     maxNoProgressMilliseconds: value("maxNoProgressMilliseconds"),
     maxTaskMilliseconds: value("maxTaskMilliseconds"),
     maxEstimatedMemoryBytes: value("maxEstimatedMemoryBytes"),
-    maxPasswordAttempts: value("maxPasswordAttempts"),
     maxSpreadsheetSheets: value("maxSpreadsheetSheets"),
     maxSpreadsheetRows: value("maxSpreadsheetRows"),
     maxSpreadsheetColumns: value("maxSpreadsheetColumns"),
@@ -117,6 +115,6 @@ export function resolveResourceBudget(overrides?: Partial<ResourceBudget>): Reso
     maxSpreadsheetStyles: value("maxSpreadsheetStyles"),
     maxDrawingObjects: value("maxDrawingObjects"),
     maxVectorRecords: value("maxVectorRecords"),
-    maxTileCacheBytes: value("maxTileCacheBytes"),
+    maxSpreadsheetCanvasBytes: value("maxSpreadsheetCanvasBytes"),
   };
 }

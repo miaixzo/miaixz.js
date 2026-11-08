@@ -32,6 +32,7 @@ import {
 import { assertBridgePayloadWithinLimits } from "../../../src/runtime/bridge/payload-budget.js";
 import { createMiaixzPostMessageHost } from "../../../src/runtime/bridge/post-message-bridge.js";
 import {
+  isPlainRecord,
   parseMessageCatalog,
   parsePermissions,
 } from "../../../src/runtime/bridge/post-message-protocol.js";
@@ -51,6 +52,26 @@ const manifest = {
   requiredPermissions: [],
   requiredCapabilities: ["context"],
 } as const;
+
+/**
+ * Defines the neutral field selected by this fixture's caller.
+ */
+interface FixtureContext {
+  readonly label: string;
+}
+
+/**
+ * Validates and copies the full label without changing its payload budget.
+ *
+ * @param value - Untrusted provider value.
+ * @returns Caller-selected immutable context.
+ */
+function parseFixtureContext(value: unknown): Readonly<FixtureContext> {
+  if (!isPlainRecord(value) || typeof value.label !== "string") {
+    throw new TypeError("Invalid fixture context.");
+  }
+  return Object.freeze({ label: value.label });
+}
 
 class HostTestWindow {
   readonly listeners = new Set<(event: MessageEvent) => void>();
@@ -264,15 +285,16 @@ describe("postMessage Host security limits", () => {
     vi.useFakeTimers();
     const runtime = new HostTestWindow();
     vi.stubGlobal("window", runtime);
-    let resolveContext!: (value: { tenantId: string }) => void;
-    const context = new Promise<{ tenantId: string }>((resolve) => {
+    let resolveContext!: (value: FixtureContext) => void;
+    const context = new Promise<FixtureContext>((resolve) => {
       resolveContext = resolve;
     });
-    const host = createMiaixzPostMessageHost({
+    const host = createMiaixzPostMessageHost<FixtureContext>({
       manifest,
       targetWindow: runtime as unknown as Window,
       targetOrigin: origin,
       adapter: { getContext: () => context },
+      parseContext: parseFixtureContext,
       timeoutMs: 1_000,
       limits: { maxInFlightRequests: 1, requestTimeoutMilliseconds: 25 },
     });
@@ -299,13 +321,18 @@ describe("postMessage Host security limits", () => {
     runtime.dispatch(request("44444444-4444-4444-8444-444444444444", "context.get"));
     expect(runtime.posted.at(-1)?.error?.code).toBe("BRIDGE_RESOURCE_LIMIT_EXCEEDED");
 
-    resolveContext({ tenantId: "tenant" });
+    resolveContext({ label: "neutral" });
     await vi.advanceTimersByTimeAsync(0);
+    expect(
+      runtime.posted.filter((entry) => entry.messageId === "22222222-2222-4222-8222-222222222222"),
+    ).toEqual([
+      expect.objectContaining({ error: expect.objectContaining({ code: "BRIDGE_TIMEOUT" }) }),
+    ]);
     runtime.dispatch(request("55555555-5555-4555-8555-555555555555", "context.get"));
     await vi.advanceTimersByTimeAsync(0);
     expect(runtime.posted.at(-1)).toMatchObject({
       messageId: "55555555-5555-4555-8555-555555555555",
-      payload: { tenantId: "tenant" },
+      payload: { label: "neutral" },
     });
     host.dispose();
   });
@@ -313,11 +340,12 @@ describe("postMessage Host security limits", () => {
   it("rejects an oversized adapter response before posting it", async () => {
     const runtime = new HostTestWindow();
     vi.stubGlobal("window", runtime);
-    const host = createMiaixzPostMessageHost({
+    const host = createMiaixzPostMessageHost<FixtureContext>({
       manifest,
       targetWindow: runtime as unknown as Window,
       targetOrigin: origin,
-      adapter: { getContext: async () => ({ tenantId: "x".repeat(100) }) },
+      adapter: { getContext: async () => ({ label: "x".repeat(100) }) },
+      parseContext: parseFixtureContext,
       timeoutMs: 1_000,
       limits: { maxPayloadBytes: 64 },
     });
@@ -338,5 +366,66 @@ describe("postMessage Host security limits", () => {
       });
     });
     host.dispose();
+  });
+  it("retains a cancelled adapter slot until settlement and never posts its late result", async () => {
+    vi.useFakeTimers();
+    const runtime = new HostTestWindow();
+    vi.stubGlobal("window", runtime);
+    let resolveContext!: (value: FixtureContext) => void;
+    const context = new Promise<FixtureContext>((resolve) => {
+      resolveContext = resolve;
+    });
+    const provider = vi.fn(() => context);
+    const host = createMiaixzPostMessageHost<FixtureContext>({
+      manifest,
+      targetWindow: runtime as unknown as Window,
+      targetOrigin: origin,
+      adapter: { getContext: provider },
+      parseContext: parseFixtureContext,
+      timeoutMs: 1_000,
+      limits: { maxInFlightRequests: 1, requestTimeoutMilliseconds: 25 },
+    });
+    runtime.dispatch(
+      request("11111111-1111-4111-8111-111111111111", "bridge.handshake", {
+        moduleId: "module-one",
+        moduleVersion: "1.2.3",
+        protocolVersion: VERSION,
+      }),
+    );
+    await host.ready;
+
+    const pending = request("22222222-2222-4222-8222-222222222222", "context.get");
+    runtime.dispatch(pending);
+    expect(provider).toHaveBeenCalledOnce();
+    runtime.dispatch({ ...pending, kind: "cancel" });
+    runtime.dispatch({ ...pending, kind: "cancel" });
+    runtime.dispatch(request("33333333-3333-4333-8333-333333333333", "context.get"));
+    expect(runtime.posted.at(-1)).toMatchObject({
+      messageId: "33333333-3333-4333-8333-333333333333",
+      error: { code: "BRIDGE_RESOURCE_LIMIT_EXCEEDED" },
+    });
+    expect(provider).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(25);
+    expect(runtime.posted.filter((entry) => entry.messageId === pending.messageId)).toEqual([]);
+    runtime.dispatch(request("55555555-5555-4555-8555-555555555555", "context.get"));
+    expect(runtime.posted.at(-1)).toMatchObject({
+      messageId: "55555555-5555-4555-8555-555555555555",
+      error: { code: "BRIDGE_RESOURCE_LIMIT_EXCEEDED" },
+    });
+    expect(provider).toHaveBeenCalledOnce();
+
+    resolveContext({ label: "neutral" });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(runtime.posted.filter((entry) => entry.messageId === pending.messageId)).toEqual([]);
+    runtime.dispatch(request("44444444-4444-4444-8444-444444444444", "context.get"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(provider).toHaveBeenCalledTimes(2);
+    expect(runtime.posted.at(-1)).toMatchObject({
+      messageId: "44444444-4444-4444-8444-444444444444",
+      payload: { label: "neutral" },
+    });
+    host.dispose();
+    expect(runtime.listeners.size).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

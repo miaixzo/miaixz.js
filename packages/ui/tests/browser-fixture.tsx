@@ -1271,7 +1271,8 @@ export function BrowserFixture() {
             <NavigationRail
               brand="Brand"
               toggle={<button type="button">Toggle</button>}
-              variant="brand"
+              variant={parameters.get("railVariant") === "default" ? "default" : "brand"}
+              {...(parameters.has("railDefaultIcon") ? { defaultIcon: "help" as const } : {})}
               expanded={parameters.get("expanded") === "1"}
               dir={parameters.get("direction") === "rtl" ? "rtl" : "ltr"}
               style={{ height: 600 }}
@@ -1297,6 +1298,23 @@ export function BrowserFixture() {
                       icon: "settings",
                       overflow: "never",
                     },
+                    ...(parameters.has("railIcons")
+                      ? [
+                          {
+                            id: "missing",
+                            label: "Menu without an icon",
+                            textValue: "Menu without an icon",
+                            href: "#missing",
+                          },
+                          {
+                            id: "help",
+                            label: "Help menu",
+                            textValue: "Help menu",
+                            href: "#help",
+                            icon: "help" as const,
+                          },
+                        ]
+                      : []),
                   ],
                 },
               ]}

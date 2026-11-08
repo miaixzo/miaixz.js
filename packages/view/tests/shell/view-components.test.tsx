@@ -43,7 +43,8 @@ import type { FileViewHandle } from "../../src/shell/file/file-view.types.js";
 import { ImageView } from "../../src/shell/image/image-view.js";
 import { OfficeView } from "../../src/shell/office/office-view.js";
 import { PdfView } from "../../src/shell/pdf/pdf-view.js";
-import { clamp, classNames } from "../../src/shell/util/class-names.js";
+import { classNames } from "../../src/shell/styles/class-names.js";
+import { clampScale } from "../../src/shell/zoom/scale.js";
 
 const drawing: DrawingScene = {
   schemaVersion: VERSION,
@@ -434,10 +435,10 @@ describe("public view components", () => {
     pdf.unmount();
   });
 
-  it("provides deterministic class and clamp helpers", () => {
+  it("joins enabled class names and clamps preview scales", () => {
     expect(classNames("one", false, undefined, "two", null)).toBe("one two");
-    expect(clamp(-1, 0, 2)).toBe(0);
-    expect(clamp(1, 0, 2)).toBe(1);
-    expect(clamp(3, 0, 2)).toBe(2);
+    expect(clampScale(-1, 0, 2)).toBe(0);
+    expect(clampScale(1, 0, 2)).toBe(1);
+    expect(clampScale(3, 0, 2)).toBe(2);
   });
 });

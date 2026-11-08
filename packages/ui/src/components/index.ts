@@ -22,6 +22,15 @@
  * Exposes the components public module.
  */
 
+export { Stage, StageLoading, useStageSettled } from "./stage/index.js";
+export type {
+  StageOwnerState,
+  StageProps,
+  StageSlotProps,
+  StageLoadingOwnerState,
+  StageLoadingProps,
+  StageLoadingSlotProps,
+} from "./stage/index.js";
 export { Alert } from "./alert/index.js";
 export type {
   AlertOwnerState,

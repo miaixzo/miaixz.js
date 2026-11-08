@@ -250,17 +250,6 @@ export function summarizeTelemetryBody(body: unknown): Readonly<MiaixzRequestBod
 }
 
 /**
- * Backward-compatible alias for metadata-only request-body summaries.
- *
- * @param body - Original or interceptor-produced request body.
- * @returns Frozen metadata-only body summary.
- * @deprecated Use summarizeTelemetryBody.
- */
-export function sanitizeTelemetryBody(body: unknown): Readonly<MiaixzRequestBodySummary> {
-  return summarizeTelemetryBody(body);
-}
-
-/**
  * Creates a frozen case-insensitive redacted header snapshot.
  *
  * @param headers - Headers to copy without exposing credentials.

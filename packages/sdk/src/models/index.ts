@@ -19,12 +19,9 @@
 */
 
 /**
- * Exports user, organization, tenant, and workspace model contracts.
+ * Exports display identity summaries and generic pagination contracts.
  */
 
-export type { MiaixzDepartmentSummary, MiaixzOrganizationSummary } from "./organization.js";
 export { getMiaixzPageCount } from "./pagination.js";
-export type { MiaixzPage, MiaixzPageQuery, MiaixzPagination } from "./pagination.js";
-export type { MiaixzSpaceState, MiaixzSpaceSummary } from "./space.js";
-export type { MiaixzTenantState, MiaixzTenantSummary } from "./tenant.js";
-export type { MiaixzUser, MiaixzUserSummary } from "./user.js";
+export type { MiaixzPage, MiaixzPagination } from "./pagination.js";
+export type { MiaixzUserSummary } from "./user.js";

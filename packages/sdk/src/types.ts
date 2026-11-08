@@ -19,16 +19,13 @@
 */
 
 /**
- * Re-exports shared API, appearance, configuration, context, file, permission, and model contracts.
+ * Re-exports shared API, appearance, configuration, file, permission, and summary contracts.
  */
 
 export type {
-  MiaixzApiEnvelope,
   MiaixzApiProblem,
-  MiaixzAudit,
   MiaixzEntity,
   MiaixzIdentifier,
-  MiaixzLogicalStatus,
   MiaixzTimestamp,
 } from "./fabric/api/api.types.js";
 export {
@@ -58,12 +55,8 @@ export type {
   MiaixzFeatureValue,
   MiaixzSdkConfig,
 } from "./runtime/config/config.types.js";
-export type { MiaixzRuntimeContext } from "./access/context/context.types.js";
 export type { MiaixzFileDescriptor, MiaixzUploadResult } from "./fabric/files/file.types.js";
-export type { MiaixzDepartmentSummary, MiaixzOrganizationSummary } from "./models/organization.js";
 export { getMiaixzPageCount } from "./models/pagination.js";
-export type { MiaixzPage, MiaixzPageQuery, MiaixzPagination } from "./models/pagination.js";
+export type { MiaixzPage, MiaixzPagination } from "./models/pagination.js";
 export type { MiaixzGrantSnapshot, MiaixzPermissionCode } from "./access/grants/grant.types.js";
-export type { MiaixzSpaceState, MiaixzSpaceSummary } from "./models/space.js";
-export type { MiaixzTenantState, MiaixzTenantSummary } from "./models/tenant.js";
-export type { MiaixzUser, MiaixzUserSummary } from "./models/user.js";
+export type { MiaixzUserSummary } from "./models/user.js";

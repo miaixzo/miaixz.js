@@ -30,7 +30,6 @@ import type {
 import type { MiaixzHostBridge, MiaixzNavigationRequest } from "../contracts/host-context.js";
 import { MiaixzSdkError } from "../../errors/errors.js";
 import type { MiaixzMessageCatalog } from "../../i18n/i18n.js";
-import type { MiaixzRuntimeContext } from "../../access/context/context.types.js";
 import { MiaixzBridgeMessageCache } from "./message-cache.js";
 import { MiaixzPendingRequestRegistry, type PendingRequest } from "./pending-requests.js";
 import {
@@ -47,7 +46,7 @@ import {
   parseMessageCatalog,
   parseNavigation,
   parsePermissions,
-  parseRuntimeContext,
+  parseBridgeContext,
   parseTargetOrigin,
   parseTargetWindow,
   parseTimeout,
@@ -72,8 +71,10 @@ interface ChildEventListener {
 
 /**
  * Implements the Child half of a postMessage Host Bridge.
+ *
+ * @typeParam Context - Caller-defined context independently validated after receipt.
  */
-export class PostMessageChildBridge implements MiaixzHostBridge {
+export class PostMessageChildBridge<Context = unknown> implements MiaixzHostBridge<Context> {
   /**
    * Micro-frontend protocol version implemented by the bridge.
    */
@@ -85,6 +86,7 @@ export class PostMessageChildBridge implements MiaixzHostBridge {
   readonly #moduleId: string;
   readonly #moduleVersion: string;
   readonly #timeoutMs: number;
+  readonly #parseContext: ((value: unknown) => Readonly<Context>) | undefined;
   readonly #pending = new MiaixzPendingRequestRegistry();
   readonly #incoming = new MiaixzBridgeMessageCache();
   readonly #listeners = new Map<string, ChildEventListener>();
@@ -95,7 +97,7 @@ export class PostMessageChildBridge implements MiaixzHostBridge {
    *
    * @param options - Validated Child connection options.
    */
-  constructor(options: MiaixzPostMessageChildOptions) {
+  constructor(options: MiaixzPostMessageChildOptions<Context>) {
     this.#runtimeWindow = getRuntimeWindow();
     this.#targetWindow = parseTargetWindow(options.targetWindow);
     this.#targetOrigin = parseTargetOrigin(options.targetOrigin);
@@ -106,6 +108,7 @@ export class PostMessageChildBridge implements MiaixzHostBridge {
     this.#moduleId = options.moduleId;
     this.#moduleVersion = options.moduleVersion;
     this.#timeoutMs = parseTimeout(options.timeoutMs);
+    this.#parseContext = options.parseContext;
     this.#runtimeWindow.addEventListener("message", this.#onMessage);
   }
 
@@ -114,7 +117,7 @@ export class PostMessageChildBridge implements MiaixzHostBridge {
    *
    * @returns Connected Child Bridge.
    */
-  async connect(): Promise<MiaixzHostBridge> {
+  async connect(): Promise<MiaixzHostBridge<Context>> {
     const payload = await this.#request("bridge.handshake", {
       moduleId: this.#moduleId,
       moduleVersion: this.#moduleVersion,
@@ -139,9 +142,12 @@ export class PostMessageChildBridge implements MiaixzHostBridge {
    *
    * @returns Runtime context returned by the Host.
    */
-  async getContext(): Promise<Readonly<MiaixzRuntimeContext>> {
+  async getContext(): Promise<Readonly<Context>> {
+    this.#assertActive();
+    if (typeof this.#parseContext !== "function")
+      throw bridgeError("BRIDGE_CAPABILITY_UNAVAILABLE");
     const payload = await this.#request("context.get");
-    return parseRuntimeContext(payload);
+    return parseBridgeContext(payload, this.#parseContext);
   }
 
   /**

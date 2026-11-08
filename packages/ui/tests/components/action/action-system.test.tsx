@@ -313,6 +313,31 @@ describe("RowActions", () => {
 });
 
 describe("ActionBar", () => {
+  it("distinguishes intrinsic primary-only footers from measured auxiliary groups", () => {
+    const onAction = vi.fn();
+    const { container, rerender } = renderAction(
+      <ActionBar primary={{ id: "save", kind: "command", label: "Save", onAction }} actions={[]} />,
+    );
+    expect(container.querySelector(".miaixz-action-bar")?.getAttribute("data-has-actions")).toBe(
+      "false",
+    );
+    rerender(
+      <MiaixzLocaleProvider
+        i18n={createMiaixzI18n({ locale: "zh-CN", messages: miaixzUiMessages })}
+      >
+        <ActionBar
+          primary={{ id: "save", kind: "command", label: "Save", onAction }}
+          actions={[{ id: "preview", kind: "command", label: "Preview", onAction }]}
+        />
+      </MiaixzLocaleProvider>,
+    );
+    expect(container.querySelector(".miaixz-action-bar")?.getAttribute("data-has-actions")).toBe(
+      "true",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the primary visible during the zero-capacity hydration partition", () => {
     renderAction(
       <ActionBar

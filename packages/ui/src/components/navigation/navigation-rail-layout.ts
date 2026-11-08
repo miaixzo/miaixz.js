@@ -172,14 +172,10 @@ export function createOverflowEntries(
         href: item.href,
         ...(item.anchorProps === undefined ? {} : { anchorProps: item.anchorProps }),
         ...(item.meta === undefined ? {} : { description: item.meta }),
-        ...(item.icon === undefined
-          ? {}
-          : {
-              icon: createElement(Icon, {
-                name: item.icon,
-                size: "control",
-              }),
-            }),
+        icon:
+          item.icon === undefined
+            ? null
+            : createElement(Icon, { name: item.icon, size: "control" }),
       });
     }
   });

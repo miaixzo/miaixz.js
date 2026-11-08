@@ -149,6 +149,10 @@ export function createApiClient(options: MiaixzApiClientOptions): MiaixzApiClien
   const baseUrl = normalizeBaseUrl(options.baseUrl, options.environment ?? "production");
   const fetchImplementation = options.fetch ?? globalThis.fetch;
   if (!fetchImplementation) throw new MiaixzSdkError({ code: "FETCH_UNAVAILABLE" });
+  const clientOptions: MiaixzApiClientOptions = {
+    ...options,
+    contextHeaderNames: normalizeContextHeaderNames(options.contextHeaderNames),
+  };
   /**
    * Executes a typed API request through the shared client pipeline.
    *
@@ -159,7 +163,7 @@ export function createApiClient(options: MiaixzApiClientOptions): MiaixzApiClien
   const request = <TResponse, TBody extends MiaixzRequestBody = MiaixzRequestBody>(
     path: string,
     requestOptions: MiaixzRequestOptions<TResponse, TBody> = {},
-  ) => executeMiaixzApiRequest(options, baseUrl, fetchImplementation, path, requestOptions);
+  ) => executeMiaixzApiRequest(clientOptions, baseUrl, fetchImplementation, path, requestOptions);
   return {
     baseUrl,
     request,
@@ -176,4 +180,27 @@ export function createApiClient(options: MiaixzApiClientOptions): MiaixzApiClien
       }),
     delete: (path, requestOptions) => request(path, { ...requestOptions, method: "DELETE" }),
   };
+}
+
+/**
+ * Validates header names without retaining caller-owned arrays or invalid input values.
+ *
+ * @param value - Optional caller-defined context-header names.
+ * @returns An immutable, lowercase, deduplicated copy of the configured names.
+ * @throws TypeError When the list or a header name is invalid.
+ */
+function normalizeContextHeaderNames(value: readonly string[] | undefined): readonly string[] {
+  if (value === undefined) return Object.freeze([]);
+  if (!Array.isArray(value)) throw new TypeError("Invalid context header names.");
+  const names = new Set<string>();
+  for (const name of value) {
+    if (typeof name !== "string") throw new TypeError("Invalid context header name.");
+    try {
+      new Headers([[name, ""]]);
+    } catch {
+      throw new TypeError("Invalid context header name.");
+    }
+    names.add(name.toLowerCase());
+  }
+  return Object.freeze([...names]);
 }

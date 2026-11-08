@@ -106,12 +106,6 @@ export interface MiaixzShellOwnProps {
   readonly mainRef?: Ref<HTMLElement>;
   readonly mainComponent?: ShellMainComponent;
   readonly header: ReactNode;
-  /**
-   * Supplies the legacy primary-navigation region.
-   *
-   * @deprecated Use primaryNavigation.
-   */
-  readonly sidebar?: ReactNode;
   readonly brand?: ReactNode;
   readonly primaryNavigation?: ReactNode;
   readonly secondaryNavigation?: ReactNode;

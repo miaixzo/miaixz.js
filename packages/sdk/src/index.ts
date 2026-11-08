@@ -19,19 +19,10 @@
 */
 
 /**
- * Exports the public SDK factory, services, shared types, and runtime integration contracts.
+ * Exports public SDK mechanisms, shared types, and runtime integration contracts.
  */
 
-export {
-  appendMiaixzQuery,
-  createApiClient,
-  isMiaixzApiEnvelope,
-  isMiaixzApiSuccess,
-  RestGatewayClient,
-  RestSigner,
-  Signer,
-  unwrapMiaixzData,
-} from "./fabric/api/index.js";
+export { appendMiaixzQuery, createApiClient } from "./fabric/api/index.js";
 export type {
   MiaixzApiClient,
   MiaixzApiClientOptions,
@@ -40,8 +31,9 @@ export type {
   MiaixzContextHeadersProvider,
   MiaixzCsrfOptions,
   MiaixzCsrfTokenProvider,
-  MiaixzEnvelopeMode,
   MiaixzErrorEvent,
+  MiaixzHttpErrorDetails,
+  MiaixzHttpErrorMapper,
   MiaixzHttpMethod,
   MiaixzHttpResponse,
   MiaixzPreparedRequest,
@@ -58,12 +50,6 @@ export type {
   MiaixzResponseParser,
   MiaixzResponseType,
   MiaixzTokenProvider,
-  RestGatewayClientOptions,
-  RestGatewayParameters,
-  RestGatewayRequestInput,
-  RestJsonValue,
-  RestSignatureAuth,
-  RestSignInput,
 } from "./fabric/api/index.js";
 export {
   createMiaixzAppearanceManager,
@@ -72,7 +58,6 @@ export {
   isMiaixzDensity,
   isMiaixzThemeId,
   MiaixzAppearanceManager,
-  miaixzAppearanceMigrationV1ToV2,
   miaixzAppearanceMigration,
   miaixzAppearanceSchemaVersion,
   miaixzColorModes,
@@ -143,13 +128,6 @@ export type {
   MiaixzPostMessageHostLimits,
   MiaixzPostMessageHostOptions,
 } from "./runtime/contracts/index.js";
-export {
-  createMiaixzContextStore,
-  isMiaixzRuntimeContext,
-  MiaixzContextStore,
-  miaixzContextToHeaders,
-} from "./access/context/index.js";
-export type { MiaixzContextStoreOptions } from "./access/context/index.js";
 export { createMiaixzEventBus, MiaixzEventBus } from "./runtime/events/index.js";
 export type {
   MiaixzEventBusOptions,
@@ -184,6 +162,7 @@ export {
   getMiaixzDownloadFilename,
   MiaixzFileClient,
   saveMiaixzBlob,
+  serializeMiaixzCsv,
 } from "./fabric/files/index.js";
 export type {
   MiaixzDownloadedFile,
@@ -234,20 +213,6 @@ export {
   createMiaixzPostMessageChildBridge,
   createMiaixzPostMessageHost,
 } from "./runtime/index.js";
-export { createMiaixzSdk } from "./sdk.js";
-export type {
-  MiaixzAppearanceScope,
-  MiaixzAuthMode,
-  MiaixzBearerSdk,
-  MiaixzBearerSdkOptions,
-  MiaixzCookieSdk,
-  MiaixzCookieSdkOptions,
-  MiaixzSdk,
-  MiaixzSdkBase,
-  MiaixzSdkCommonOptions,
-  MiaixzSdkEventOptions,
-  MiaixzSdkOptions,
-} from "./sdk.js";
 export {
   createMiaixzStorageKey,
   getMiaixzBrowserStorage,
@@ -267,33 +232,31 @@ export type {
 } from "./runtime/storage/index.js";
 export { getMiaixzPageCount } from "./types.js";
 export type {
-  MiaixzApiEnvelope,
   MiaixzApiProblem,
-  MiaixzAudit,
-  MiaixzDepartmentSummary,
   MiaixzEntity,
   MiaixzEnvironment,
   MiaixzFeatureValue,
   MiaixzFileDescriptor,
   MiaixzGrantSnapshot,
   MiaixzIdentifier,
-  MiaixzLogicalStatus,
-  MiaixzOrganizationSummary,
   MiaixzPage,
-  MiaixzPageQuery,
   MiaixzPagination,
   MiaixzPermissionCode,
-  MiaixzRuntimeContext,
   MiaixzSdkConfig,
-  MiaixzSpaceState,
-  MiaixzSpaceSummary,
-  MiaixzTenantState,
-  MiaixzTenantSummary,
   MiaixzTimestamp,
   MiaixzUploadResult,
-  MiaixzUser,
   MiaixzUserSummary,
 } from "./types.js";
-export { clamp, isNonEmptyString, isRecord, isValidDate } from "./shared/index.js";
+export {
+  clamp,
+  cloneMiaixzJsonValue,
+  freezeMiaixzJsonValue,
+  isNonEmptyString,
+  isRecord,
+  isValidDate,
+  mergeMiaixzJsonValue,
+  resolveCollectionValue,
+} from "./shared/index.js";
+export type { MiaixzDeepReadonly, MiaixzJsonOptions } from "./shared/index.js";
 
 export { VERSION } from "./version.js";

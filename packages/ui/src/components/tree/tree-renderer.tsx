@@ -236,7 +236,6 @@ export function TreeRenderer<Value>(props: TreeRendererProps<Value>) {
       selectionMode: props.selectionMode,
       view: props.controller.view.name,
       itemId: id,
-      level: viewRecord.record.logicalLevel,
       logicalLevel: viewRecord.record.logicalLevel,
       semanticLevel: viewRecord.semanticLevel,
       visualLevel: viewRecord.visualLevel,
@@ -395,7 +394,7 @@ export function TreeRenderer<Value>(props: TreeRendererProps<Value>) {
             {...mergeMiaixzSlotProps({
               ownerState,
               defaultProps: { className: "miaixz-tree-expander" },
-              slotProps: props.slotProps?.expander ?? props.slotProps?.icon,
+              slotProps: props.slotProps?.expander,
               internalProps: {
                 ...expanderInteraction,
                 "data-state": expandable
@@ -632,7 +631,7 @@ export function TreeRenderer<Value>(props: TreeRendererProps<Value>) {
                 void props.controller.actions.retry(id).catch(() => undefined);
               }}
             >
-              <Icon name="rotate-ccw" size="indicator" />
+              <Icon name="refresh-cw" size="indicator" />
               {props.retryLabel}
             </button>
           </div>

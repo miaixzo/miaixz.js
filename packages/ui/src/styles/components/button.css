@@ -58,7 +58,7 @@
 }
 
 .miaixz-button[data-variant="solid"][data-tone="brand"] {
-  color: var(--miaixz-color-text-inverse);
+  color: var(--miaixz-color-on-brand);
   background: var(--miaixz-color-brand);
   border-color: var(--miaixz-color-brand);
 }
@@ -325,6 +325,13 @@ button.miaixz-button.miaixz-icon-button[data-appearance="glyph"][data-variant="p
   flex: none;
   align-items: center;
   justify-content: center;
+}
+
+/**
+ * Align labeled font glyphs optically without altering standalone icons or indicators.
+ */
+.miaixz-button-icon > .miaixz-icon:not([data-size="indicator"]) {
+  translate: 0 -0.5px;
 }
 
 .miaixz-button-loading-indicator,

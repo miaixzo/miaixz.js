@@ -19,38 +19,11 @@
 */
 
 /**
- * Converts runtime-context fields to canonical Miaixz request headers.
- */
-
-import { miaixzHeaders } from "../../fabric/api/constants.js";
-import type { MiaixzRuntimeContext } from "./context.types.js";
-
-/**
- * Maps runtime-context fields to their canonical HTTP headers.
- */
-const CONTEXT_HEADER_MAP: readonly [keyof MiaixzRuntimeContext, string][] = [
-  ["userId", miaixzHeaders.userId],
-  ["tenantId", miaixzHeaders.tenantId],
-  ["organizationId", miaixzHeaders.organizationId],
-  ["departmentId", miaixzHeaders.departmentId],
-  ["spaceId", miaixzHeaders.spaceId],
-  ["locale", miaixzHeaders.locale],
-  ["timezone", miaixzHeaders.timezone],
-  ["traceId", miaixzHeaders.traceId],
-];
-
-/**
- * Converts tenant, organization, space, locale, and trace context into request headers.
+ * Joins optional CSS class names.
  *
- * @param context - Runtime context to convert.
- * @returns Headers containing all defined runtime-context values.
- * @public
+ * @param values - Class names and disabled values.
+ * @returns Space-separated class names.
  */
-export function miaixzContextToHeaders(context: Readonly<MiaixzRuntimeContext>): Headers {
-  const headers = new Headers();
-  for (const [key, header] of CONTEXT_HEADER_MAP) {
-    const value = context[key];
-    if (value) headers.set(header, value);
-  }
-  return headers;
+export function classNames(...values: Array<string | false | null | undefined>): string {
+  return values.filter(Boolean).join(" ");
 }

@@ -9,7 +9,7 @@ src/
 ├── app/                Routes for /ui, /icons, /sdk, and /view
 ├── module/
 │   ├── icons/          Variable-font catalog and axis controls
-│   ├── sdk/            Context, grants, API, appearance, i18n, and event demo
+│   ├── sdk/            HTTP, config, session, grants, appearance, i18n, and event demo
 │   ├── ui/             Component workbench and complete public catalog
 │   └── view/           Image, Office, and local-file previews
 └── shared/             Application shell, guide primitives, and providers

@@ -77,6 +77,7 @@ export const TableContainer = withMiaixzThemeComponent(
       gutter = "inset",
       surface = "default",
       minimumWidth = "default",
+      tabIndex = 0,
       ...props
     },
     ref,
@@ -85,6 +86,7 @@ export const TableContainer = withMiaixzThemeComponent(
       <div
         {...props}
         ref={ref}
+        tabIndex={tabIndex}
         className={classNames(
           "miaixz-table-container",
           frame === "plain" && "miaixz-table-container-plain",

@@ -4,6 +4,7 @@
 
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { themePresetPlugin } from "../../../.github/scripts/modules/ui/codegen/vite-theme-plugin.mjs";
 
@@ -69,11 +70,12 @@ export default defineConfig({
        */
       resolveId(id) {
         if (!resolvedPackedRoot || !resolvedPackedSdkRoot) return;
-        if (id === "../../src/index.js") return resolve(resolvedPackedRoot, "dist/index.js");
-        if (id === "../../src/theme/theme.css")
+        if (id === "../src/index.js") return resolve(resolvedPackedRoot, "dist/index.js");
+        if (id === "../src/version.js") return resolve(resolvedPackedRoot, "dist/version.js");
+        if (id === "../src/theme/theme.css")
           return resolve(resolvedPackedRoot, "dist/theme/theme.css");
         if (id === "@miaixz/sdk/appearance")
-          return resolve(resolvedPackedSdkRoot, "dist/appearance/index.js");
+          return resolve(resolvedPackedSdkRoot, "dist/display/index.js");
         if (id === "@miaixz/sdk/i18n") return resolve(resolvedPackedSdkRoot, "dist/i18n/index.js");
       },
     },
@@ -123,7 +125,16 @@ export default defineConfig({
     host: serverHost,
     port,
     ...(resolvedPackedRoot && resolvedPackedSdkRoot
-      ? { fs: { allow: [process.cwd(), resolvedPackedRoot, resolvedPackedSdkRoot] } }
+      ? {
+          fs: {
+            allow: [
+              process.cwd(),
+              resolvedPackedRoot,
+              resolvedPackedSdkRoot,
+              createRequire(import.meta.url).resolve("@miaixz/icons/font.woff2"),
+            ],
+          },
+        }
       : {}),
     strictPort: true,
   },

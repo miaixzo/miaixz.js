@@ -19,25 +19,23 @@
 */
 
 /**
- * Provides bounded presentation helpers for the viewer shell.
+ * Serializes string and number cells without choosing application export policies.
+ * Every cell is quoted; embedded quotes are doubled and row separators are explicit.
  *
- * Joins optional CSS class names.
- *
- * @param values - Class names and disabled values.
- * @returns Space-separated class names.
+ * @param rows - Ordered rows whose cells retain their original string conversion.
+ * @param lineEnding - Required row separator selected by the caller.
+ * @returns CSV text without a byte-order mark or a trailing row separator.
+ * @throws TypeError When the caller does not select a supported row separator.
+ * @public
  */
-export function classNames(...values: Array<string | false | null | undefined>): string {
-  return values.filter(Boolean).join(" ");
-}
-
-/**
- * Restricts a number to an inclusive range.
- *
- * @param value - Candidate number.
- * @param minimum - Inclusive lower boundary.
- * @param maximum - Inclusive upper boundary.
- * @returns Bounded number.
- */
-export function clamp(value: number, minimum: number, maximum: number): number {
-  return Math.min(Math.max(value, minimum), maximum);
+export function serializeMiaixzCsv(
+  rows: readonly (readonly (string | number)[])[],
+  lineEnding: "\n" | "\r\n",
+): string {
+  if (lineEnding !== "\n" && lineEnding !== "\r\n") {
+    throw new TypeError("Invalid CSV line ending.");
+  }
+  return rows
+    .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+    .join(lineEnding);
 }

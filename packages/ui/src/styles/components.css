@@ -25,6 +25,7 @@
 @layer miaixz-components;
 
 @import url("./components/alert.css") layer(miaixz-components);
+@import url("./components/stage.css") layer(miaixz-components);
 @import url("./components/avatar.css") layer(miaixz-components);
 @import url("./components/badge.css") layer(miaixz-components);
 @import url("./components/bar.css") layer(miaixz-components);

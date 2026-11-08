@@ -19,10 +19,13 @@
 */
 
 /**
- * Exports shared date, number, object, and string validation utilities.
+ * Exports shared collection, JSON, date, number, object, and string utilities.
  */
 
+export { resolveCollectionValue } from "./collection.js";
 export { isValidDate } from "./date.js";
+export { cloneMiaixzJsonValue, freezeMiaixzJsonValue, mergeMiaixzJsonValue } from "./json.js";
+export type { MiaixzDeepReadonly, MiaixzJsonOptions } from "./json.js";
 export { clamp } from "./number.js";
 export { isRecord } from "./object.js";
 export { isNonEmptyString } from "./string.js";

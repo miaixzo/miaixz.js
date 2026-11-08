@@ -28,9 +28,10 @@ import type { MiaixzModuleManifest } from "./module-manifest.js";
 /**
  * Provides the host-owned resources required to mount an integrated module.
  *
+ * @typeParam Context - Caller-defined context exposed through the supplied bridge.
  * @public
  */
-export interface MiaixzModuleMountContext {
+export interface MiaixzModuleMountContext<Context = unknown> {
   /**
    * DOM container owned by the host application.
    */
@@ -39,7 +40,7 @@ export interface MiaixzModuleMountContext {
   /**
    * Capability-limited bridge supplied by the host.
    */
-  readonly bridge: MiaixzHostBridge;
+  readonly bridge: MiaixzHostBridge<Context>;
 
   /**
    * Validated immutable manifest associated with the module.
@@ -64,14 +65,17 @@ export interface MiaixzModuleHandle {
 /**
  * Defines the only lifecycle entry exposed by an integrated module.
  *
+ * @typeParam Context - Context validated by the host bridge provided at mount.
  * @public
  */
-export interface MiaixzIntegratedModule {
+export interface MiaixzIntegratedModule<Context = unknown> {
   /**
    * Mounts the module into its host-owned container.
    *
    * @param context - Validated host resources supplied to the module.
    * @returns Handle used by the host to unmount the module.
    */
-  mount(context: MiaixzModuleMountContext): MiaixzModuleHandle | Promise<MiaixzModuleHandle>;
+  mount(
+    context: MiaixzModuleMountContext<Context>,
+  ): MiaixzModuleHandle | Promise<MiaixzModuleHandle>;
 }

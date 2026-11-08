@@ -101,6 +101,10 @@ export interface MiaixzNavigationRailOwnProps {
   readonly brand: ReactNode;
   readonly toggle: ReactNode;
   readonly groups: readonly NavigationRailGroupModel[];
+  /**
+   * Supplies the caller's icon for entries without a valid icon.
+   */
+  readonly defaultIcon?: NonNullable<NavigationEntry["icon"]>;
   readonly overflowLabel?: string;
   readonly overflowBehavior?: "menu" | "scroll";
   readonly expanded?: boolean;

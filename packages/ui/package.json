@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/ui",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Miaixz design tokens, themes, styles, and UI components.",
   "type": "module",
   "engines": {
@@ -117,6 +117,8 @@
       "Spinner",
       "Split",
       "Stack",
+      "Stage",
+      "StageLoading",
       "Status",
       "Steps",
       "Switch",
@@ -393,7 +395,11 @@
     "attributes": [
       "data-miaixz-tab-trigger",
       "data-motion-replay",
-      "data-motion-state"
+      "data-motion-state",
+      "data-current-row",
+      "data-selected",
+      "data-empty",
+      "data-disabled"
     ]
   },
   "files": [
@@ -711,6 +717,10 @@
       "types": "./dist/components/search/index.d.ts",
       "import": "./dist/components/search/index.js"
     },
+    "./stage": {
+      "types": "./dist/components/stage/index.d.ts",
+      "import": "./dist/components/stage/index.js"
+    },
     "./overlay": {
       "types": "./dist/components/overlay/index.d.ts",
       "import": "./dist/components/overlay/index.js"
@@ -784,6 +794,7 @@
     "./timeline/styles.css": "./dist/styles/components/timeline.css",
     "./toaster/styles.css": "./dist/styles/components/toaster.css",
     "./alert/styles.css": "./dist/styles/components/alert.css",
+    "./stage/styles.css": "./dist/styles/components/stage.css",
     "./action/styles.css": "./dist/styles/components/action.css",
     "./avatar/styles.css": "./dist/styles/components/avatar.css",
     "./button/styles.css": "./dist/styles/components/button.css",
@@ -876,8 +887,8 @@
     "check": "npm run typecheck && npm run lint && npm run audit:css && npm run test:coverage && npm run format:check"
   },
   "peerDependencies": {
-    "@miaixz/icons": ">=0.8.2 <0.9.0",
-    "@miaixz/sdk": ">=0.8.2 <0.9.0",
+    "@miaixz/icons": ">=0.8.3 <0.9.0",
+    "@miaixz/sdk": ">=0.8.3 <0.9.0",
     "react": ">=18.3 <20",
     "react-dom": ">=18.3 <20"
   },
@@ -888,8 +899,8 @@
     "@babel/core": "8.0.1",
     "@babel/eslint-parser": "8.0.1",
     "@eslint/js": "10.0.1",
-    "@miaixz/icons": "0.8.2",
-    "@miaixz/sdk": "0.8.2",
+    "@miaixz/icons": "0.8.3",
+    "@miaixz/sdk": "0.8.3",
     "@playwright/test": "1.62.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -902,7 +913,7 @@
     "@vitest/coverage-v8": "4.1.12",
     "axe-core": "4.13.0",
     "esbuild": "0.28.2",
-    "eslint": "10.9.1",
+    "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jsdoc": "62.7.0",
     "eslint-plugin-react-hooks": "7.1.1",

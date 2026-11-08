@@ -129,17 +129,17 @@
 }
 
 .miaixz-tab:where(:hover:not(:disabled, [aria-disabled="true"])) {
-  color: var(--miaixz-color-brand);
+  color: var(--miaixz-color-text-primary);
 }
 
 .miaixz-tab:focus-visible {
-  color: var(--miaixz-color-brand);
+  color: var(--miaixz-color-text-primary);
   outline: 0;
   box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-focus);
 }
 
 .miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {
-  color: var(--miaixz-color-brand);
+  color: var(--miaixz-color-text-primary);
   box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-brand);
 }
 
