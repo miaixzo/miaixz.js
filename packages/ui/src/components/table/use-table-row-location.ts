@@ -52,7 +52,9 @@ export function useTableRowLocation(
       if (
         !row ||
         row.closest("table") !== table ||
-        row.matches('[aria-disabled="true"], [data-disabled="true"], [data-current-controlled]') ||
+        row.matches(
+          '[aria-disabled="true"], [data-disabled="true"], [data-current-controlled], [data-table-state-row]',
+        ) ||
         row.querySelector(':scope > [data-empty="true"], :scope > .miaixz-table-empty')
       )
         return;

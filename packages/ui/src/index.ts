@@ -672,6 +672,7 @@ export type {
   TableCellProps,
   TableContainerProps,
   TableGutter,
+  TableLoadState,
   TableRowHeight,
   TableFooterProps,
   TableHeaderProps,

@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 
 import { IconsGuide } from "../../module/icons/icons-guide";
 
+/**
+ * Sets the document title for the icon catalog guide.
+ */
 export const metadata: Metadata = { title: "Icons 指南" };
 
 /**

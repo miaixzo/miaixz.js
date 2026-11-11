@@ -46,6 +46,18 @@
   border-radius: var(--miaixz-radius-panel);
 }
 
+.miaixz-table-load[data-loading="true"] > .miaixz-stage-loading-content {
+  opacity: var(--miaixz-opacity-muted);
+}
+
+.miaixz-table-load-surface {
+  background: transparent;
+}
+
+.miaixz-table [data-table-state-row="loading"] {
+  pointer-events: none;
+}
+
 .miaixz-table-container[data-gutter="inset"] {
   padding-inline: var(--miaixz-table-gutter-inline);
 }

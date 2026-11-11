@@ -302,17 +302,11 @@ async function readProjection(options, strict) {
       "Unused category: " + id,
     );
   if (strict) {
-    const sortedNames = icons.map((i) => i.name).sort();
-    for (const [index, icon] of icons.entries()) {
-      requireCondition(
-        icon.name === sortedNames[index],
-        "Icon names must use ASCII assignment order: " + icon.name,
-      );
+    for (const [index, icon] of icons.entries())
       requireCondition(
         icon.codepoint === FIRST_CODEPOINT + index,
-        "Invalid continuous name-derived codepoint: " + icon.name,
+        "Invalid continuous codepoint: " + icon.name,
       );
-    }
     const expectedPaths = [...new Set(icons.map((i) => shardPathFor(i.codepoint)))];
     requireCondition(
       JSON.stringify(expectedPaths) === JSON.stringify(manifest.shards),

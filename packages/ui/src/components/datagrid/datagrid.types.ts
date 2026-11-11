@@ -23,7 +23,7 @@
  */
 
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
-import type { TableGutter, TableRowHeight } from "../table/table.types.js";
+import type { TableGutter, TableLoadState, TableRowHeight } from "../table/table.types.js";
 
 /**
  * Datagrid sort directions permitted by the component contract.
@@ -96,6 +96,10 @@ export interface MiaixzDatagridBaseProps<Row> {
   readonly getRowId: (row: Readonly<Row>) => string;
   readonly sort?: DatagridSort;
   readonly onSortChange?: (sort: DatagridSort | undefined) => void;
+  /**
+   * Controls asynchronous presentation and takes precedence over loading and error.
+   */
+  readonly loadState?: TableLoadState;
   readonly loading?: boolean;
   readonly error?: ReactNode;
   readonly emptyState?: ReactNode;

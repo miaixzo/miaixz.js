@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 
 import { UiWorkbench } from "../../module/ui/ui-workbench";
 
+/**
+ * Sets the document title for the interactive UI workbench.
+ */
 export const metadata: Metadata = { title: "UI 指南" };
 
 /**

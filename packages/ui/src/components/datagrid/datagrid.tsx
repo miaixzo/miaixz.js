@@ -32,6 +32,7 @@ import { Icon } from "@miaixz/icons";
 import { Overlay } from "../overlay/overlay.js";
 import { Radio } from "../radio/radio.js";
 import { Scroll } from "../scroll/scroll.js";
+import { getTableResult, TableLoadRegion } from "../table/table-load.js";
 import {
   Table,
   TableBody,
@@ -181,6 +182,7 @@ function DatagridImplementation<Row>(
     onSelectedRowIdsChange,
     selectionMode = "none",
     selectionWidthPercent,
+    loadState,
     loading = false,
     error,
     emptyState,
@@ -200,7 +202,11 @@ function DatagridImplementation<Row>(
     validateColumns(columns);
     return columns;
   }, [columns]);
-  const resolvedRows = useMemo(() => resolveRows(rows, getRowId), [getRowId, rows]);
+  const showRows = loadState === undefined || getTableResult(loadState) === "rows";
+  const resolvedRows = useMemo(
+    () => (showRows ? resolveRows(rows, getRowId) : []),
+    [getRowId, rows, showRows],
+  );
   validatePercent(selectionWidthPercent);
   const selectedValues = selectedRowIds ?? [];
   if (selectionMode === "single" && selectedValues.length > 1) {
@@ -216,13 +222,9 @@ function DatagridImplementation<Row>(
   const someCurrentSelected = selectedCurrent.length > 0 && !allCurrentSelected;
   const hasSelection = selectionMode !== "none";
   const columnCount = resolvedColumns.length + (hasSelection ? 1 : 0);
-  const state = loading
-    ? "loading"
-    : error !== undefined
-      ? "error"
-      : rows.length === 0
-        ? "empty"
-        : "ready";
+  const state =
+    loadState?.status ??
+    (loading ? "loading" : error !== undefined ? "error" : rows.length === 0 ? "empty" : "ready");
 
   /**
    * Reports one row-selection change according to the active selection mode.
@@ -259,11 +261,178 @@ function DatagridImplementation<Row>(
     (onSelectedRowIdsChange as ((ids: readonly string[]) => void) | undefined)?.([...next]);
   };
 
+  const viewport = (
+    <Scroll
+      focusable="auto"
+      aria-label={caption}
+      className="miaixz-table-container miaixz-table-container-plain miaixz-datagrid-container"
+    >
+      <Table
+        aria-busy={loadState?.status === "loading" || undefined}
+        trackCurrentRow={currentRowId === undefined}
+        {...(onCurrentRowChange
+          ? {
+              onCurrentRowChange: (row) => {
+                const id = row.dataset.rowId;
+                if (id) onCurrentRowChange(id);
+              },
+            }
+          : {})}
+        stickyHeader={bodyLayout === "fill"}
+        {...(rowHeight === undefined ? {} : { rowHeight })}
+      >
+        <TableCaption>{caption}</TableCaption>
+        <TableHeader>
+          <TableRow>
+            {hasSelection && (
+              <TableHead
+                className="miaixz-datagrid-selection-cell"
+                style={
+                  selectionWidthPercent === undefined
+                    ? undefined
+                    : { width: `${selectionWidthPercent}%` }
+                }
+              >
+                {selectionMode === "multiple" && (
+                  <Checkbox
+                    aria-label={t("ui.table.selectPage")}
+                    checked={allCurrentSelected}
+                    indeterminate={someCurrentSelected}
+                    disabled={resolvedRows.length === 0 || onSelectedRowIdsChange === undefined}
+                    onChange={changePageSelection}
+                  />
+                )}
+              </TableHead>
+            )}
+            {resolvedColumns.map((column) => {
+              const direction = getSortDirection(column.id, sort);
+              return (
+                <TableHead
+                  key={column.id}
+                  aria-sort={direction}
+                  style={
+                    column.width !== undefined
+                      ? { width: column.width }
+                      : column.widthPercent === undefined
+                        ? undefined
+                        : { width: `${column.widthPercent}%` }
+                  }
+                  className={`miaixz-datagrid-align-${column.align ?? "start"}`}
+                >
+                  {column.sortable === true ? (
+                    <button
+                      type="button"
+                      disabled={onSortChange === undefined}
+                      data-state={direction ?? "none"}
+                      className="miaixz-datagrid-sort"
+                      onClick={() => onSortChange?.(getNextSort(column.id, sort))}
+                    >
+                      <span>{column.header}</span>
+                      <Icon
+                        name="chevron-down"
+                        size="inline"
+                        className="miaixz-datagrid-sort-icon"
+                      />
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </TableHead>
+              );
+            })}
+          </TableRow>
+        </TableHeader>
+        <TableBody
+          {...(loadState === undefined
+            ? {}
+            : { columnCount: Math.max(1, columnCount), emptyState })}
+        >
+          {loadState === undefined && error !== undefined ? (
+            <TableRow>
+              <TableCell colSpan={columnCount} className="miaixz-datagrid-state-cell">
+                <div className="miaixz-datagrid-error" role="alert">
+                  {error}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : loadState === undefined && resolvedRows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={columnCount} className="miaixz-datagrid-state-cell">
+                <div className="miaixz-datagrid-empty">{emptyState}</div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            resolvedRows.map((row) => {
+              const selected = hasSelection && selectedIds.has(row.id);
+              return (
+                <TableRow
+                  key={row.id}
+                  selected={selected}
+                  rowId={row.id}
+                  {...(currentRowId === undefined ? {} : { current: row.id === currentRowId })}
+                  {...(currentRowId === undefined || !onCurrentRowChange
+                    ? {}
+                    : {
+                        onClickCapture: () => {
+                          if (row.id !== currentRowId) onCurrentRowChange(row.id);
+                        },
+                        onFocusCapture: () => {
+                          if (row.id !== currentRowId) onCurrentRowChange(row.id);
+                        },
+                      })}
+                >
+                  {hasSelection && (
+                    <TableCell className="miaixz-datagrid-selection-cell">
+                      {selectionMode === "multiple" ? (
+                        <Checkbox
+                          aria-label={t("ui.table.selectRow")}
+                          checked={selected}
+                          disabled={onSelectedRowIdsChange === undefined}
+                          onChange={(event) =>
+                            changeRowSelection(row.id, event.currentTarget.checked)
+                          }
+                        />
+                      ) : (
+                        <Radio
+                          aria-label={t("ui.table.selectRow")}
+                          name={radioName}
+                          checked={selected}
+                          disabled={onSelectedRowIdsChange === undefined}
+                          onChange={(event) =>
+                            changeRowSelection(row.id, event.currentTarget.checked)
+                          }
+                        />
+                      )}
+                    </TableCell>
+                  )}
+                  {resolvedColumns.map((column) => (
+                    <TableCell
+                      key={column.id}
+                      className={`miaixz-datagrid-align-${column.align ?? "start"}`}
+                    >
+                      {column.overflow === "ellipsis" ? (
+                        <div className="miaixz-datagrid-cell-ellipsis">
+                          {column.cell(row.value)}
+                        </div>
+                      ) : (
+                        column.cell(row.value)
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+    </Scroll>
+  );
+
   return (
     <div
       {...props}
       ref={reference}
-      aria-busy={loading || undefined}
+      aria-busy={(loadState === undefined && loading) || undefined}
       data-state={state}
       data-gutter={gutter}
       data-layout={layout}
@@ -271,167 +440,13 @@ function DatagridImplementation<Row>(
       data-caption-visibility={captionVisibility}
       className={classNames("miaixz-datagrid", className)}
     >
-      <Overlay active={loading} label={t("ui.loading")}>
-        <Scroll
-          focusable="auto"
-          aria-label={caption}
-          className="miaixz-table-container miaixz-table-container-plain miaixz-datagrid-container"
-        >
-          <Table
-            trackCurrentRow={currentRowId === undefined}
-            {...(onCurrentRowChange
-              ? {
-                  onCurrentRowChange: (row) => {
-                    const id = row.dataset.rowId;
-                    if (id) onCurrentRowChange(id);
-                  },
-                }
-              : {})}
-            stickyHeader={bodyLayout === "fill"}
-            {...(rowHeight === undefined ? {} : { rowHeight })}
-          >
-            <TableCaption>{caption}</TableCaption>
-            <TableHeader>
-              <TableRow>
-                {hasSelection && (
-                  <TableHead
-                    className="miaixz-datagrid-selection-cell"
-                    style={
-                      selectionWidthPercent === undefined
-                        ? undefined
-                        : { width: `${selectionWidthPercent}%` }
-                    }
-                  >
-                    {selectionMode === "multiple" && (
-                      <Checkbox
-                        aria-label={t("ui.table.selectPage")}
-                        checked={allCurrentSelected}
-                        indeterminate={someCurrentSelected}
-                        disabled={resolvedRows.length === 0 || onSelectedRowIdsChange === undefined}
-                        onChange={changePageSelection}
-                      />
-                    )}
-                  </TableHead>
-                )}
-                {resolvedColumns.map((column) => {
-                  const direction = getSortDirection(column.id, sort);
-                  return (
-                    <TableHead
-                      key={column.id}
-                      aria-sort={direction}
-                      style={
-                        column.width !== undefined
-                          ? { width: column.width }
-                          : column.widthPercent === undefined
-                            ? undefined
-                            : { width: `${column.widthPercent}%` }
-                      }
-                      className={`miaixz-datagrid-align-${column.align ?? "start"}`}
-                    >
-                      {column.sortable === true ? (
-                        <button
-                          type="button"
-                          disabled={onSortChange === undefined}
-                          data-state={direction ?? "none"}
-                          className="miaixz-datagrid-sort"
-                          onClick={() => onSortChange?.(getNextSort(column.id, sort))}
-                        >
-                          <span>{column.header}</span>
-                          <Icon
-                            name="chevron-down"
-                            size="inline"
-                            className="miaixz-datagrid-sort-icon"
-                          />
-                        </button>
-                      ) : (
-                        column.header
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {error !== undefined ? (
-                <TableRow>
-                  <TableCell colSpan={columnCount} className="miaixz-datagrid-state-cell">
-                    <div className="miaixz-datagrid-error" role="alert">
-                      {error}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : resolvedRows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columnCount} className="miaixz-datagrid-state-cell">
-                    <div className="miaixz-datagrid-empty">{emptyState}</div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                resolvedRows.map((row) => {
-                  const selected = hasSelection && selectedIds.has(row.id);
-                  return (
-                    <TableRow
-                      key={row.id}
-                      selected={selected}
-                      rowId={row.id}
-                      {...(currentRowId === undefined ? {} : { current: row.id === currentRowId })}
-                      {...(currentRowId === undefined || !onCurrentRowChange
-                        ? {}
-                        : {
-                            onClickCapture: () => {
-                              if (row.id !== currentRowId) onCurrentRowChange(row.id);
-                            },
-                            onFocusCapture: () => {
-                              if (row.id !== currentRowId) onCurrentRowChange(row.id);
-                            },
-                          })}
-                    >
-                      {hasSelection && (
-                        <TableCell className="miaixz-datagrid-selection-cell">
-                          {selectionMode === "multiple" ? (
-                            <Checkbox
-                              aria-label={t("ui.table.selectRow")}
-                              checked={selected}
-                              disabled={onSelectedRowIdsChange === undefined}
-                              onChange={(event) =>
-                                changeRowSelection(row.id, event.currentTarget.checked)
-                              }
-                            />
-                          ) : (
-                            <Radio
-                              aria-label={t("ui.table.selectRow")}
-                              name={radioName}
-                              checked={selected}
-                              disabled={onSelectedRowIdsChange === undefined}
-                              onChange={(event) =>
-                                changeRowSelection(row.id, event.currentTarget.checked)
-                              }
-                            />
-                          )}
-                        </TableCell>
-                      )}
-                      {resolvedColumns.map((column) => (
-                        <TableCell
-                          key={column.id}
-                          className={`miaixz-datagrid-align-${column.align ?? "start"}`}
-                        >
-                          {column.overflow === "ellipsis" ? (
-                            <div className="miaixz-datagrid-cell-ellipsis">
-                              {column.cell(row.value)}
-                            </div>
-                          ) : (
-                            column.cell(row.value)
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </Scroll>
-      </Overlay>
+      {loadState === undefined ? (
+        <Overlay active={loading} label={t("ui.loading")}>
+          {viewport}
+        </Overlay>
+      ) : (
+        <TableLoadRegion state={loadState}>{viewport}</TableLoadRegion>
+      )}
       {pagination !== undefined && <div className="miaixz-datagrid-pagination">{pagination}</div>}
     </div>
   );

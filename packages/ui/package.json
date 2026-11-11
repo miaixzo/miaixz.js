@@ -243,6 +243,16 @@
         "bordered",
         "slotProps"
       ],
+      "Datagrid": [
+        "loadState"
+      ],
+      "TableContainer": [
+        "loadState"
+      ],
+      "TableBody": [
+        "columnCount",
+        "emptyState"
+      ],
       "Tree": [
         "showSelectionIndicator",
         "creatable",

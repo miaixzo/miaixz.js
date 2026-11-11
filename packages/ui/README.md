@@ -596,6 +596,25 @@ combines string class maps in order, retaining duplicates and empty strings and 
 Both helpers are root exports and are not Theme components. The scoped JavaScript and CSS entries
 are listed in the public-entry table; the complete stylesheet already includes the new CSS.
 
+### Asynchronous tables
+
+Pass a controlled `TableLoadState` as `loadState` to `Datagrid` or `TableContainer` under
+`MiaixzLocaleProvider`. Use the complete `@miaixz/ui/styles.css` entry for the table and its feedback.
+For a composed table, set `TableBody columnCount` to the total number of physical columns, including
+selection and action columns. Both components accept optional empty-result content through `emptyState`
+on `Datagrid` or `TableBody`.
+
+| State                                         | Presentation                                                                                                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{ status: "loading" }`                       | Keeps the header and shows three skeleton rows for the first request or a changed query.                                                                      |
+| `{ status: "ready" }` / `{ status: "empty" }` | Shows the returned rows or the empty result.                                                                                                                  |
+| `{ status: "refreshing", result: "rows" }`    | Keeps the current rows and scroll position and blocks interaction within the table while it refreshes. Use `result: "empty"` after a successful empty result. |
+| `{ status: "error", message, onRetry }`       | Shows the error and an optional retry. Supply `result: "rows"` or `result: "empty"` when the current query still has that result.                             |
+
+Keep `loadState` defined across requests. During a same-query refresh or failure, keep the associated
+rows supplied by the caller. The page owns fetching, pagination, sorting, and stale response handling.
+With `loadState` omitted, `Datagrid` continues to use its existing `loading` and `error` props.
+
 ## Error handling
 
 Component contract violations throw `MiaixzUiError`. Each error includes a stable `code`, a translatable `messageKey`, and optional sanitized `details`:

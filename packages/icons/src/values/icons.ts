@@ -1803,6 +1803,11 @@ export const ICON_NAMES = Object.freeze({
   "zodiac-virgo": Object.freeze([984818, 0] as const),
   "zoom-in": Object.freeze([984819, 0] as const),
   "zoom-out": Object.freeze([984820, 0] as const),
+  "openid": Object.freeze([984821, 0] as const),
+  "saml": Object.freeze([984822, 0] as const),
+  "ldap": Object.freeze([984823, 0] as const),
+  "microsoft-entra": Object.freeze([984824, 0] as const),
+  "google-workspace": Object.freeze([984825, 0] as const),
 } as const);
 /**
  * Canonical icon name, derived from the keys of the generated mapping.

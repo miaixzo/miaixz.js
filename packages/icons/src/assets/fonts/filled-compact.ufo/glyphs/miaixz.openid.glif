@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+ ~                                                                           ~
+ ~ Copyright (c) 2015-2026 miaixz.org and other contributors.                ~
+ ~                                                                           ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");           ~
+ ~ you may not use this file except in compliance with the License.          ~
+ ~ You may obtain a copy of the License at                                   ~
+ ~                                                                           ~
+ ~      https://www.apache.org/licenses/LICENSE-2.0                          ~
+ ~                                                                           ~
+ ~ Unless required by applicable law or agreed to in writing, software       ~
+ ~ distributed under the License is distributed on an "AS IS" BASIS,         ~
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ~
+ ~ See the License for the specific language governing permissions and       ~
+ ~ limitations under the License.                                            ~
+ ~                                                                           ~
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+-->
+<glyph name="miaixz.openid" format="2">
+  <advance width="960"/>
+  <unicode hex="F06F5"/>
+  <outline>
+    <contour>
+      <point x="461.857143" y="610.285714" type="line"/>
+      <point x="461.857143" y="44.228571" type="line"/>
+      <point x="311.876190" y="61.161905"/>
+      <point x="230.838095" y="103.495238"/>
+      <point x="230.838095" y="183.323810" type="curve" smooth="yes"/>
+      <point x="230.838095" y="258.314286"/>
+      <point x="294.942857" y="318.790476"/>
+      <point x="413.476190" y="340.561905" type="curve"/>
+      <point x="413.476190" y="460.304762" type="line"/>
+      <point x="232.047619" y="436.114286"/>
+      <point x="99.000000" y="332.095238"/>
+      <point x="99.000000" y="208.723810" type="curve" smooth="yes"/>
+      <point x="99.000000" y="75.676190"/>
+      <point x="268.333333" y="-35.600000"/>
+      <point x="461.857143" y="-42.857143" type="curve"/>
+      <point x="608.209524" y="53.904762" type="line"/>
+      <point x="608.209524" y="682.857143" type="line"/>
+    </contour>
+    <contour>
+      <point x="631.190476" y="460.304762" type="curve"/>
+      <point x="631.190476" y="374.428571" type="line"/>
+      <point x="665.057143" y="364.752381"/>
+      <point x="696.504762" y="324.838095"/>
+      <point x="725.533333" y="305.485714" type="curve"/>
+      <point x="684.409524" y="269.200000" type="line"/>
+      <point x="861.000000" y="235.333333" type="line"/>
+      <point x="848.904762" y="411.923810" type="line"/>
+      <point x="807.780952" y="382.895238" type="line"/>
+      <point x="759.400000" y="419.180952"/>
+      <point x="703.761905" y="445.790476"/>
+    </contour>
+  </outline>
+</glyph>

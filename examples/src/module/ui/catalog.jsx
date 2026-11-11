@@ -5,6 +5,9 @@ import { Stage, Button, StageLoading, MiaixzErrorBoundary, useStageSettled } fro
 
 import styles from "./ui-workbench.module.css";
 
+/**
+ * Lists the public UI components and providers shown in the workbench catalog.
+ */
 export const UI_COMPONENT_NAMES = Object.freeze([
   "ActionBar",
   "ActionText",

@@ -157,6 +157,21 @@ Drawer 默认不会因点击背景、按 Escape、失焦或指针离开而关闭
 
 ## 异步内容与非视觉工具
 
+### 表格加载
+
+在 `MiaixzLocaleProvider` 下为 `Datagrid` 或 `TableContainer` 传入受控的 `TableLoadState`，并使用完整的 `@miaixz/ui/styles.css`。组合表格通过 `TableBody columnCount` 声明实际列数，包含选择列和操作列。可在 `Datagrid` 或 `TableBody` 上传入 `emptyState` 定制空结果。
+
+| 状态                                          | 呈现                                                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `{ status: "loading" }`                       | 首次请求或查询条件变化时保留表头，显示三行骨架。                                           |
+| `{ status: "ready" }` / `{ status: "empty" }` | 显示本次查询的数据或空结果。                                                               |
+| `{ status: "refreshing", result: "rows" }`    | 刷新同一查询时保留数据和滚动位置，暂时禁用表格内交互。已有空结果时使用 `result: "empty"`。 |
+| `{ status: "error", message, onRetry }`       | 显示错误和可选重试。当前查询仍有结果时传入 `result: "rows"` 或 `result: "empty"`。         |
+
+请求切换时持续传入 `loadState`。同一查询的刷新或失败需要保留对应的行数据。请求、分页、排序和过期响应处理由页面负责。省略 `loadState` 时，`Datagrid` 继续按原有 `loading` 和 `error` 属性工作。
+
+### 通用反馈
+
 沿用上面的语言 Provider 和样式入口。`Stage` 提供 loading/empty/error/ready 呈现，ready 仅渲染 children；文案、placeholder、数据和请求恢复由调用方提供。error 默认 `presentation="region"`，也可选 `"inline"`；显式提供 loadingLabel，onRetry 与 retryLabel 同时存在才显示重试按钮。
 
 ```tsx

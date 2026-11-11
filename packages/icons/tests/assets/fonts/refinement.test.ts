@@ -10367,7 +10367,8 @@ describe("refinement contract fixtures", () => {
         `url("data:font/ttf;base64,${reference.bytes.toString("base64")}")`,
       )
       .replace('format("woff2")', 'format("truetype")');
-    expect(fontCss).toContain("unicode-range: U+0020, U+F0000-F06F4;");
+    const lastCodepoint = actualSource.icons.at(-1).codepoint.toString(16).toUpperCase();
+    expect(fontCss).toContain(`unicode-range: U+0020, U+F0000-${lastCodepoint};`);
     /**
      * Constructs independent analytic circle polygons below the source subdivision bound.
      * @param radius - Font-unit mathematical radius.

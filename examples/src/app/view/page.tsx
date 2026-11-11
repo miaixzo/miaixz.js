@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 
 import { ViewGuide } from "../../module/view/view-guide";
 
+/**
+ * Sets the document title for the document-preview guide.
+ */
 export const metadata: Metadata = { title: "View 指南" };
 
 /**

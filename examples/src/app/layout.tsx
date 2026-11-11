@@ -11,6 +11,9 @@ import { GuideShell } from "../shared/guide/guide-shell";
 import { ExampleRuntime } from "../shared/runtime/example-runtime";
 import "./styles/global.css";
 
+/**
+ * Supplies the shared guide title template and site description.
+ */
 export const metadata: Metadata = {
   title: {
     default: "Miaixz Guides",

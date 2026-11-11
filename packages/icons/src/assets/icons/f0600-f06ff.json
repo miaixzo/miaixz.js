@@ -1714,6 +1714,41 @@
       "category": "actions",
       "opticalClass": "regular",
       "rtl": "none"
+    },
+    {
+      "name": "openid",
+      "codepoint": 984821,
+      "category": "security",
+      "opticalClass": "regular",
+      "rtl": "none"
+    },
+    {
+      "name": "saml",
+      "codepoint": 984822,
+      "category": "security",
+      "opticalClass": "regular",
+      "rtl": "none"
+    },
+    {
+      "name": "ldap",
+      "codepoint": 984823,
+      "category": "security",
+      "opticalClass": "regular",
+      "rtl": "none"
+    },
+    {
+      "name": "microsoft-entra",
+      "codepoint": 984824,
+      "category": "symbols",
+      "opticalClass": "regular",
+      "rtl": "none"
+    },
+    {
+      "name": "google-workspace",
+      "codepoint": 984825,
+      "category": "symbols",
+      "opticalClass": "regular",
+      "rtl": "none"
     }
   ]
 }

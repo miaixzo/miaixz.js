@@ -3,19 +3,103 @@
  */
 
 import { readFileSync } from "node:fs";
+import { createMiaixzI18n } from "@miaixz/sdk/i18n";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   Table,
   TableBody,
   TableCell,
   TableContainer,
+  TableHead,
+  TableHeader,
   TableRow,
+  type TableLoadState,
 } from "../../../src/components/table/index.js";
+import { MiaixzLocaleProvider, miaixzUiMessages } from "../../../src/i18n/index.js";
 
 afterEach(cleanup);
+
+describe("asynchronous table loading", () => {
+  it("keeps the header and scroll viewport while the body presents the current query state", async () => {
+    const i18n = createMiaixzI18n({ locale: "en-US", messages: miaixzUiMessages });
+    const retry = vi.fn();
+    const view = (state: TableLoadState) => (
+      <MiaixzLocaleProvider i18n={i18n}>
+        <TableContainer data-testid="viewport" loadState={state}>
+          <Table aria-label="Records">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody columnCount={2} emptyState="No matching records">
+              <TableRow rowId="one">
+                <TableCell>First record</TableCell>
+                <TableCell>View record</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </MiaixzLocaleProvider>
+    );
+    const { rerender } = render(view({ status: "loading" }));
+    const viewport = screen.getByTestId("viewport");
+    const header = screen.getByRole("columnheader", { name: "Name" });
+    expect(screen.getByRole("status")).toHaveTextContent("Loading");
+    expect(viewport).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText("First record")).not.toBeInTheDocument();
+    const placeholders = viewport.querySelectorAll<HTMLTableRowElement>(
+      'tbody > tr[data-table-state-row="loading"]',
+    );
+    expect(placeholders).toHaveLength(3);
+    for (const row of placeholders) {
+      expect(row.cells).toHaveLength(2);
+      expect(row).toHaveAttribute("aria-hidden", "true");
+      fireEvent.click(row.cells[0]!);
+      expect(row).not.toHaveAttribute("data-current-row");
+    }
+
+    rerender(view({ status: "ready" }));
+    const record = screen.getByText("First record").closest("tr");
+    expect(screen.getByRole("columnheader", { name: "Name" })).toBe(header);
+    expect(viewport).not.toHaveAttribute("aria-busy");
+    viewport.scrollLeft = 64;
+    viewport.scrollTop = 48;
+
+    rerender(view({ status: "refreshing", result: "rows", label: "Refreshing records" }));
+    expect(screen.getByText("Refreshing records")).toBeInTheDocument();
+    expect(viewport.closest("[inert]")).not.toBeNull();
+    expect(screen.getByText("First record").closest("tr")).toBe(record);
+
+    rerender(view({ status: "error", result: "rows", message: "Try again", onRetry: retry }));
+    expect(screen.getByTestId("viewport")).toBe(viewport);
+    expect(viewport.scrollLeft).toBe(64);
+    expect(viewport.scrollTop).toBe(48);
+    expect(viewport.closest("[inert]")).toBeNull();
+    expect(screen.getByText("First record").closest("tr")).toBe(record);
+    expect(screen.getByRole("alert")).toHaveTextContent("Could not refresh the table");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(retry).toHaveBeenCalledOnce());
+
+    rerender(view({ status: "error", message: "No response" }));
+    const errorCell = screen.getByRole("alert").closest("td");
+    expect(errorCell).toHaveAttribute("colspan", "2");
+    expect(screen.queryByText("First record")).not.toBeInTheDocument();
+
+    rerender(view({ status: "empty" }));
+    const empty = screen.getByText("No matching records");
+    expect(empty).toHaveAttribute("colspan", "2");
+    rerender(view({ status: "refreshing", result: "empty" }));
+    expect(screen.getByText("No matching records")).toBe(empty);
+    rerender(view({ status: "error", result: "empty", message: "No response" }));
+    expect(screen.getByText("No matching records")).toBe(empty);
+    expect(screen.getByRole("alert")).toHaveTextContent("Could not refresh the table");
+  });
+});
 
 describe("table row effects", () => {
   it("uses inset gutters by default and supports flush content", () => {
