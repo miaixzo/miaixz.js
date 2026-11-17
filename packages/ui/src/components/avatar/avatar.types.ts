@@ -36,10 +36,14 @@ export type AvatarSlot = "root" | "image" | "fallback" | "indicator";
  */
 export type AvatarVariant = "circular" | "rounded" | "square";
 /**
+ * Avatar sizes, including the larger profile presentation.
+ */
+export type AvatarSize = MiaixzComponentSize | "profile";
+/**
  * Resolved Avatar state exposed to theme and slot overrides.
  */
 export interface AvatarOwnerState {
-  readonly size: MiaixzComponentSize;
+  readonly size: AvatarSize;
   readonly state: "image" | "fallback";
   readonly decorative: boolean;
   readonly hasIndicator: boolean;
@@ -50,7 +54,7 @@ export interface AvatarOwnerState {
  */
 export type AvatarRootAttributes = HTMLAttributes<HTMLSpanElement> &
   RefAttributes<HTMLSpanElement> & {
-    readonly "data-size"?: MiaixzComponentSize;
+    readonly "data-size"?: AvatarSize;
     readonly "data-state"?: "image" | "fallback";
     readonly "data-variant"?: AvatarVariant;
   };
@@ -115,7 +119,7 @@ export interface MiaixzAvatarOwnProps {
    *
    * @defaultValue `"medium"`
    */
-  readonly size?: MiaixzComponentSize;
+  readonly size?: AvatarSize;
 
   /**
    * Selects the avatar shape.

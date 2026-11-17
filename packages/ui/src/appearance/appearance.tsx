@@ -216,7 +216,7 @@ function Appearance(props: AppearanceProps) {
   );
 
   const localeGroup = group(
-    localeRuntime.t("ui.appearance.language"),
+    localeRuntime.t("ui.label.language"),
     <button
       aria-label={localeRuntime.t("ui.appearance.language.open")}
       className="miaixz-appearance-locale-summary"
@@ -412,7 +412,7 @@ function Appearance(props: AppearanceProps) {
         width={360}
         title={
           view === "language"
-            ? localeRuntime.t("ui.appearance.language")
+            ? localeRuntime.t("ui.label.language")
             : localeRuntime.t("ui.appearance.title")
         }
       >

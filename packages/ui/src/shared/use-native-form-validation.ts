@@ -51,8 +51,7 @@ function resolveValidationMessage(
   if (validity.patternMismatch) return translate("ui.validation.patternMismatch");
   if (validity.tooShort) return translate("ui.validation.tooShort");
   if (validity.tooLong) return translate("ui.validation.tooLong");
-  if (validity.rangeUnderflow) return translate("ui.validation.rangeUnderflow");
-  if (validity.rangeOverflow) return translate("ui.validation.rangeOverflow");
+  if (validity.rangeUnderflow || validity.rangeOverflow) return translate("ui.validation.range");
   if (validity.stepMismatch) return translate("ui.validation.stepMismatch");
   if (validity.badInput) return translate("ui.validation.badInput");
   return translate("ui.validation.invalid");

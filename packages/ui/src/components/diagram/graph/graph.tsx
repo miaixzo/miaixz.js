@@ -376,7 +376,7 @@ export const Graph = withMiaixzThemeComponent(
           <caption>{tableCaption}</caption>
           <thead>
             <tr>
-              <th scope="col">{t("ui.diagram.graph.source")}</th>
+              <th scope="col">{t("ui.label.source")}</th>
               <th scope="col">{t("ui.diagram.graph.relation")}</th>
               <th scope="col">{t("ui.diagram.graph.target")}</th>
             </tr>

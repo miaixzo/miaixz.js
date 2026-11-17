@@ -38,9 +38,20 @@
 }
 
 .miaixz-list[data-layout="grid"] {
+  --miaixz-list-item-width: 18rem;
+
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fill, min(100%, var(--miaixz-list-item-width)));
   gap: var(--miaixz-list-row-gap);
+}
+
+.miaixz-list[data-layout="grid"][data-fill-row] {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.miaixz-list[data-layout="grid"][data-fill-row] > .miaixz-list-item {
+  flex: 1 1 min(100%, var(--miaixz-list-item-width));
 }
 
 .miaixz-list[data-surface="panel"] {

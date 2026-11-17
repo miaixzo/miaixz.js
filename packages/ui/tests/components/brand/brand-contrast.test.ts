@@ -81,12 +81,16 @@ describe("brand foreground semantics", () => {
     expect(rule("button", '.miaixz-button[data-variant="plain"][data-tone="brand"] {')).toContain(
       "color: var(--miaixz-color-brand-strong);",
     );
-    const navigation = rule(
-      "tabs",
-      '.miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {',
+    expect(rule("tabs", "\n.miaixz-tab {")).toContain(
+      "font-weight: var(--miaixz-font-weight-regular);",
     );
-    expect(navigation).toContain("color: var(--miaixz-color-text-primary);");
-    expect(navigation).toContain("0 var(--miaixz-color-brand);");
+    expect(rule("tabs", "[data-miaixz-theme] {")).toContain(
+      "--miaixz-tabs-selected-color: var(--miaixz-color-brand);",
+    );
+    const navigation = rule("tabs", ".miaixz-tab:is(\n");
+    expect(navigation).toContain("font-weight: var(--miaixz-font-weight-medium);");
+    expect(navigation).toContain("color: var(--miaixz-tabs-selected-color);");
+    expect(navigation).toMatch(/box-shadow: inset[^;]+var\(--miaixz-tabs-selected-color\);/u);
     expect(
       rule("tabs", '.miaixz-tab:where(:hover:not(:disabled, [aria-disabled="true"])) {'),
     ).toContain("color: var(--miaixz-color-text-primary);");

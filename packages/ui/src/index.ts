@@ -199,6 +199,7 @@ export type {
   AvatarPickerProps,
   AvatarProps,
   AvatarRootAttributes,
+  AvatarSize,
   AvatarSlot,
   AvatarSlotProps,
   AvatarVariant,

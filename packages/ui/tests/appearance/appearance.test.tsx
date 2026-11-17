@@ -220,7 +220,7 @@ describe("Appearance", () => {
     expect(screen.getByRole("dialog", { name: "ui.appearance.title" })).toBeInTheDocument();
     expect(screen.queryByText("ui.appearance.theme")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "ui.appearance.language.open" }));
-    expect(screen.getByRole("dialog", { name: "ui.appearance.language" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "ui.label.language" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "choose-locale" }));
     await waitFor(() => expect(fixture.setLocale).toHaveBeenCalledWith("zh-CN"));
     expect(screen.getByRole("dialog", { name: "ui.appearance.title" })).toBeInTheDocument();

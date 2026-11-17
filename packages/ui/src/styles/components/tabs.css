@@ -28,6 +28,7 @@
   --miaixz-tabs-padding-inline: var(--miaixz-space-8);
   --miaixz-tabs-tab-padding-inline: var(--miaixz-space-8);
   --miaixz-tabs-indicator-size: var(--miaixz-border-width-strong);
+  --miaixz-tabs-selected-color: var(--miaixz-color-brand);
 }
 
 .miaixz-tabs {
@@ -114,7 +115,7 @@
   padding-inline: var(--miaixz-tabs-tab-padding-inline);
   font-family: var(--miaixz-font-family-sans);
   font-size: var(--miaixz-text-body-size);
-  font-weight: var(--miaixz-font-weight-medium);
+  font-weight: var(--miaixz-font-weight-regular);
   line-height: var(--miaixz-text-body-line-height);
   color: var(--miaixz-color-text-secondary);
   white-space: nowrap;
@@ -134,13 +135,19 @@
 
 .miaixz-tab:focus-visible {
   color: var(--miaixz-color-text-primary);
-  outline: 0;
-  box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-focus);
+  outline: var(--miaixz-border-width-default) solid var(--miaixz-color-focus);
+  outline-offset: calc(var(--miaixz-border-width-default) * -1);
 }
 
-.miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {
-  color: var(--miaixz-color-text-primary);
-  box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-brand);
+.miaixz-tab:is(
+    [aria-selected="true"],
+    [aria-current]:where(:not([aria-current="false"])),
+    [aria-pressed="true"]
+  ):where(:not(:disabled, [aria-disabled="true"])) {
+  font-weight: var(--miaixz-font-weight-medium);
+  color: var(--miaixz-tabs-selected-color);
+  box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0
+    var(--miaixz-tabs-selected-color);
 }
 
 .miaixz-tab:is(:disabled, [aria-disabled="true"]) {
@@ -219,9 +226,13 @@
 .miaixz-tabs[data-orientation="vertical"]
   > .miaixz-tabs-layout
   > .miaixz-tabs-list
-  .miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {
+  .miaixz-tab:is(
+    [aria-selected="true"],
+    [aria-current]:where(:not([aria-current="false"])),
+    [aria-pressed="true"]
+  ):where(:not(:disabled, [aria-disabled="true"])) {
   background: var(--miaixz-surface-role-selected-background);
-  box-shadow: inset var(--miaixz-tabs-indicator-size) 0 0 var(--miaixz-color-brand);
+  box-shadow: inset var(--miaixz-tabs-indicator-size) 0 0 var(--miaixz-tabs-selected-color);
 }
 
 .miaixz-tabs[data-orientation="vertical"] > .miaixz-tabs-layout > .miaixz-tab-panel {
@@ -250,9 +261,14 @@
   .miaixz-tabs[data-orientation="vertical"]
     > .miaixz-tabs-layout
     > .miaixz-tabs-list
-    .miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {
+    .miaixz-tab:is(
+      [aria-selected="true"],
+      [aria-current]:where(:not([aria-current="false"])),
+      [aria-pressed="true"]
+    ):where(:not(:disabled, [aria-disabled="true"])) {
     background: transparent;
-    box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0 var(--miaixz-color-brand);
+    box-shadow: inset 0 calc(var(--miaixz-tabs-indicator-size) * -1) 0
+      var(--miaixz-tabs-selected-color);
   }
 
   .miaixz-tabs[data-orientation="vertical"] > .miaixz-tabs-layout > .miaixz-tab-panel {
@@ -280,7 +296,7 @@
     :hover,
     :focus-visible,
     [aria-pressed="true"],
-    [aria-current],
+    [aria-current]:where(:not([aria-current="false"])),
     [aria-selected="true"]
   ) {
   color: var(--miaixz-color-text-disabled);

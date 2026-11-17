@@ -25,7 +25,7 @@
 import type { HTMLAttributes } from "react";
 
 /**
- * Configures a responsive auto-fit grid. @public
+ * Configures a responsive grid. @public
  */
 export interface GridProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -33,7 +33,12 @@ export interface GridProps extends HTMLAttributes<HTMLDivElement> {
    */
   columns?: "auto" | "one" | "two" | "three";
   /**
-   * Selects the minimum width used by auto-fit columns.
+   * Selects the width of automatic columns before any row expansion.
    */
   minItemWidth?: "standard" | "wide";
+  /**
+   * Lets items in automatic columns expand to fill each row, including the last row.
+   * Defaults to false. Fixed column modes keep their specified column count.
+   */
+  fillRow?: boolean;
 }

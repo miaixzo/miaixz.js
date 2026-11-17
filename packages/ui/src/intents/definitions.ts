@@ -32,7 +32,7 @@ export interface IntentDefinition {
   /**
    * Localized message key.
    */
-  readonly labelKey: `ui.action.${Intent}`;
+  readonly labelKey: `ui.action.${Exclude<Intent, "add-member" | "reset-password"> | "enroll" | "recover"}`;
   /**
    * Framework icon name.
    */
@@ -100,12 +100,12 @@ export const intentDefinitions: Readonly<Record<Intent, IntentDefinition>> = Obj
     tone: "neutral",
   },
   "add-member": {
-    labelKey: "ui.action.add-member",
+    labelKey: "ui.action.enroll",
     icon: "user-plus",
     tone: "neutral",
   },
   "reset-password": {
-    labelKey: "ui.action.reset-password",
+    labelKey: "ui.action.recover",
     icon: "key-round",
     tone: "neutral",
   },

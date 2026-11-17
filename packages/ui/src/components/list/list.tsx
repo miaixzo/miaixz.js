@@ -46,6 +46,7 @@ export const List = withMiaixzThemeComponent(
       surface = "plain",
       dividers = true,
       bordered = false,
+      fillRow = false,
       slotProps,
       ...props
     },
@@ -61,7 +62,15 @@ export const List = withMiaixzThemeComponent(
       }
       ids.add(item.id);
     }
-    const ownerState: ListOwnerState = { variant, layout, density, surface, dividers, bordered };
+    const ownerState: ListOwnerState = {
+      variant,
+      layout,
+      density,
+      surface,
+      dividers,
+      bordered,
+      fillRow: layout === "grid" && fillRow,
+    };
     return (
       <ListProvider value={{ density, surface }}>
         <ul
@@ -79,6 +88,7 @@ export const List = withMiaixzThemeComponent(
               "data-surface": surface,
               ...(dividers ? { "data-dividers": true } : {}),
               ...(bordered ? { "data-bordered": true } : {}),
+              ...(ownerState.fillRow ? { "data-fill-row": true } : {}),
             },
             ownedProps: [
               "data-layout",
@@ -87,6 +97,7 @@ export const List = withMiaixzThemeComponent(
               "data-surface",
               "data-dividers",
               "data-bordered",
+              "data-fill-row",
             ],
           })}
         >
