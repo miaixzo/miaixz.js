@@ -59,7 +59,12 @@ describe("Exception", () => {
       ).toBeNull();
       expect(fetch).not.toHaveBeenCalled();
       expect(screen.queryByRole("link")).toBeNull();
-      if (status === "unavailable") expect(screen.queryByText(/500|503/)).toBeNull();
+      if (status === "unavailable") {
+        expect(screen.queryByText(/500|503/)).toBeNull();
+        expect(screen.getByRole("region", { name: title })).toHaveAccessibleDescription(
+          "Try again later.",
+        );
+      }
     },
   );
 
@@ -71,6 +76,13 @@ describe("Exception", () => {
     );
     expect(screen.getByRole("heading", { level: 2, name: "无法读取列表" })).toBeVisible();
     expect(screen.getByText("请重新加载。")).toBeVisible();
+  });
+
+  it("uses the shared recovery description for a localized unavailable state", () => {
+    renderWithLocale(<Exception status="unavailable" />);
+    expect(screen.getByRole("region", { name: "服务暂时不可用" })).toHaveAccessibleDescription(
+      "请稍后重试。",
+    );
   });
 
   it("delegates recovery to the caller and never chooses a destination", () => {

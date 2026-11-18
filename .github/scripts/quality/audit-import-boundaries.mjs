@@ -47,13 +47,14 @@ const viewSourceRoot = requireSourceRoot("@miaixz/view");
 const violations = [];
 const componentRanks = new Map(
   Object.entries({
-    0: "badge bar brand breadcrumb checkbox cluster columns descriptions divider donut empty entry exception field file grid header icon input link list masonry page panel popover pressable progress radio scroll sections sidebar skeleton slider sparkline spinner split stack status steps switch table tabs textarea timeline toolbar tooltip transfer",
+    0: "badge bar brand breadcrumb checkbox cluster columns descriptions divider donut empty entry exception field file grid header icon input link list masonry page panel popover pressable progress radio scroll sections sidebar skeleton slider sparkline spinner split stack status steps switch tabs textarea timeline toolbar tooltip transfer",
     1: "button combobox dialog disclosure dropdown dropzone editor heatmap metrics pagination rating segmented select tag",
     2: "action avatar date navigation overlay shell tree",
-    3: "datagrid graph search toast view feedback drawer",
+    3: "graph search toast view feedback drawer",
     4: "alert locale notice toaster picker",
     5: "stage confirm",
-    6: "upload",
+    6: "upload table",
+    7: "datagrid",
   }).flatMap(([rank, names]) => names.split(" ").map((name) => [name, Number(rank)])),
 );
 
@@ -149,7 +150,7 @@ function relative(file) {
 }
 
 /**
- * Classifies one UI source according to the sole D0/D1/C0-C6/P0 table.
+ * Classifies one UI source according to the sole D0/D1/C0-C7/P0 table.
  *
  * @param {string} file Absolute UI source path.
  * @returns {{ kind: string, component?: string, rank?: number }} Layer classification.

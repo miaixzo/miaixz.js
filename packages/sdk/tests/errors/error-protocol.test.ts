@@ -33,16 +33,29 @@ import {
 import { miaixzSdkMessages } from "../../src/i18n/index.js";
 
 describe("SDK error protocol", () => {
-  it("maps every code to one unique, registered message key", () => {
-    const keys = Object.values(miaixzSdkErrorMessageKeys);
-    expect(new Set(keys).size).toBe(keys.length);
+  it("maps every code to its registered message key and preserves diagnostic identity", () => {
     for (const [code, messageKey] of Object.entries(miaixzSdkErrorMessageKeys)) {
       const error = new MiaixzSdkError({ code });
+      expect(error.code).toBe(code);
       expect(error.messageKey).toBe(messageKey);
       expect(error.message).toBe(`[${code}] ${messageKey}`);
       expect(miaixzSdkMessages["en-US"]?.[messageKey]).toBeTypeOf("string");
       expect(miaixzSdkMessages["zh-CN"]?.[messageKey]).toBeTypeOf("string");
     }
+  });
+
+  it("shares only the documented crypto-unavailable presentation key", () => {
+    const codesByKey = new Map<string, string[]>();
+    for (const [code, messageKey] of Object.entries(miaixzSdkErrorMessageKeys)) {
+      codesByKey.set(messageKey, [...(codesByKey.get(messageKey) ?? []), code]);
+    }
+    expect(Object.fromEntries([...codesByKey].filter(([, codes]) => codes.length > 1))).toEqual({
+      "sdk.error.crypto": [
+        "API_CRYPTO_UNAVAILABLE",
+        "BRIDGE_CRYPTO_UNAVAILABLE",
+        "EVENT_CRYPTO_UNAVAILABLE",
+      ],
+    });
   });
 
   it("uses fixed fallback keys for HTTP and backend business codes", () => {

@@ -80,9 +80,9 @@
 .miaixz-avatar-profile {
   width: var(--miaixz-avatar-size-profile);
   height: var(--miaixz-avatar-size-profile);
-  border-color: var(--miaixz-color-brand);
   font-size: var(--miaixz-text-metric-size);
   line-height: 1;
+  border-color: var(--miaixz-color-brand);
 }
 
 .miaixz-dropzone.miaixz-avatar-picker {

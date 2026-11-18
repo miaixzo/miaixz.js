@@ -55,7 +55,8 @@ export const Exception = withMiaixzThemeComponent(
     const descriptionId = `${generatedId}-description`;
     const ownerState: ExceptionOwnerState = { status, background, headingLevel, showCode };
     const titleKey = `ui.exception.${status}.title`;
-    const descriptionKey = `ui.exception.${status}.description`;
+    const descriptionKey =
+      status === "unavailable" ? "ui.try.later" : `ui.exception.${status}.description`;
     const resolvedTitle =
       title ?? (locale ? locale.t(titleKey) : miaixzUiMessages["en-US"]?.[titleKey]);
     const resolvedDescription =

@@ -173,7 +173,9 @@ export interface ListProps extends Omit<HTMLAttributes<HTMLUListElement>, "child
   readonly items: readonly ListItemProps[];
   readonly variant?: ListVariant;
   readonly layout?: ListLayout;
-  /** Lets items in the grid layout expand to fill each row. Defaults to false. */
+  /**
+   * Lets items in the grid layout expand to fill each row. Defaults to false.
+   */
   readonly fillRow?: boolean;
   readonly density?: ListDensity;
   readonly surface?: ListSurface;
