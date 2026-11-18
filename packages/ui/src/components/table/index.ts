@@ -36,6 +36,7 @@ export {
 export type {
   TableProps,
   TableGutter,
+  TableLoadState,
   TableRowHeight,
   TableOwnerState,
   TableRootAttributes,

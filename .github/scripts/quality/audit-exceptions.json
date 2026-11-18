@@ -1,4 +1,32 @@
 {
   "schemaVersion": 1,
-  "exceptions": []
+  "exceptions": [
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresOn": "2026-11-25",
+      "graphs": ["miaixz.js"],
+      "rootPackage": "picomatch",
+      "severity": "high",
+      "packages": [
+        "@vitejs/plugin-react",
+        "@vitest/coverage-v8",
+        "fast-glob",
+        "fdir",
+        "globby",
+        "micromatch",
+        "picomatch",
+        "stylelint",
+        "stylelint-config-recess-order",
+        "stylelint-config-recommended",
+        "stylelint-config-standard",
+        "stylelint-order",
+        "tinyglobby",
+        "vite",
+        "vitest"
+      ],
+      "reason": "No patched picomatch release is available. The affected dependency graph is limited to repository development tooling; production dependency audits are clean.",
+      "mitigation": "Use only repository-controlled glob patterns, do not expose development tooling to untrusted input, and replace this exception when an upstream fix becomes available."
+    }
+  ]
 }

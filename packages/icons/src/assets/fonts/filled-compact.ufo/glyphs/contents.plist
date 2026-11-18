@@ -3585,5 +3585,15 @@
   <string>miaixz.zoom-in.glif</string>
   <key>miaixz.zoom-out</key>
   <string>miaixz.zoom-out.glif</string>
+  <key>miaixz.openid</key>
+  <string>miaixz.openid.glif</string>
+  <key>miaixz.saml</key>
+  <string>miaixz.saml.glif</string>
+  <key>miaixz.ldap</key>
+  <string>miaixz.ldap.glif</string>
+  <key>miaixz.microsoft-entra</key>
+  <string>miaixz.microsoft-entra.glif</string>
+  <key>miaixz.google-workspace</key>
+  <string>miaixz.google-workspace.glif</string>
 </dict>
 </plist>

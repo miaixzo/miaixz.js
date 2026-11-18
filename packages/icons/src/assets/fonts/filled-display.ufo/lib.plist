@@ -1805,6 +1805,11 @@
     <string>miaixz.zodiac-virgo</string>
     <string>miaixz.zoom-in</string>
     <string>miaixz.zoom-out</string>
+    <string>miaixz.openid</string>
+    <string>miaixz.saml</string>
+    <string>miaixz.ldap</string>
+    <string>miaixz.microsoft-entra</string>
+    <string>miaixz.google-workspace</string>
   </array>
 </dict>
 </plist>

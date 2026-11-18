@@ -153,7 +153,7 @@ function TreeImplementation<Value = unknown, View extends TreeViewMode = TreeVie
         createInputLabel={t("ui.tree.createInput")}
         moveLabel={t("ui.tree.move")}
         renameLabel={t("ui.tree.rename")}
-        deleteLabel={t("ui.tree.delete")}
+        deleteLabel={t("ui.action.delete")}
         creatable={creatable}
         movable={movable}
         renamable={renamable}

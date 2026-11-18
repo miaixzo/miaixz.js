@@ -28,6 +28,7 @@ import type {
   TdHTMLAttributes,
   ThHTMLAttributes,
   RefAttributes,
+  ReactNode,
 } from "react";
 
 import type { MiaixzSlotProps } from "../../shared/slots.js";
@@ -40,11 +41,37 @@ import type { MiaixzSlotProps } from "../../shared/slots.js";
 export type TableGutter = "inset" | "flush";
 
 /**
+ * Caller-owned loading state for an asynchronous Table or Datagrid.
+ *
+ * A retained result belongs to the current query, including a successful empty result.
+ * Use loading when the query changes and refreshing when reloading that same query.
+ * @public
+ */
+export type TableLoadState =
+  | { readonly status: "loading"; readonly label?: string }
+  | { readonly status: "ready" | "empty" }
+  | {
+      readonly status: "refreshing";
+      readonly result: "rows" | "empty";
+      readonly label?: string;
+    }
+  | {
+      readonly status: "error";
+      readonly message: ReactNode;
+      readonly result?: "rows" | "empty";
+      readonly onRetry?: () => unknown;
+    };
+
+/**
  * Configures the responsive table framing container.
  *
  * @public
  */
 export interface TableContainerProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Enables managed table loading. Keep it defined across all states to retain the scroll container.
+   */
+  readonly loadState?: TableLoadState;
   /**
    * Controls the table's inline spacing within its container.
    *
@@ -148,7 +175,16 @@ export interface TableHeaderProps extends HTMLAttributes<HTMLTableSectionElement
  *
  * @public
  */
-export interface TableBodyProps extends HTMLAttributes<HTMLTableSectionElement> {}
+export interface TableBodyProps extends HTMLAttributes<HTMLTableSectionElement> {
+  /**
+   * Number of physical columns, including selection and action columns, in a managed table.
+   */
+  readonly columnCount?: number;
+  /**
+   * Content shown for an empty result in a managed table.
+   */
+  readonly emptyState?: ReactNode;
+}
 
 /**
  * Configures the table footer section.

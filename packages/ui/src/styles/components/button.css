@@ -35,54 +35,53 @@
   width: 100%;
 }
 
+.miaixz-button[data-variant="solid"] {
+  color: var(--miaixz-button-solid-foreground);
+  background: var(--miaixz-button-readable-fill);
+  border-color: var(--miaixz-button-readable-fill);
+}
+
 .miaixz-button[data-variant="solid"][data-tone="neutral"] {
-  color: var(--miaixz-color-text-inverse);
-  background: var(--miaixz-color-text-primary);
-  border-color: var(--miaixz-color-text-primary);
+  --miaixz-button-fill: var(--miaixz-color-text-primary);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="neutral"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-  background: var(--miaixz-color-text-secondary);
-  border-color: var(--miaixz-color-text-secondary);
+  --miaixz-button-fill: var(--miaixz-color-text-secondary);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="neutral"]:active:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-  background: var(--miaixz-color-text-muted);
-  border-color: var(--miaixz-color-text-muted);
+  --miaixz-button-fill: var(--miaixz-color-text-muted);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="brand"] {
-  color: var(--miaixz-color-on-brand);
-  background: var(--miaixz-color-brand);
-  border-color: var(--miaixz-color-brand);
+  --miaixz-button-fill: var(--miaixz-color-brand);
+
+  background: var(--miaixz-button-fill);
+  border-color: var(--miaixz-button-fill);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="brand"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-  background: var(--miaixz-color-brand-hover);
-  border-color: var(--miaixz-color-brand-hover);
+  --miaixz-button-fill: var(--miaixz-color-brand-hover);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="brand"]:active:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-  background: var(--miaixz-color-brand-active);
-  border-color: var(--miaixz-color-brand-active);
+  --miaixz-button-fill: var(--miaixz-color-brand-active);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="danger"] {
-  color: var(--miaixz-color-text-inverse);
-  background: var(--miaixz-color-danger);
-  border-color: var(--miaixz-color-danger);
+  --miaixz-button-fill: var(--miaixz-color-danger);
 }
 
 .miaixz-button[data-variant="solid"][data-tone="danger"]:hover:not(
@@ -93,9 +92,7 @@
     :disabled,
     [aria-disabled="true"]
   ) {
-  background: var(--miaixz-color-danger);
-  border-color: var(--miaixz-color-danger);
-  opacity: var(--miaixz-opacity-muted);
+  --miaixz-button-fill: var(--miaixz-button-danger-interaction-fill);
 }
 
 .miaixz-button[data-variant="outlined"][data-tone="neutral"] {

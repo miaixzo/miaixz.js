@@ -238,7 +238,7 @@ export const NavigationRail = withMiaixzThemeComponent(
             ))}
             <RailOverflow
               entries={createOverflowEntries(groups, layout.overflowItems, instanceId)}
-              label={overflowLabel ?? t("ui.navigation.more")}
+              label={overflowLabel ?? t("ui.action.more")}
               measuring={layout.overflowItems.length === 0}
               ownerState={ownerState}
               ref={overflowRef}

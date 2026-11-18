@@ -5,6 +5,9 @@ import { Stage, Button, StageLoading, MiaixzErrorBoundary, useStageSettled } fro
 
 import styles from "./ui-workbench.module.css";
 
+/**
+ * Lists the public UI components and providers shown in the workbench catalog.
+ */
 export const UI_COMPONENT_NAMES = Object.freeze([
   "ActionBar",
   "ActionText",
@@ -148,7 +151,9 @@ export function CompleteCatalog() {
   );
 }
 
-/** Demonstrates caller-owned content, state selection, and recovery without an application runtime. */
+/**
+ * Demonstrates caller-owned content, state selection, and recovery without an application runtime.
+ */
 function StageExamples() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("empty");
@@ -209,7 +214,13 @@ function StageExamples() {
   );
 }
 
-/** Throws only an explicitly selected neutral demonstration error. */
+/**
+ * Simulates a preview failure on demand to demonstrate error-boundary recovery.
+ *
+ * @param {object} props - Controls whether the preview throws.
+ * @param {boolean} props.failed - Whether to simulate a preview failure.
+ * @returns {import("react").ReactElement} The preview content when it succeeds.
+ */
 function BoundaryPreview({ failed }) {
   if (failed) throw new Error("Neutral preview failure");
   return <p>The preview is rendered inside the public error boundary.</p>;

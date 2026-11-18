@@ -5,6 +5,9 @@ import type { Metadata } from "next";
 
 import { SdkGuide } from "../../module/sdk/sdk-guide";
 
+/**
+ * Sets the document title for the SDK integration guide.
+ */
 export const metadata: Metadata = { title: "SDK 指南" };
 
 /**

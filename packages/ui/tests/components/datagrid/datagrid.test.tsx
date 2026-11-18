@@ -50,6 +50,46 @@ const columns: readonly DatagridColumn<Row>[] = [
 ];
 
 describe("Datagrid", () => {
+  it("gives controlled loading precedence and includes the selection column in placeholders", () => {
+    const cell = vi.fn((row: Row) => row.name);
+    const { container } = renderWithLocale(
+      <Datagrid
+        caption="应用列表"
+        columns={[{ id: "name", header: "名称", cell }]}
+        rows={[{ id: "one", name: "旧结果" }]}
+        getRowId={(row) => row.id}
+        selectionMode="multiple"
+        selectedRowIds={["one"]}
+        loadState={{ status: "loading", label: "正在查询应用" }}
+        error="旧错误"
+      />,
+    );
+    expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("columnheader", { name: "名称" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("正在查询应用");
+    expect(screen.getByRole("checkbox")).toBeDisabled();
+    expect(screen.queryByText("旧错误")).not.toBeInTheDocument();
+    const rows = container.querySelectorAll<HTMLTableRowElement>("tbody > tr");
+    expect(rows).toHaveLength(3);
+    for (const row of rows) expect(row.cells).toHaveLength(2);
+    expect(cell).not.toHaveBeenCalled();
+  });
+
+  it("keeps legacy loading behavior for existing callers", () => {
+    const { container } = renderWithLocale(
+      <Datagrid
+        caption="应用列表"
+        columns={columns}
+        rows={[{ id: "one", name: "已有结果" }]}
+        getRowId={(row) => row.id}
+        loading
+      />,
+    );
+    expect(container.querySelector(".miaixz-datagrid")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("已有结果").closest("[inert]")).not.toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent("加载中");
+  });
+
   it("preserves cell actions, full-text hints, and row selection with ellipsis enabled", () => {
     const onAction = vi.fn();
     const onSelection = vi.fn();

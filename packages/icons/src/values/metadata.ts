@@ -7193,6 +7193,26 @@ const entries: readonly IconCatalogEntry[] = [
     name: "zoom-out",
     category: "actions",
   } as IconCatalogEntry,
+  {
+    name: "openid",
+    category: "security",
+  } as IconCatalogEntry,
+  {
+    name: "saml",
+    category: "security",
+  } as IconCatalogEntry,
+  {
+    name: "ldap",
+    category: "security",
+  } as IconCatalogEntry,
+  {
+    name: "microsoft-entra",
+    category: "symbols",
+  } as IconCatalogEntry,
+  {
+    name: "google-workspace",
+    category: "symbols",
+  } as IconCatalogEntry,
 ];
 /**
  * Immutable public icon directory.

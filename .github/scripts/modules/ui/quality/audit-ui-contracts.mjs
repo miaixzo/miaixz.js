@@ -106,7 +106,7 @@ const removedBodyContract =
 const removedThemeVariables =
   /--miaixz-(?:app-(?:border|divider|selected|title-size|section-size|body-size|meta-size|metric-size)|module-(?:border|divider|soft|soft-strong|type-section|type-region|type-body|type-meta|type-auxiliary|type-metric))\b/g;
 const removedCssContracts =
-  /(?:\.miaixz-(?:body|visually-hidden)(?![a-z0-9-])|\.miaixz-(?:sticky|relation-map|locale-picker|metric-group|avatar-(?:account|profile|fill)|popover-(?:trigger-avatar|picker)|dropdown-(?:plain|compact)|badge-dot)\b|\bmiaixz-(?:grouped-list|module-frame)(?:-[a-z0-9-]+)*\b|--miaixz-(?:metric-group-(?:[a-z0-9-]+)|sparkline-(?:metric|trend)-height)\b)/g;
+  /(?:\.miaixz-(?:body|visually-hidden)(?![a-z0-9-])|\.miaixz-(?:sticky|relation-map|locale-picker|metric-group|avatar-(?:account|fill)|popover-(?:trigger-avatar|picker)|dropdown-(?:plain|compact)|badge-dot)\b|\bmiaixz-(?:grouped-list|module-frame)(?:-[a-z0-9-]+)*\b|--miaixz-(?:metric-group-(?:[a-z0-9-]+)|sparkline-(?:metric|trend)-height)\b)/g;
 for (const file of publicContractFiles) {
   const source = await readFile(file, "utf8");
   const fileName = relative(packageDirectory, file);

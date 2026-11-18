@@ -22,11 +22,13 @@
  * Implements the table UI component.
  */
 
-import { forwardRef, useRef, type CSSProperties } from "react";
+import { forwardRef, useContext, useRef, type CSSProperties } from "react";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
 import { classNames } from "../../shared/class-names.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
+import { Skeleton } from "../skeleton/skeleton.js";
+import { getTableResult, TableLoadContext, TableLoadError, TableLoadRegion } from "./table-load.js";
 import type {
   TableBodyProps,
   TableCaptionProps,
@@ -78,13 +80,15 @@ export const TableContainer = withMiaixzThemeComponent(
       surface = "default",
       minimumWidth = "default",
       tabIndex = 0,
+      loadState,
       ...props
     },
     ref,
   ) {
-    return (
+    const viewport = (
       <div
         {...props}
+        {...(loadState?.status === "loading" ? { "aria-busy": true } : {})}
         ref={ref}
         tabIndex={tabIndex}
         className={classNames(
@@ -96,6 +100,11 @@ export const TableContainer = withMiaixzThemeComponent(
         data-gutter={gutter}
         data-minimum-width={minimumWidth}
       />
+    );
+    return loadState === undefined ? (
+      viewport
+    ) : (
+      <TableLoadRegion state={loadState}>{viewport}</TableLoadRegion>
     );
   }),
 );
@@ -178,10 +187,51 @@ export const TableHeader = withMiaixzThemeComponent(
 export const TableBody = withMiaixzThemeComponent(
   "TableBody",
   forwardRef<HTMLTableSectionElement, TableBodyProps>(function TableBody(
-    { className, ...props },
+    { className, columnCount, emptyState, children, ...props },
     ref,
   ) {
-    return <tbody {...props} ref={ref} className={classNames("miaixz-table-body", className)} />;
+    const load = useContext(TableLoadContext);
+    let content = children;
+
+    if (load !== undefined && columnCount !== undefined) {
+      const { state, emptyLabel } = load;
+      if (!Number.isSafeInteger(columnCount) || columnCount < 1) {
+        throw new MiaixzUiError({ code: "UI_CONTROLLED_VALUE_INVALID" });
+      }
+      if (state.status === "loading") {
+        content = [0, 1, 2].map((row) => (
+          <TableRow key={row} aria-hidden="true" data-table-state-row="loading">
+            {Array.from({ length: columnCount }, (_, column) => (
+              <TableCell key={column}>
+                <Skeleton variant="text" width={column === 0 ? "75%" : "55%"} />
+              </TableCell>
+            ))}
+          </TableRow>
+        ));
+      } else if (getTableResult(state) === "empty") {
+        content = (
+          <TableRow data-table-state-row="empty">
+            <TableCell colSpan={columnCount} empty>
+              {emptyState ?? emptyLabel}
+            </TableCell>
+          </TableRow>
+        );
+      } else if (state.status === "error" && state.result === undefined) {
+        content = (
+          <TableRow data-table-state-row="error">
+            <TableCell colSpan={columnCount}>
+              <TableLoadError state={state} />
+            </TableCell>
+          </TableRow>
+        );
+      }
+    }
+
+    return (
+      <tbody {...props} ref={ref} className={classNames("miaixz-table-body", className)}>
+        {content}
+      </tbody>
+    );
   }),
 );
 

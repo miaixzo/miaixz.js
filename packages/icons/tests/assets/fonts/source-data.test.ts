@@ -178,6 +178,18 @@ describe("canonical JSON source", () => {
       /ENOENT.*schema\.json/u,
     );
   });
+  it("accepts new names appended after published codepoints", async () => {
+    const records = ["zulu", "alpha"].map((name, index) => ({
+      name,
+      codepoint: 0xf0000 + index,
+      category: "actions",
+      opticalClass: "regular",
+      rtl: "none",
+    }));
+    const fixture = await make(records);
+    const source = await loadIconSource({ assetsRoot: fixture.assetsRoot });
+    expect(source.icons).toEqual(records);
+  });
   it("derives dynamic windows and never reads fonts", async () => {
     const records = Array.from({ length: 257 }, (_, i) => ({
       name: "icon-" + String(i).padStart(3, "0"),

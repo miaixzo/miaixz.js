@@ -77,28 +77,42 @@ describe("brand foreground semantics", () => {
     }
   }
 
-  it("uses semantic foregrounds without changing branded backgrounds or indicators", () => {
+  it("keeps solid brand buttons and the navigation indicator on their theme tokens", () => {
     expect(rule("button", '.miaixz-button[data-variant="plain"][data-tone="brand"] {')).toContain(
       "color: var(--miaixz-color-brand-strong);",
     );
-    const navigation = rule(
-      "tabs",
-      '.miaixz-tab:is([aria-selected="true"], [aria-current], [aria-pressed="true"]) {',
+    expect(rule("tabs", "\n.miaixz-tab {")).toContain(
+      "font-weight: var(--miaixz-font-weight-regular);",
     );
-    expect(navigation).toContain("color: var(--miaixz-color-text-primary);");
-    expect(navigation).toContain("0 var(--miaixz-color-brand);");
+    expect(rule("tabs", "[data-miaixz-theme] {")).toContain(
+      "--miaixz-tabs-selected-color: var(--miaixz-color-brand);",
+    );
+    const navigation = rule("tabs", ".miaixz-tab:is(\n");
+    expect(navigation).toContain("font-weight: var(--miaixz-font-weight-medium);");
+    expect(navigation).toContain("color: var(--miaixz-tabs-selected-color);");
+    expect(navigation).toMatch(/box-shadow: inset[^;]+var\(--miaixz-tabs-selected-color\);/u);
     expect(
       rule("tabs", '.miaixz-tab:where(:hover:not(:disabled, [aria-disabled="true"])) {'),
     ).toContain("color: var(--miaixz-color-text-primary);");
     expect(rule("tabs", ".miaixz-tab:focus-visible {")).toContain(
       "color: var(--miaixz-color-text-primary);",
     );
-    expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
-      "color: var(--miaixz-color-on-brand);",
+    const solid = rule("button", '.miaixz-button[data-variant="solid"] {');
+    expect(solid).toContain("color: var(--miaixz-button-solid-foreground);");
+    expect(readFileSync("src/theme/scope.css", "utf8")).toContain(
+      "--miaixz-button-solid-foreground: white;",
     );
-    expect(rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {')).toContain(
-      "background: var(--miaixz-color-brand);",
-    );
+    expect(solid).toContain("background: var(--miaixz-button-readable-fill);");
+    const brand = rule("button", '.miaixz-button[data-variant="solid"][data-tone="brand"] {');
+    expect(brand).toContain("--miaixz-button-fill: var(--miaixz-color-brand);");
+    expect(brand).not.toMatch(/(?:^|[;{])\s*color\s*:/u);
+    expect(brand).toContain("background: var(--miaixz-button-fill);");
+    expect(brand).toContain("border-color: var(--miaixz-button-fill);");
+    for (const state of ["hover", "active"]) {
+      expect(
+        rule("button", `.miaixz-button[data-variant="solid"][data-tone="brand"]:${state}:not(`),
+      ).toContain(`--miaixz-button-fill: var(--miaixz-color-brand-${state});`);
+    }
     expect(rule("appearance", ".miaixz-appearance-trigger {")).toContain(
       "color: var(--miaixz-color-text-inverse);",
     );

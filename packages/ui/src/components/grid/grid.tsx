@@ -29,12 +29,12 @@ import type { GridProps } from "./grid.types.js";
 import { withMiaixzThemeComponent } from "../../theme/binding.js";
 
 /**
- * Creates a responsive auto-fit grid with configurable minimum width. @public
+ * Creates a responsive grid with configurable column sizing. @public
  */
 export const Grid = withMiaixzThemeComponent(
   "Grid",
   forwardRef<HTMLDivElement, GridProps>(function Grid(
-    { columns = "auto", minItemWidth = "standard", className, ...props },
+    { columns = "auto", minItemWidth = "standard", fillRow = false, className, ...props },
     ref,
   ) {
     return (
@@ -42,6 +42,7 @@ export const Grid = withMiaixzThemeComponent(
         {...props}
         ref={ref}
         data-columns={columns}
+        data-fill-row={columns === "auto" && fillRow ? true : undefined}
         className={classNames(
           "miaixz-grid",
           minItemWidth === "wide" && "miaixz-grid-wide",

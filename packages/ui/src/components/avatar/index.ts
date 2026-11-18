@@ -35,6 +35,7 @@ export type {
   AvatarOwnerState,
   AvatarProps,
   AvatarRootAttributes,
+  AvatarSize,
   AvatarSlot,
   AvatarSlotProps,
   AvatarVariant,

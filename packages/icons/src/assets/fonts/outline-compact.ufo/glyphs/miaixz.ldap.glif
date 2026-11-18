@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+ ~                                                                           ~
+ ~ Copyright (c) 2015-2026 miaixz.org and other contributors.                ~
+ ~                                                                           ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");           ~
+ ~ you may not use this file except in compliance with the License.          ~
+ ~ You may obtain a copy of the License at                                   ~
+ ~                                                                           ~
+ ~      https://www.apache.org/licenses/LICENSE-2.0                          ~
+ ~                                                                           ~
+ ~ Unless required by applicable law or agreed to in writing, software       ~
+ ~ distributed under the License is distributed on an "AS IS" BASIS,         ~
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ~
+ ~ See the License for the specific language governing permissions and       ~
+ ~ limitations under the License.                                            ~
+ ~                                                                           ~
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+-->
+<glyph name="miaixz.ldap" format="2">
+  <advance width="960"/>
+  <unicode hex="F06F7"/>
+  <outline>
+    <contour>
+      <point x="106.000000" y="186.833333" type="line"/>
+      <point x="303.200000" y="186.833333" type="line"/>
+      <point x="393.866667" y="334.166667" type="line"/>
+      <point x="294.133333" y="509.833333" type="line"/>
+    </contour>
+    <contour>
+      <point x="297.533333" y="130.166667" type="line"/>
+      <point x="730.466667" y="130.166667" type="line"/>
+      <point x="514.000000" y="507.566667" type="line"/>
+    </contour>
+    <contour>
+      <point x="631.866667" y="370.433333" type="line"/>
+      <point x="729.333333" y="186.833333" type="line"/>
+      <point x="854.000000" y="186.833333" type="line"/>
+      <point x="688.533333" y="496.233333" type="line"/>
+    </contour>
+  </outline>
+</glyph>
