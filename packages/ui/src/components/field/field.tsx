@@ -22,7 +22,7 @@
  * Implements the field UI component.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
 import { classNames } from "../../shared/class-names.js";
@@ -41,6 +41,8 @@ import { withMiaixzThemeComponent } from "../../theme/binding.js";
  */
 function Field({
   label,
+  layout = "vertical",
+  labelWidth,
   children,
   helperText,
   errorText,
@@ -75,7 +77,7 @@ function Field({
     helperText === undefined || helperText === null ? undefined : `${id}-description`;
   const errorId = errorExists ? `${id}-error` : undefined;
   const effectiveInvalid = invalid ?? errorExists;
-  const ownerState: FieldOwnerState = { required, invalid: effectiveInvalid, disabled };
+  const ownerState: FieldOwnerState = { required, invalid: effectiveInvalid, disabled, layout };
   const registeredControlRef = useRef<symbol | null>(null);
   const registerControl = useCallback((token: symbol) => {
     const registered = registeredControlRef.current;
@@ -119,12 +121,13 @@ function Field({
   const mergedRootProps = mergeMiaixzSlotProps<FieldOwnerState, FieldRootSlotProps, HTMLDivElement>(
     {
       ownerState,
-      componentProps: { ...rootProps, className, style },
+      componentProps: { ...rootProps, className, style: { ...(labelWidth === undefined ? {} : { "--miaixz-field-label-width": `${labelWidth}px` }), ...style } as CSSProperties },
       slotProps: slotProps?.root,
       defaultProps: {
         className: classNames("miaixz-field", effectiveInvalid && "miaixz-field-invalid"),
       },
       internalProps: {
+        "data-layout": layout,
         ...(effectiveInvalid ? { "data-invalid": true } : {}),
         ...(disabled ? { "data-disabled": true } : {}),
       },

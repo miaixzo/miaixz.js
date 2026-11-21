@@ -104,7 +104,7 @@ describe("UI dynamic example", () => {
       "MiaixzErrorBoundary",
       "Theme",
     ].sort();
-    expect(catalogNames).toHaveLength(124);
+    expect(catalogNames).toHaveLength(expectedNames.length);
     expect([...new Set(catalogNames)].sort()).toEqual(expectedNames);
   });
 });

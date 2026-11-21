@@ -93,7 +93,8 @@ function createMenuEntry(action: ActionDescriptor): DropdownEntry {
  * @internal
  */
 export function MoreActionsView(properties: MoreActionsViewProps) {
-  const { actions, label: labelOverride, triggerSize = "small" } = properties;
+  const { label: labelOverride, triggerSize = "small" } = properties;
+  const actions = properties.actions.filter((action) => !action.hidden);
   const { t } = useMiaixzLocale();
   const dividerId = useId();
   if (actions.length === 0) return null;

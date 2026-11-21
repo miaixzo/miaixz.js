@@ -39,6 +39,12 @@ import type { ButtonLinkSlotProps, ButtonSlotProps, ButtonTone } from "../button
  * Identity, display label, icon, and presentation shared by command and navigation actions.
  */
 export interface ActionBase {
+  /**
+   * Omits unavailable actions before rendering, counting or measuring overflow.
+   *
+   * @defaultValue `false`
+   */
+  readonly hidden?: boolean;
   readonly id: string;
   readonly label: string;
   readonly icon?: IconName;
@@ -267,7 +273,7 @@ export interface FormActionsRootAttributes extends HTMLAttributes<HTMLDivElement
  * Properties accepted by the Form Actions renderer.
  */
 export interface FormActionsProps {
-  readonly cancel?: FormCancelAction;
+  readonly cancel?: FormCancelAction | undefined;
   readonly submit?: FormSubmitAction | undefined;
   /**
    * Existing auxiliary command controls rendered before the native submit control.

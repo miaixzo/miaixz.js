@@ -89,6 +89,7 @@
     "core.css",
     "reset.css",
     "file/styles.css",
-    "exception/styles.css"
+    "exception/styles.css",
+    "wizard/styles.css"
   ]
 }

@@ -22,7 +22,7 @@
  * Implements the steps UI component.
  */
 
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 
 import { MiaixzUiError } from "../../errors/ui-error.js";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
@@ -37,6 +37,7 @@ export const Steps = withMiaixzThemeComponent(
   forwardRef<HTMLOListElement, StepsProps>(function Steps(
     {
       label,
+      disabled: allDisabled = false,
       items,
       onStepChange,
       orientation = "horizontal",
@@ -48,6 +49,7 @@ export const Steps = withMiaixzThemeComponent(
     },
     ref,
   ) {
+    const prefix = useId();
     const ids = new Set<string>();
     for (const item of items) {
       if (ids.has(item.id)) {
@@ -66,6 +68,7 @@ export const Steps = withMiaixzThemeComponent(
       connector,
       status: undefined,
       interactive,
+      disabled: allDisabled,
     };
     return (
       <ol
@@ -93,7 +96,9 @@ export const Steps = withMiaixzThemeComponent(
       >
         {items.map((item, index) => {
           const status = item.status ?? "pending";
-          const disabled = status === "disabled";
+          const disabled = allDisabled || item.disabled === true || status === "disabled";
+          const labelId = `${prefix}-${index}-label`;
+          const descriptionId = item.description != null ? `${prefix}-${index}-description` : undefined;
           const ownerState: StepsOwnerState = {
             orientation,
             surface,
@@ -101,6 +106,7 @@ export const Steps = withMiaixzThemeComponent(
             connector,
             status,
             interactive,
+            disabled,
           };
           const content = (
             <>
@@ -118,6 +124,8 @@ export const Steps = withMiaixzThemeComponent(
                   ownerState,
                   defaultProps: { className: "miaixz-steps-label" },
                   slotProps: slotProps?.label,
+                  internalProps: { id: labelId },
+                  ownedProps: ["id"],
                 })}
               >
                 {item.label}
@@ -128,6 +136,8 @@ export const Steps = withMiaixzThemeComponent(
                     ownerState,
                     defaultProps: { className: "miaixz-steps-description" },
                     slotProps: slotProps?.description,
+                    internalProps: { id: descriptionId },
+                    ownedProps: ["id"],
                   })}
                 >
                   {item.description}
@@ -154,6 +164,9 @@ export const Steps = withMiaixzThemeComponent(
                 <button
                   className="miaixz-steps-item-content"
                   disabled={disabled}
+                  aria-current={status === "current" ? "step" : undefined}
+                  aria-labelledby={labelId}
+                  aria-describedby={descriptionId}
                   onClick={() => onStepChange(item, index)}
                   type="button"
                 >

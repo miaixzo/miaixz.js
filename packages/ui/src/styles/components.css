@@ -95,6 +95,7 @@
 @import url("./components/stack.css") layer(miaixz-components);
 @import url("./components/status.css") layer(miaixz-components);
 @import url("./components/steps.css") layer(miaixz-components);
+@import url("./components/wizard.css") layer(miaixz-components);
 @import url("./components/switch.css") layer(miaixz-components);
 @import url("./components/table.css") layer(miaixz-components);
 @import url("./components/tabs.css") layer(miaixz-components);

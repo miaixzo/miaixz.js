@@ -134,6 +134,7 @@ type ExpectedComponentName =
   | "Descriptions"
   | "Tree"
   | "Steps"
+  | "Wizard"
   | "Timeline"
   | "EditorForm"
   | "EditorLayout"

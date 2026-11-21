@@ -128,7 +128,9 @@ function PrimaryAction(properties: PrimaryActionProps) {
  * @public
  */
 function ActionBar(properties: ActionBarProps) {
-  const { primary, actions, slotProps } = properties;
+  const { slotProps } = properties;
+  const primary = properties.primary?.hidden ? undefined : properties.primary;
+  const actions = properties.actions.filter((action) => !action.hidden);
   const { t } = useMiaixzLocale();
   assertUniqueActionIds(primary === undefined ? actions : [...actions, primary]);
   const rootRef = useRef<HTMLDivElement>(null);

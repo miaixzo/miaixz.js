@@ -41,6 +41,7 @@ export const ActionText = withMiaixzThemeComponent(
     { action, labelVisibility = "always", priority = "default", slotProps },
     ref,
   ) {
+    if (action.hidden) return null;
     if (labelVisibility !== "always" && action.icon === undefined) {
       throw new MiaixzUiError({
         code: "UI_ACTION_LABEL_VISIBILITY_REQUIRES_ICON",

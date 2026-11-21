@@ -144,7 +144,9 @@
       "Transfer",
       "Tree",
       "Upload",
-      "View"
+      "View",
+      "Wizard",
+      "WizardPanel"
     ],
     "props": {
       "Shell": [
@@ -197,7 +199,8 @@
         "description",
         "children",
         "footer",
-        "slotProps"
+        "slotProps",
+        "contentScroll"
       ],
       "Toolbar": [
         "behavior",
@@ -317,6 +320,36 @@
         "headingLevel",
         "showCode",
         "slotProps"
+      ],
+      "Wizard": [
+        "label",
+        "items",
+        "currentStep",
+        "onStepChange",
+        "disabled",
+        "feedback",
+        "footer",
+        "children",
+        "slotProps"
+      ],
+      "WizardPanel": [
+        "stepId",
+        "keepMounted"
+      ],
+      "Steps": [
+        "label",
+        "items",
+        "onStepChange",
+        "disabled",
+        "orientation",
+        "surface",
+        "density",
+        "connector",
+        "slotProps"
+      ],
+      "Field": [
+        "layout",
+        "labelWidth"
       ]
     },
     "values": {
@@ -872,7 +905,12 @@
       "types": "./dist/components/exception/index.d.ts",
       "import": "./dist/components/exception/index.js"
     },
-    "./exception/styles.css": "./dist/styles/components/exception.css"
+    "./exception/styles.css": "./dist/styles/components/exception.css",
+    "./wizard": {
+      "types": "./dist/components/wizard/index.d.ts",
+      "import": "./dist/components/wizard/index.js"
+    },
+    "./wizard/styles.css": "./dist/styles/components/wizard.css"
   },
   "scripts": {
     "clean": "node --input-type=module --eval \"import { rm } from 'node:fs/promises'; await rm('dist', { recursive: true, force: true });\"",

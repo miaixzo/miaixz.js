@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Stage, Button, StageLoading, MiaixzErrorBoundary, useStageSettled } from "@miaixz/ui";
+import {
+  Stage,
+  Button,
+  StageLoading,
+  MiaixzErrorBoundary,
+  useStageSettled,
+  Wizard,
+  WizardPanel,
+} from "@miaixz/ui";
 
 import styles from "./ui-workbench.module.css";
 
@@ -108,6 +116,8 @@ export const UI_COMPONENT_NAMES = Object.freeze([
   "Stack",
   "Status",
   "Steps",
+  "Wizard",
+  "WizardPanel",
   "Switch",
   "TabTrigger",
   "Table",
@@ -146,6 +156,7 @@ export function CompleteCatalog() {
           <code key={name}>{name}</code>
         ))}
       </div>
+      <WizardExamples />
       <StageExamples />
     </>
   );
@@ -224,4 +235,37 @@ function StageExamples() {
 function BoundaryPreview({ failed }) {
   if (failed) throw new Error("Neutral preview failure");
   return <p>The preview is rendered inside the public error boundary.</p>;
+}
+
+/**
+ * Demonstrates stable controlled navigation and retained form content.
+ *
+ * @returns An independently composed Wizard example.
+ */
+function WizardExamples() {
+  const [step, setStep] = useState("connection");
+  const items = [
+    { id: "connection", label: "Connection" },
+    { id: "review", label: "Review" },
+  ];
+  return (
+    <section aria-label="Wizard example" style={{ height: 320 }}>
+      <Wizard
+        label="Setup"
+        items={items}
+        currentStep={step}
+        onStepChange={setStep}
+        footer={
+          <Button onClick={() => setStep(step === "connection" ? "review" : "connection")}>
+            Continue
+          </Button>
+        }
+      >
+        <WizardPanel stepId="connection" keepMounted>
+          <input aria-label="Connection name" />
+        </WizardPanel>
+        <WizardPanel stepId="review">Review your configuration.</WizardPanel>
+      </Wizard>
+    </section>
+  );
 }

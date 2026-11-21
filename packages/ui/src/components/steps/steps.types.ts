@@ -33,6 +33,7 @@ export interface StepsItem {
   readonly label: ReactNode;
   readonly description?: ReactNode;
   readonly marker?: ReactNode;
+  readonly disabled?: boolean;
   readonly status?: "pending" | "current" | "complete" | "error" | "disabled";
 }
 /**
@@ -61,6 +62,7 @@ export interface StepsOwnerState {
   readonly connector: boolean;
   readonly status: NonNullable<StepsItem["status"]> | undefined;
   readonly interactive: boolean;
+  readonly disabled: boolean;
 }
 /**
  * Attributes accepted by the Steps Root slot.
@@ -93,6 +95,7 @@ export interface StepsSlotProps {
  * Component-specific Steps properties composed with the permitted native attributes.
  */
 export interface MiaixzStepsOwnProps {
+  readonly disabled?: boolean;
   readonly label: string;
   readonly items: readonly StepsItem[];
   readonly onStepChange?: (item: StepsItem, index: number) => void;

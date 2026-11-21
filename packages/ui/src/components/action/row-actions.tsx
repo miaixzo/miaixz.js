@@ -41,7 +41,8 @@ import { withMiaixzThemeComponent } from "../../theme/binding.js";
  * @public
  */
 function RowActions(properties: RowActionsProps) {
-  const { actions, overflowLabel, slotProps } = properties;
+  const { overflowLabel, slotProps } = properties;
+  const actions = properties.actions.filter((action) => !action.hidden);
   const { t } = useMiaixzLocale();
   assertUniqueActionIds(actions);
   const compact = useMiaixzCompactActions();

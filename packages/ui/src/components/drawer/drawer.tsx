@@ -186,6 +186,7 @@ export const Drawer = withMiaixzThemeComponent(
       closeOnBackdrop = false,
       closeOnEscape = false,
       closeDisabled = false,
+      contentScroll = "auto",
       slots,
       slotProps,
     } = props;
@@ -287,6 +288,7 @@ export const Drawer = withMiaixzThemeComponent(
       floating,
       positioned,
       showClose,
+      contentScroll,
     };
 
     /**
@@ -448,6 +450,7 @@ export const Drawer = withMiaixzThemeComponent(
               )}
             </header>
             <div
+              data-scroll={contentScroll}
               {...mergeMiaixzSlotProps({
                 ownerState,
                 defaultProps: { className: "miaixz-drawer-body" },

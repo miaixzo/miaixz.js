@@ -263,3 +263,50 @@ npm run check
 - 漏洞报告与受支持版本见仓库[安全策略](../../SECURITY.md)。
 - 包归属声明见 [NOTICE](./NOTICE)。
 - 许可证：Apache-2.0。
+
+## Steps 与 Wizard
+
+`Steps` 独立负责有序步骤展示和导航；`Wizard` 通过独立的 `@miaixz/ui/wizard` 入口组合 Steps、内容面板、提示及底部操作。两者在同一组件包中交付，Steps 不依赖 Wizard。
+
+```tsx
+import { useState } from "react";
+import { Wizard, WizardPanel } from "@miaixz/ui/wizard";
+
+const items = [
+  { id: "connection", label: "连接配置" },
+  { id: "review", label: "确认配置" },
+];
+
+function Setup() {
+  const [step, setStep] = useState("connection");
+  return (
+    <Wizard label="配置步骤" items={items} currentStep={step} onStepChange={setStep}>
+      <WizardPanel stepId="connection" keepMounted>
+        <input aria-label="连接名称" />
+      </WizardPanel>
+      <WizardPanel stepId="review">确认当前配置。</WizardPanel>
+    </Wizard>
+  );
+}
+```
+
+应用负责校验导航请求，再更新受控的 `currentStep`。步骤 ID 必须唯一且包含当前 ID；顺序变化不会改变步骤身份。整体或单项 `disabled` 禁用导航，但保留当前、完成和错误状态。
+
+WizardPanel 默认在离开步骤时卸载；`keepMounted` 只保留已访问的面板，并对隐藏内容设置 `hidden` 和 `inert`，未访问的面板不会提前挂载。`feedback`、`footer` 和 `slotProps` 提供公开区域扩展；组件根据实际容器宽度切换导航方向。
+
+`Field` 新增 `layout="horizontal"` 和以像素为单位的 `labelWidth`，默认仍为纵向布局。`Drawer contentScroll="contained"` 允许子组件管理内容滚动，默认仍为 `"auto"`。
+
+## 已解析操作的通用适配
+
+`@miaixz/ui/action` 导出 `adaptCommand`、`adaptNavigation`、`adaptButton`、`adaptMenu`、`adaptFormCancel` 和 `adaptFormSubmit`。调用方提供已解析的展示信息和原有行为；适配层不维护业务操作清单，不获取资源，不判断授权，也不从操作编码推断文案。
+
+展示名称必须非空。命令适配不会提前执行回调；表单提交保留原生表单关联，不添加第二个提交处理器。
+
+```tsx
+const action = adaptCommand(
+  { label: resource.title, icon: resource.icon, tone: "brand" },
+  { id: resource.id, kind: "command", onAction: save },
+);
+```
+
+不可用的操作描述和菜单项可设置 `hidden: true`，操作区域会在计数、校验、测量及溢出分配前过滤。独立按钮由应用在渲染前判断可用性。

@@ -306,3 +306,10 @@ dialog.miaixz-drawer[data-positioned="true"]::backdrop {
       var(--miaixz-drawer-backdrop-bottom) var(--miaixz-drawer-backdrop-left)
   );
 }
+
+.miaixz-drawer-body[data-scroll="contained"] {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
+}
