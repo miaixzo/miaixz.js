@@ -186,6 +186,15 @@ export interface RowActionsSlotProps {
 export interface RowActionsProps {
   readonly actions: readonly ActionDescriptor[];
   readonly overflowLabel?: string;
+  /**
+   * Keeps descriptor order and uses a fixed-capacity menu, or wraps all visible actions.
+   * When omitted, actions use the responsive overflow policy.
+   */
+  readonly overflow?: "menu" | "wrap";
+  /**
+   * Maximum inline actions for menu overflow. Defaults to two.
+   */
+  readonly maxVisible?: 2 | 3;
   readonly slotProps?: RowActionsSlotProps;
 }
 

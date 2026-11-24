@@ -212,8 +212,10 @@
 }
 
 .miaixz-field[data-layout="horizontal"] {
+  --miaixz-field-label-width: 96px;
+
   display: grid;
-  grid-template-columns: var(--miaixz-field-label-width, 96px) minmax(0, 1fr);
+  grid-template-columns: var(--miaixz-field-label-width) minmax(0, 1fr);
   column-gap: var(--miaixz-space-16);
   align-items: center;
   container-type: normal;

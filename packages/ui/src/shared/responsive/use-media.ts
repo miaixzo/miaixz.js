@@ -38,6 +38,10 @@ export type { UseMediaOptions } from "./media-store.js";
  */
 export function useMedia(query: string, options: UseMediaOptions = {}): boolean {
   const defaultMatches = options.defaultMatches ?? false;
-  const store = useMemo(() => getMediaStore(query, { defaultMatches }), [query, defaultMatches]);
+  const enabled = options.enabled ?? true;
+  const store = useMemo(
+    () => getMediaStore(query, { defaultMatches, enabled }),
+    [query, defaultMatches, enabled],
+  );
   return useSyncExternalStore(store.subscribe, store.getSnapshot, () => defaultMatches);
 }

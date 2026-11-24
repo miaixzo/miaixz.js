@@ -346,6 +346,10 @@ export interface MiaixzTreeBaseProps<Value = unknown> {
   readonly connectors?: boolean;
   readonly dividerStyle?: TreeDividerStyle;
   readonly density?: TreeDensity;
+  /**
+   * Uses flush, denser rows with a matching expander height.
+   */
+  readonly rowLayout?: "flush";
   readonly showSelectionIndicator?: boolean;
   /**
    * Enables child-create requests when an onCreateRequest callback is supplied. @default true

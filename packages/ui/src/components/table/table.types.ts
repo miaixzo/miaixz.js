@@ -96,6 +96,10 @@ export interface TableContainerProps extends HTMLAttributes<HTMLDivElement> {
    * @defaultValue `"default"`
    */
   minimumWidth?: "default" | "compact";
+  /**
+   * Lets wheel scrolling reach the surrounding page at a vertical boundary.
+   */
+  verticalOverscroll?: "auto" | "contain";
 }
 
 /**
@@ -120,11 +124,16 @@ export interface TableOwnerState {
 export type TableRootAttributes = TableHTMLAttributes<HTMLTableElement> &
   RefAttributes<HTMLTableElement> & {
     readonly "data-sticky-header"?: boolean;
+    readonly "data-layout"?: "readable";
   };
 /**
  * Properties accepted by the Table renderer.
  */
 export interface TableProps extends TableHTMLAttributes<HTMLTableElement> {
+  /**
+   * Keeps headings on one line and allows long cell content to wrap on screen.
+   */
+  readonly layout?: "readable";
   /**
    * Keeps the clicked or keyboard-focused row visually located. Disable for controlled current rows.
    */

@@ -29,6 +29,7 @@ export type {
   StageOwnerState,
   StageProps,
   StageSlotProps,
+  StagePlaceholderLayout,
   StageLoadingOwnerState,
   StageLoadingProps,
   StageLoadingSlotProps,

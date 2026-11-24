@@ -35,3 +35,4 @@
 @import url("./foundation/density.css") layer(miaixz-foundation);
 @import url("./foundation/controls.css") layer(miaixz-foundation);
 @import url("./foundation/link.css") layer(miaixz-overrides);
+@import url("./foundation/slot-recipes.css") layer(miaixz-overrides);

@@ -42,3 +42,4 @@ export type {
   MiaixzThemeLoader,
   MiaixzThemeScriptOptions,
 } from "./types.js";
+export { typographySlotClasses, controlSlotClasses, paginationSlotClasses, iconSlotClasses } from "./slot-recipes.js";

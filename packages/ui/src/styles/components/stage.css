@@ -31,6 +31,27 @@
   background: var(--miaixz-color-surface);
 }
 
+.miaixz-stage-loading-surface[data-surface="translucent"] {
+  background: var(--miaixz-stage-retained-background);
+}
+
+.miaixz-stage-placeholder {
+  --miaixz-stage-placeholder-rows: 5;
+  --miaixz-stage-placeholder-default-block-size: calc(
+    var(--miaixz-density-table-row-height) * var(--miaixz-stage-placeholder-rows)
+  );
+
+  min-block-size: var(--miaixz-stage-placeholder-default-block-size);
+}
+
+.miaixz-stage-placeholder[data-loading-layout="detail"] {
+  min-block-size: calc(var(--miaixz-density-table-row-height) * 4);
+}
+
+.miaixz-stage-placeholder[data-loading-layout="metrics"] {
+  min-block-size: calc(var(--miaixz-density-table-row-height) * 2);
+}
+
 .miaixz-stage-region {
   display: grid;
   flex: 1;

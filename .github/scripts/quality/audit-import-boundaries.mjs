@@ -50,7 +50,7 @@ const componentRanks = new Map(
     0: "badge bar brand breadcrumb checkbox cluster columns descriptions divider donut empty entry exception field file grid header icon input link list masonry page panel popover pressable progress radio scroll sections sidebar skeleton slider sparkline spinner split stack status steps switch tabs textarea timeline toolbar tooltip transfer",
     1: "button combobox dialog disclosure dropdown dropzone editor heatmap metrics pagination rating segmented select tag",
     2: "action avatar date navigation overlay shell tree",
-    3: "graph search toast view feedback drawer",
+    3: "graph search toast view feedback drawer wizard",
     4: "alert locale notice toaster picker",
     5: "stage confirm",
     6: "upload table",

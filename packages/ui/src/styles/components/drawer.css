@@ -271,6 +271,10 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
   color: var(--miaixz-color-brand);
 }
 
+.miaixz-drawer-close:not(:disabled, [aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .miaixz-drawer-close:disabled {
   color: var(--miaixz-color-text-disabled);
   cursor: not-allowed;
@@ -287,6 +291,10 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
   padding-block: var(--miaixz-drawer-body-padding-block);
   overflow: auto;
   overscroll-behavior: contain;
+}
+
+.miaixz-drawer-body[data-padding="none"] {
+  padding: 0;
 }
 
 .miaixz-drawer-footer {

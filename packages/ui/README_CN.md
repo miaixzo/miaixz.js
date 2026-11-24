@@ -61,6 +61,18 @@ const tenantIcon: IconName = "blocks";
 
 业务应用不应覆盖内部组件选择器。品牌定制应使用公开 CSS 变量和运行时外观设置。
 
+`@miaixz/ui/theme` 的 `controlSlotClasses`、`typographySlotClasses`、
+`paginationSlotClasses` 和 `iconSlotClasses` 可绑定到公开 Theme slot。
+`@miaixz/ui/view` 的 `viewLayoutClasses.section` 提供分区间距和窄屏标题布局。
+表格可用 `Table layout="readable"`、`TableContainer verticalOverscroll="auto"`
+以及 `Datagrid pinStateToViewport` 选择可读性和滚动行为。
+
+`RowActions` 支持按描述顺序显示的 `overflow="menu"`（`maxVisible` 为 2 或 3）
+和 `overflow="wrap"`。 `StageLoading` 可按 `placeholderLayout` 和
+`placeholderRows` 预留加载空间。 `Drawer contentPadding="none"` 适用于自行布局的内容。
+`@miaixz/ui/radio` 暴露受控的 `ChoiceCards`，`Avatar singleInitial` 选择单字素回退。
+`NavigationRail selection="inset"` 可选择内缩的当前项指示样式。
+
 ## 主题、颜色和密度
 
 独立的 SDK Appearance manager 负责外观状态，所有者显式配置同步，`Theme` 是校验并应用这些设置到 DOM 的唯一运行时所有者：

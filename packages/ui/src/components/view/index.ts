@@ -34,3 +34,9 @@ export type {
   ViewSlotProps,
   ViewSurface,
 } from "./view.types.js";
+
+/**
+ * Selects sectional spacing and responsive heading placement on a View root.
+ * @public
+ */
+export const viewLayoutClasses = Object.freeze({ section: "miaixz-view-section" });

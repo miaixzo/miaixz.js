@@ -29,9 +29,10 @@ const compactActionQuery = "(max-width: 767px)";
 /**
  * Shares one viewport breakpoint listener across compact row action layouts.
  *
+ * @param enabled - Whether the row group uses responsive overflow.
  * @returns Whether compact row action density is active.
  * @internal
  */
-export function useMiaixzCompactActions(): boolean {
-  return useMedia(compactActionQuery);
+export function useMiaixzCompactActions(enabled = true): boolean {
+  return useMedia(compactActionQuery, { enabled });
 }

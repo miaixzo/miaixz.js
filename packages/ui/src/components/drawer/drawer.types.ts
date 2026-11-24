@@ -118,6 +118,10 @@ interface DrawerSharedProps {
    * Lets a child composition manage its own content scrolling.
    */
   readonly contentScroll?: "auto" | "contained";
+  /**
+   * Removes the built-in content padding for full-bleed child layouts.
+   */
+  readonly contentPadding?: "default" | "none";
   readonly boundary?: HTMLElement | null;
   readonly inset?: number | DrawerInset;
   readonly floating?: boolean;
