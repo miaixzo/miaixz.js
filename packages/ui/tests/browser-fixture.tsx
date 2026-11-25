@@ -1342,7 +1342,17 @@ export function BrowserFixture() {
   }
 
   if (parameters.get("wizard") === "1") {
-    return <MiaixzLocaleProvider i18n={i18n}><Theme appearance={appearance} fallback={miaixzDefaultAppearance.theme} themes={[legacyTheme]}><WizardContractFixture /></Theme></MiaixzLocaleProvider>;
+    return (
+      <MiaixzLocaleProvider i18n={i18n}>
+        <Theme
+          appearance={appearance}
+          fallback={miaixzDefaultAppearance.theme}
+          themes={[legacyTheme]}
+        >
+          <WizardContractFixture />
+        </Theme>
+      </MiaixzLocaleProvider>
+    );
   }
 
   if (parameters.get("treeFixture") === "1") {
@@ -1726,21 +1736,40 @@ function NavigationRefreshFixture() {
 function WizardContractFixture() {
   const [step, setStep] = useState("connection");
   const [narrow, setNarrow] = useState(false);
-  return <>
-    <Button onClick={() => setNarrow((value) => !value)}>Resize container</Button>
-    <section data-testid="wizard-frame" style={{ width: narrow ? 360 : 960, height: 320 }}>
-      <Wizard label="Setup steps" items={[{id:"connection",label:"Connection",description:"Enter connection details"},{id:"review",label:"Review"}]}
-        currentStep={step} onStepChange={setStep}
-        feedback={<Alert tone="info">Configuration guidance</Alert>}
-        footer={<Button onClick={() => setStep(step === "connection" ? "review" : "connection")}>{step === "connection" ? "Continue" : "Back to configuration"}</Button>}>
-        <WizardPanel stepId="connection" keepMounted>
-          <Field label="Connection name"><Input /></Field>
-          {Array.from({length:20},(_,index)=><p key={index}>Configuration detail {index+1}</p>)}
-        </WizardPanel>
-        <WizardPanel stepId="review"><p>Review configuration</p></WizardPanel>
-      </Wizard>
-    </section>
-  </>;
+  return (
+    <>
+      <Button onClick={() => setNarrow((value) => !value)}>Resize container</Button>
+      <section data-testid="wizard-frame" style={{ width: narrow ? 360 : 960, height: 320 }}>
+        <Wizard
+          label="Setup steps"
+          items={[
+            { id: "connection", label: "Connection", description: "Enter connection details" },
+            { id: "review", label: "Review" },
+          ]}
+          currentStep={step}
+          onStepChange={setStep}
+          feedback={<Alert tone="info">Configuration guidance</Alert>}
+          footer={
+            <Button onClick={() => setStep(step === "connection" ? "review" : "connection")}>
+              {step === "connection" ? "Continue" : "Back to configuration"}
+            </Button>
+          }
+        >
+          <WizardPanel stepId="connection" keepMounted>
+            <Field label="Connection name">
+              <Input />
+            </Field>
+            {Array.from({ length: 20 }, (_, index) => (
+              <p key={index}>Configuration detail {index + 1}</p>
+            ))}
+          </WizardPanel>
+          <WizardPanel stepId="review">
+            <p>Review configuration</p>
+          </WizardPanel>
+        </Wizard>
+      </section>
+    </>
+  );
 }
 
 const root = document.getElementById("root");

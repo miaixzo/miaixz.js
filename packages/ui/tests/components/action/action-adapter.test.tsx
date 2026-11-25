@@ -82,14 +82,30 @@ it("submits the associated native form exactly once and keeps cancel separate", 
 });
 
 it("omits unavailable actions before overflow and measurement", () => {
-  const hidden = { id: "missing", kind: "command" as const, label: "", hidden: true, onAction: vi.fn() };
-  render(<><ActionBar primary={hidden} actions={[hidden]} /><RowActions actions={[hidden]} /></>);
+  const hidden = {
+    id: "missing",
+    kind: "command" as const,
+    label: "",
+    hidden: true,
+    onAction: vi.fn(),
+  };
+  render(
+    <>
+      <ActionBar primary={hidden} actions={[hidden]} />
+      <RowActions actions={[hidden]} />
+    </>,
+  );
   expect(screen.queryByRole("button")).toBeNull();
 });
 
 it("keeps behavior identity and navigation semantics separate from presentation objects", () => {
   const display = { label: "Help", kind: "interface", id: "control", onAction: () => undefined };
   const navigation = adaptNavigation(display, { id: "help", kind: "navigation", href: "/help" });
-  expect(navigation).toMatchObject({ id: "help", kind: "navigation", href: "/help", label: "Help" });
+  expect(navigation).toMatchObject({
+    id: "help",
+    kind: "navigation",
+    href: "/help",
+    label: "Help",
+  });
   expect(navigation).not.toHaveProperty("onAction");
 });

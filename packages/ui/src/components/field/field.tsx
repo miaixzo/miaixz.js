@@ -121,7 +121,14 @@ function Field({
   const mergedRootProps = mergeMiaixzSlotProps<FieldOwnerState, FieldRootSlotProps, HTMLDivElement>(
     {
       ownerState,
-      componentProps: { ...rootProps, className, style: { ...(labelWidth === undefined ? {} : { "--miaixz-field-label-width": `${labelWidth}px` }), ...style } as CSSProperties },
+      componentProps: {
+        ...rootProps,
+        className,
+        style: {
+          ...(labelWidth === undefined ? {} : { "--miaixz-field-label-width": `${labelWidth}px` }),
+          ...style,
+        } as CSSProperties,
+      },
       slotProps: slotProps?.root,
       defaultProps: {
         className: classNames("miaixz-field", effectiveInvalid && "miaixz-field-invalid"),

@@ -248,7 +248,6 @@ This table is checked directly against the package export map.
 | `./upload`                   | JavaScript |
 | `./tree`                     | JavaScript |
 | `./status`                   | JavaScript |
-| `./wizard`                   | JavaScript |
 | `./steps`                    | JavaScript |
 | `./empty`                    | JavaScript |
 | `./entry`                    | JavaScript |
@@ -331,7 +330,6 @@ This table is checked directly against the package export map.
 | `./upload/styles.css`        | CSS        |
 | `./tree/styles.css`          | CSS        |
 | `./status/styles.css`        | CSS        |
-| `./wizard/styles.css`        | CSS        |
 | `./steps/styles.css`         | CSS        |
 | `./empty/styles.css`         | CSS        |
 | `./entry/styles.css`         | CSS        |
@@ -343,6 +341,8 @@ This table is checked directly against the package export map.
 | `./file/styles.css`          | CSS        |
 | `./exception`                | JavaScript |
 | `./exception/styles.css`     | CSS        |
+| `./wizard`                   | JavaScript |
+| `./wizard/styles.css`        | CSS        |
 
 The package manifest publishes its machine-readable UI contract under `miaixz`, covering public components, audited
 properties and values, stable selectors, and runtime attributes. Removed APIs are not published as package metadata.

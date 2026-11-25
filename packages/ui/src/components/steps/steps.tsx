@@ -98,7 +98,8 @@ export const Steps = withMiaixzThemeComponent(
           const status = item.status ?? "pending";
           const disabled = allDisabled || item.disabled === true || status === "disabled";
           const labelId = `${prefix}-${index}-label`;
-          const descriptionId = item.description != null ? `${prefix}-${index}-description` : undefined;
+          const descriptionId =
+            item.description != null ? `${prefix}-${index}-description` : undefined;
           const ownerState: StepsOwnerState = {
             orientation,
             surface,

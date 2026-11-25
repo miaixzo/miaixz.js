@@ -27,24 +27,42 @@ import { afterEach, expect, it, vi } from "vitest";
 import { Steps } from "../../../src/components/steps/index.js";
 afterEach(cleanup);
 it("retains current status while navigation is globally disabled", () => {
- const select = vi.fn();
- render(<Steps label="Progress" items={[{ id: "a", label: "Basics", status: "current", description: "Enter a name" }]} disabled onStepChange={select} />);
- const button=screen.getByRole("button",{name:"Basics"});
- expect(button).toHaveAccessibleDescription("Enter a name");
- expect(button).toBeDisabled();
- expect(button.closest("li")).toHaveAttribute("aria-current","step");
- fireEvent.click(button);expect(select).not.toHaveBeenCalled();
+  const select = vi.fn();
+  render(
+    <Steps
+      label="Progress"
+      items={[{ id: "a", label: "Basics", status: "current", description: "Enter a name" }]}
+      disabled
+      onStepChange={select}
+    />,
+  );
+  const button = screen.getByRole("button", { name: "Basics" });
+  expect(button).toHaveAccessibleDescription("Enter a name");
+  expect(button).toBeDisabled();
+  expect(button.closest("li")).toHaveAttribute("aria-current", "step");
+  fireEvent.click(button);
+  expect(select).not.toHaveBeenCalled();
 });
 it("separates item availability from progress and preserves legacy disabled status", () => {
- const select=vi.fn();
- render(<Steps label="Progress" items={[{id:"a",label:"Basics",status:"complete",disabled:true},{id:"b",label:"Connection",status:"disabled"},{id:"c",label:"Review"}]} onStepChange={select}/>);
- expect(screen.getByRole("button",{name:"Basics"})).toBeDisabled();
- expect(screen.getByRole("button",{name:"Connection"})).toBeDisabled();
- fireEvent.click(screen.getByRole("button",{name:"Review"}));
- expect(select).toHaveBeenCalledWith(expect.objectContaining({id:"c"}),2);
+  const select = vi.fn();
+  render(
+    <Steps
+      label="Progress"
+      items={[
+        { id: "a", label: "Basics", status: "complete", disabled: true },
+        { id: "b", label: "Connection", status: "disabled" },
+        { id: "c", label: "Review" },
+      ]}
+      onStepChange={select}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Basics" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Connection" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Review" }));
+  expect(select).toHaveBeenCalledWith(expect.objectContaining({ id: "c" }), 2);
 });
 it("keeps noninteractive progress as an ordered list", () => {
- render(<Steps label="Progress" items={[{id:"a",label:"Basics",status:"current"}]} />);
- expect(screen.getByRole("list",{name:"Progress"})).toBeInTheDocument();
- expect(screen.queryByRole("button")).toBeNull();
+  render(<Steps label="Progress" items={[{ id: "a", label: "Basics", status: "current" }]} />);
+  expect(screen.getByRole("list", { name: "Progress" })).toBeInTheDocument();
+  expect(screen.queryByRole("button")).toBeNull();
 });

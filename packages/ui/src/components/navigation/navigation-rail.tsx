@@ -174,7 +174,13 @@ export const NavigationRail = withMiaixzThemeComponent(
             "data-density": density,
             ...(measured ? { "data-measured": true } : {}),
           },
-          ownedProps: ["data-expanded", "data-variant", "data-density", "data-measured", "data-selection"],
+          ownedProps: [
+            "data-expanded",
+            "data-variant",
+            "data-density",
+            "data-measured",
+            "data-selection",
+          ],
         })}
       >
         <div

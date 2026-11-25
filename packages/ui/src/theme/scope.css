@@ -27,7 +27,11 @@
     var(--miaixz-color-brand) calc(var(--miaixz-opacity-navigation-selected) * 100% + 5%),
     transparent
   );
-  --miaixz-stage-retained-background: color-mix(in srgb, var(--miaixz-color-surface) 45%, transparent);
+  --miaixz-stage-retained-background: color-mix(
+    in srgb,
+    var(--miaixz-color-surface) 45%,
+    transparent
+  );
 
   color: var(--miaixz-surface-role-page-foreground);
   accent-color: var(--miaixz-color-brand);

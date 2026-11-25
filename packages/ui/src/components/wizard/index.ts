@@ -23,4 +23,11 @@
  */
 export { Wizard } from "./wizard.js";
 export { WizardPanel } from "./wizard-panel.js";
-export type { WizardItem, WizardOwnerState, WizardPanelProps, WizardProps, WizardSlot, WizardSlotProps } from "./wizard.types.js";
+export type {
+  WizardItem,
+  WizardOwnerState,
+  WizardPanelProps,
+  WizardProps,
+  WizardSlot,
+  WizardSlotProps,
+} from "./wizard.types.js";

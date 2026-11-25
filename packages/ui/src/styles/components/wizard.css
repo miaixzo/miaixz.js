@@ -62,7 +62,9 @@
 }
 
 .miaixz-wizard-feedback,
-.miaixz-wizard-footer { flex: none; }
+.miaixz-wizard-footer {
+  flex: none;
+}
 
 @container miaixz-wizard (width <= 740px) {
   .miaixz-wizard-layout {

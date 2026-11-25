@@ -280,6 +280,8 @@ npm run check
 
 `Steps` 独立负责有序步骤展示和导航；`Wizard` 通过独立的 `@miaixz/ui/wizard` 入口组合 Steps、内容面板、提示及底部操作。两者在同一组件包中交付，Steps 不依赖 Wizard。
 
+按需加载时使用 `@miaixz/ui/wizard/styles.css`；完整的 `@miaixz/ui/styles.css` 已包含向导样式。公共入口及顺序与 `package.json` 的 exports 映射一致，见[公共入口表](./README.md#public-entries)。
+
 ```tsx
 import { useState } from "react";
 import { Wizard, WizardPanel } from "@miaixz/ui/wizard";

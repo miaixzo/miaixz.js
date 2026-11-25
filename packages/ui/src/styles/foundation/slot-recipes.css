@@ -130,10 +130,12 @@
  */
 .miaixz-segmented-frame-item {
   block-size: calc(
-    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 * var(--miaixz-border-width-default)
+    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 *
+      var(--miaixz-border-width-default)
   );
   min-block-size: calc(
-    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 * var(--miaixz-border-width-default)
+    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 *
+      var(--miaixz-border-width-default)
   );
 }
 
@@ -172,7 +174,8 @@
   --miaixz-icon-slot-opsz: 32;
 }
 
-:is(.miaixz-icon-slot-control, .miaixz-icon-slot-feature, .miaixz-icon-slot-empty) > [data-motion]:not([data-size="indicator"]),
+:is(.miaixz-icon-slot-control, .miaixz-icon-slot-feature, .miaixz-icon-slot-empty)
+  > [data-motion]:not([data-size="indicator"]),
 .miaixz-icon-scope-control [data-motion]:not([data-size="indicator"]),
 .miaixz-icon-scope-action-measure [inert] [data-motion]:not([data-size="indicator"]) {
   --miaixz-icon-size-override: var(--miaixz-icon-slot-size);

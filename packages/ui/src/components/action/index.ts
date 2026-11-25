@@ -53,5 +53,18 @@ export type {
   RowActionsSlotProps,
 } from "./action.types.js";
 
-export { adaptCommand, adaptNavigation, adaptButton, adaptMenu, adaptFormCancel, adaptFormSubmit } from "./action-adapter.js";
-export type { ActionPresentation, CommandBehavior, NavigationBehavior, FormCancelBehavior, FormSubmitBehavior } from "./action-adapter.js";
+export {
+  adaptCommand,
+  adaptNavigation,
+  adaptButton,
+  adaptMenu,
+  adaptFormCancel,
+  adaptFormSubmit,
+} from "./action-adapter.js";
+export type {
+  ActionPresentation,
+  CommandBehavior,
+  NavigationBehavior,
+  FormCancelBehavior,
+  FormSubmitBehavior,
+} from "./action-adapter.js";

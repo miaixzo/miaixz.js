@@ -931,7 +931,27 @@ export type {
   ExceptionStatus,
 } from "./components/exception/index.js";
 
-export type { WizardItem, WizardOwnerState, WizardPanelProps, WizardProps, WizardSlot, WizardSlotProps } from "./components/wizard/index.js";
+export type {
+  WizardItem,
+  WizardOwnerState,
+  WizardPanelProps,
+  WizardProps,
+  WizardSlot,
+  WizardSlotProps,
+} from "./components/wizard/index.js";
 
-export { adaptCommand, adaptNavigation, adaptButton, adaptMenu, adaptFormCancel, adaptFormSubmit } from "./components/action/index.js";
-export type { ActionPresentation, CommandBehavior, NavigationBehavior, FormCancelBehavior, FormSubmitBehavior } from "./components/action/index.js";
+export {
+  adaptCommand,
+  adaptNavigation,
+  adaptButton,
+  adaptMenu,
+  adaptFormCancel,
+  adaptFormSubmit,
+} from "./components/action/index.js";
+export type {
+  ActionPresentation,
+  CommandBehavior,
+  NavigationBehavior,
+  FormCancelBehavior,
+  FormSubmitBehavior,
+} from "./components/action/index.js";

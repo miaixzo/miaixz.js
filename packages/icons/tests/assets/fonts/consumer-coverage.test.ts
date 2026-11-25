@@ -117,20 +117,22 @@ describe("read-only icon consumers", () => {
       {
         "consumer.tsx": `
       import { Icon, type IconName, type IconName as Name, type IconProps } from "@miaixz/icons";
-      import { forwardRef } from "react";
+      import { createElement, forwardRef } from "react";
       interface Base { icon: IconName }
       interface Props extends Base { items: readonly Base[] }
+      interface PickedProps extends Pick<Base, "icon"> {}
       function direct(name: IconName) { return <Icon name={name}/>; }
       function aliased(name: Name) { return <Icon name={name}/>; }
       function list(items: ReadonlyArray<Base>) { return items.flatMap(item => <Icon name={item.icon}/>); }
       function inherited({ icon, items }: Props) { return <><Icon name={icon}/>{items.map(item => <Icon name={item.icon}/>)}</>; }
+      function picked(props: PickedProps) { return createElement(Icon, { name: props.icon }); }
       const forwarded = forwardRef<HTMLElement, IconProps>(function component(props, ref) { return <Icon name={props.name}/>; });
     `,
       },
       async (root) => {
         const result = await tools.readIconConsumers({ roots: [root], names });
         expect(result.unresolved).toEqual([]);
-        expect(result.genericConsumers).toHaveLength(6);
+        expect(result.genericConsumers).toHaveLength(7);
         expect(result.names).toEqual([]);
       },
     );
@@ -141,6 +143,7 @@ describe("read-only icon consumers", () => {
     "function view(name: string) { return <Icon name={name}/>; }",
     "function view(name: any) { return <Icon name={name as IconName}/>; }",
     'function view(props: Omit<IconProps, "name">) { return <Icon name={props.name}/>; }',
+    'interface Props extends Pick<IconProps, "size"> {} function view(props: Props) { return <Icon name={props.name}/>; }',
     "const name = name; const view = <Icon name={name}/>;",
     'const view = <Icon name="loader" {...runtimeProps}/>;',
     'const name = (() => { const nested = () => "loader"; return runtimeName; })(); const view = <Icon name={name}/>;',

@@ -54,7 +54,9 @@
 
   .miaixz-datagrid[data-pin-state]
     .miaixz-datagrid-container
-    :is([data-table-state-row="empty"], [data-table-state-row="error"]) > td > * {
+    :is([data-table-state-row="empty"], [data-table-state-row="error"])
+    > td
+    > * {
     position: sticky;
     inset-inline-start: var(--miaixz-table-cell-padding-inline);
     inline-size: max(0px, calc(100cqi - 2 * var(--miaixz-table-cell-padding-inline)));

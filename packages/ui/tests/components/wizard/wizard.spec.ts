@@ -33,7 +33,9 @@ for (const mode of ["light", "dark"] as const) {
     const input = frame.getByRole("textbox", { name: "Connection name" });
     await input.fill("Retained connection");
     const content = frame.locator(".miaixz-wizard-content");
-    await expect.poll(() => content.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+    await expect
+      .poll(() => content.evaluate((node) => node.scrollHeight > node.clientHeight))
+      .toBe(true);
     const bounds = await frame.boundingBox();
     const footer = await frame.getByRole("button", { name: "Continue" }).boundingBox();
     expect(footer!.y + footer!.height).toBeLessThanOrEqual(bounds!.y + bounds!.height + 1);

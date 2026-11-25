@@ -388,7 +388,7 @@ export async function readIconConsumers(options = {}) {
               {
                 type: "TSTypeReference",
                 typeName: extension.expression,
-                typeParameters: extension.typeParameters,
+                typeParameters: extension.typeArguments ?? extension.typeParameters,
               },
               resolved.scope,
               keys,
