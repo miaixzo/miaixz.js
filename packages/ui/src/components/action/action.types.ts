@@ -39,6 +39,12 @@ import type { ButtonLinkSlotProps, ButtonSlotProps, ButtonTone } from "../button
  * Identity, display label, icon, and presentation shared by command and navigation actions.
  */
 export interface ActionBase {
+  /**
+   * Omits unavailable actions before rendering, counting or measuring overflow.
+   *
+   * @defaultValue `false`
+   */
+  readonly hidden?: boolean;
   readonly id: string;
   readonly label: string;
   readonly icon?: IconName;
@@ -180,6 +186,15 @@ export interface RowActionsSlotProps {
 export interface RowActionsProps {
   readonly actions: readonly ActionDescriptor[];
   readonly overflowLabel?: string;
+  /**
+   * Keeps descriptor order and uses a fixed-capacity menu, or wraps all visible actions.
+   * When omitted, actions use the responsive overflow policy.
+   */
+  readonly overflow?: "menu" | "wrap";
+  /**
+   * Maximum inline actions for menu overflow. Defaults to two.
+   */
+  readonly maxVisible?: 2 | 3;
   readonly slotProps?: RowActionsSlotProps;
 }
 
@@ -267,7 +282,7 @@ export interface FormActionsRootAttributes extends HTMLAttributes<HTMLDivElement
  * Properties accepted by the Form Actions renderer.
  */
 export interface FormActionsProps {
-  readonly cancel?: FormCancelAction;
+  readonly cancel?: FormCancelAction | undefined;
   readonly submit?: FormSubmitAction | undefined;
   /**
    * Existing auxiliary command controls rendered before the native submit control.

@@ -58,6 +58,7 @@ export const NavigationRail = withMiaixzThemeComponent(
       density = "standard",
       overflowLabel,
       overflowBehavior = "menu",
+      selection,
       slotProps,
       ...props
     },
@@ -168,11 +169,18 @@ export const NavigationRail = withMiaixzThemeComponent(
           forwardedRef: ref,
           internalProps: {
             ...(expanded ? { "data-expanded": true } : {}),
+            ...(selection === undefined ? {} : { "data-selection": selection }),
             "data-variant": variant,
             "data-density": density,
             ...(measured ? { "data-measured": true } : {}),
           },
-          ownedProps: ["data-expanded", "data-variant", "data-density", "data-measured"],
+          ownedProps: [
+            "data-expanded",
+            "data-variant",
+            "data-density",
+            "data-measured",
+            "data-selection",
+          ],
         })}
       >
         <div

@@ -22,6 +22,8 @@
  * Exposes the radio public module.
  */
 
+export { ChoiceCards } from "./choice-cards.js";
+export type { ChoiceCard, ChoiceCardsProps } from "./choice-cards.js";
 export { Radio } from "./radio.js";
 export { RadioGroup } from "./radio-group.js";
 export type {

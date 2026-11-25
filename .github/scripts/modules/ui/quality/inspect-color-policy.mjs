@@ -37,7 +37,11 @@ const recipes = {
   "appearance.css": [
     "color-mix(in srgb, var(--miaixz-appearance-preview-brand) 18%, var(--miaixz-appearance-preview-surface))",
   ],
-  "scope.css": ["color-mix(in srgb, var(--miaixz-color-danger) 90%, black)"],
+  "scope.css": [
+    "color-mix(in srgb, var(--miaixz-color-danger) 90%, black)",
+    "color-mix(in srgb, var(--miaixz-color-brand) calc(var(--miaixz-opacity-navigation-selected) * 100% + 5%), transparent)",
+    "color-mix(in srgb, var(--miaixz-color-surface) 45%, transparent)",
+  ],
 };
 
 /**

@@ -207,6 +207,7 @@ import type { SpinnerOwnerState, SpinnerProps } from "../components/spinner/spin
 import type { SplitProps } from "../components/split/split.types.js";
 import type { StackProps } from "../components/stack/stack.types.js";
 import type { StatusOwnerState, StatusProps } from "../components/status/status.types.js";
+import type { WizardOwnerState, WizardProps } from "../components/wizard/wizard.types.js";
 import type { StepsOwnerState, StepsProps } from "../components/steps/steps.types.js";
 import type { SwitchOwnerState, SwitchProps } from "../components/switch/switch.types.js";
 import type {
@@ -461,6 +462,7 @@ export interface MiaixzThemeComponentRegistry {
   readonly Descriptions: MiaixzThemeEntry<DescriptionsProps, DescriptionsOwnerState>;
   readonly Tree: MiaixzThemeEntry<TreeProps<unknown, TreeViewMode>, TreeOwnerState>;
   readonly Steps: MiaixzThemeEntry<StepsProps, StepsOwnerState>;
+  readonly Wizard: MiaixzThemeEntry<WizardProps, WizardOwnerState>;
   readonly Timeline: MiaixzThemeEntry<TimelineProps, TimelineOwnerState>;
   readonly EditorLayout: MiaixzThemeEntry<EditorLayoutProps, EditorLayoutOwnerState>;
   readonly EditorForm: MiaixzThemeEntry<

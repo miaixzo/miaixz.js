@@ -22,7 +22,7 @@
  * Defines neutral asynchronous presentation and retained-content loading contracts.
  */
 
-import type { HTMLAttributes, ReactNode } from "react";
+import type { CSSProperties, HTMLAttributes, ReactNode } from "react";
 import type { MiaixzSlotProps } from "../../shared/slots.js";
 
 /**
@@ -65,11 +65,19 @@ export interface StageLoadingSlotProps {
   /**
    * Properties for the blocking feedback surface.
    */
-  readonly surface?: MiaixzSlotProps<StageLoadingOwnerState, StageDivAttributes>;
+  readonly surface?: MiaixzSlotProps<
+    StageLoadingOwnerState,
+    StageDivAttributes & { readonly "data-surface"?: "translucent" | undefined }
+  >;
 }
 
 /**
- * Caller-owned content, loading label, placeholder, and native attributes. @public
+ * Reserved loading geometry for a content layout. @public
+ */
+export type StagePlaceholderLayout = "list" | "table" | "detail" | "metrics";
+
+/**
+ * Caller-owned loading content and optional placeholder geometry. @public
  */
 export interface StageLoadingProps extends Omit<StageDivAttributes, "children" | "aria-busy"> {
   /**
@@ -88,6 +96,18 @@ export interface StageLoadingProps extends Omit<StageDivAttributes, "children" |
    * Fallback rendered when children are null or undefined.
    */
   readonly placeholder?: ReactNode;
+  /**
+   * Reserves space for initial loading when no custom placeholder is supplied.
+   */
+  readonly placeholderLayout?: StagePlaceholderLayout;
+  /**
+   * Number of placeholder rows for list and table layouts, bounded from one to six.
+   */
+  readonly placeholderRows?: number;
+  /**
+   * Overrides the reserved block size for list and table placeholders.
+   */
+  readonly placeholderMinBlockSize?: CSSProperties["minBlockSize"];
   /**
    * Overrides applied using this component's resolved owner state.
    */

@@ -161,6 +161,7 @@ export type ListRootAttributes = HTMLAttributes<HTMLUListElement> &
     readonly "data-layout"?: ListLayout;
     readonly "data-variant"?: ListVariant;
     readonly "data-density"?: ListDensity;
+    readonly "data-row-padding"?: "tight";
     readonly "data-surface"?: ListSurface;
     readonly "data-dividers"?: boolean;
     readonly "data-bordered"?: boolean;
@@ -178,6 +179,10 @@ export interface ListProps extends Omit<HTMLAttributes<HTMLUListElement>, "child
    */
   readonly fillRow?: boolean;
   readonly density?: ListDensity;
+  /**
+   * Uses a smaller block inset for rows in constrained lists.
+   */
+  readonly rowPadding?: "tight";
   readonly surface?: ListSurface;
   readonly dividers?: boolean;
   readonly bordered?: boolean;

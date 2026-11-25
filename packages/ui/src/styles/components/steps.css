@@ -96,3 +96,47 @@
   border-block-start: 0;
   border-inline-start: var(--miaixz-border-width-default) solid var(--miaixz-color-border);
 }
+
+.miaixz-steps[data-orientation="horizontal"] {
+  flex-wrap: wrap;
+}
+
+.miaixz-steps-item[data-status="current"] {
+  font-weight: 600;
+  color: var(--miaixz-color-brand-strong);
+}
+
+.miaixz-steps-item[data-status="current"] .miaixz-steps-icon {
+  color: var(--miaixz-color-on-brand);
+  background: var(--miaixz-color-brand);
+  border-color: var(--miaixz-color-brand);
+}
+
+.miaixz-steps-item[data-status="complete"] .miaixz-steps-icon {
+  color: var(--miaixz-color-success);
+}
+
+.miaixz-steps-item[data-status="error"] {
+  color: var(--miaixz-color-danger);
+}
+
+.miaixz-steps-item[aria-disabled="true"] {
+  cursor: default;
+}
+
+.miaixz-steps-item-content:enabled {
+  cursor: pointer;
+}
+
+.miaixz-steps-item-content:enabled:hover {
+  background: var(--miaixz-color-surface-hover);
+}
+
+.miaixz-steps-item-content:focus-visible {
+  outline: var(--miaixz-border-width-default) solid var(--miaixz-color-brand);
+  outline-offset: var(--miaixz-space-2);
+}
+
+.miaixz-steps-item-content:disabled {
+  opacity: 0.6;
+}

@@ -46,6 +46,10 @@
   border-radius: var(--miaixz-radius-panel);
 }
 
+.miaixz-table-container[data-vertical-overscroll="auto"] {
+  overscroll-behavior-y: auto;
+}
+
 .miaixz-table-load[data-loading="true"] > .miaixz-stage-loading-content {
   opacity: var(--miaixz-opacity-muted);
 }
@@ -148,6 +152,20 @@
   text-align: end;
   white-space: nowrap;
   background-color: var(--miaixz-surface-role-panel-background);
+}
+
+.miaixz-table[data-layout="readable"] .miaixz-table-actions {
+  text-align: start;
+}
+
+.miaixz-table[data-layout="readable"] th {
+  white-space: nowrap;
+}
+
+@media screen {
+  .miaixz-table[data-layout="readable"] > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+    overflow-wrap: break-word;
+  }
 }
 
 .miaixz-table-sort {

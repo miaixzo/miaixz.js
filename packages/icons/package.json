@@ -1,6 +1,6 @@
 {
   "name": "@miaixz/icons",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Miaixz variable-font icons, React component, and accessibility primitives.",
   "type": "module",
   "engines": {

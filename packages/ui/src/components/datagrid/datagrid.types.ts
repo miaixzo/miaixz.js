@@ -84,6 +84,10 @@ export type DatagridSelectionProps =
  */
 export interface MiaixzDatagridBaseProps<Row> {
   /**
+   * Keeps empty and error feedback within the visible scroll viewport on screen.
+   */
+  readonly pinStateToViewport?: boolean;
+  /**
    * Controls the visually located row independently of selectedRowIds.
    */
   readonly currentRowId?: string | null;

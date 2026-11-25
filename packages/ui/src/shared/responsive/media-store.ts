@@ -24,6 +24,10 @@
 
 export interface UseMediaOptions {
   readonly defaultMatches?: boolean;
+  /**
+   * Returns the fallback without subscribing when false.
+   */
+  readonly enabled?: boolean;
 }
 
 /**
@@ -45,7 +49,11 @@ const stores = new Map<string, MediaStore>();
  */
 export function getMediaStore(query: string, options: UseMediaOptions): MediaStore {
   const fallback = options.defaultMatches ?? false;
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (
+    options.enabled === false ||
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return { getSnapshot: () => fallback, subscribe: () => () => undefined };
   }
   const existing = stores.get(query);

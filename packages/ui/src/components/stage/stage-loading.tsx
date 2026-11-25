@@ -24,7 +24,7 @@
 
 "use client";
 
-import { forwardRef, type HTMLAttributes } from "react";
+import { forwardRef, type CSSProperties, type HTMLAttributes } from "react";
 import { mergeMiaixzSlotProps } from "../../shared/slots.js";
 import { useMiaixzThemeComponent } from "../../theme/context.js";
 import { getMiaixzThemeSlotClassNames } from "../../theme/registry.js";
@@ -46,6 +46,9 @@ function getNativeProps(props: Partial<StageLoadingProps>) {
     label: _label,
     children: _children,
     placeholder: _placeholder,
+    placeholderLayout: _placeholderLayout,
+    placeholderRows: _placeholderRows,
+    placeholderMinBlockSize: _placeholderMinBlockSize,
     slotProps: _slotProps,
     ...nativeProps
   } = props;
@@ -77,7 +80,15 @@ export const StageLoading = forwardRef<HTMLDivElement, StageLoadingProps>(
   function StageLoading(props, ref) {
     const theme = useMiaixzThemeComponent("StageLoading");
     const defaults = theme.defaultProps;
-    const { active, label, children, placeholder } = { ...defaults, ...props };
+    const {
+      active,
+      label,
+      children,
+      placeholder,
+      placeholderLayout,
+      placeholderRows = 5,
+      placeholderMinBlockSize,
+    } = { ...defaults, ...props };
     const { slotProps } = props;
     const nativeProps = getNativeProps(props);
     const ownerState: StageLoadingOwnerState = { active, hasContent: children != null };
@@ -113,13 +124,33 @@ export const StageLoading = forwardRef<HTMLDivElement, StageLoadingProps>(
       themeClassNames: getMiaixzThemeSlotClassNames(theme, ownerState, "surface"),
       slotProps: slotProps?.surface,
     });
+    const rowCount = Math.max(
+      1,
+      Math.min(Number.isFinite(placeholderRows) ? Math.floor(placeholderRows) : 5, 6),
+    );
+    const reservedSpace =
+      placeholderLayout === undefined ? null : (
+        <div
+          aria-hidden="true"
+          className="miaixz-stage-placeholder"
+          style={
+            {
+              "--miaixz-stage-placeholder-rows": rowCount,
+              ...((placeholderLayout === "list" || placeholderLayout === "table") && {
+                minBlockSize: placeholderMinBlockSize,
+              }),
+            } as CSSProperties
+          }
+          data-loading-layout={placeholderLayout}
+        />
+      );
     return (
       <Overlay
         active={active}
         label={label}
         slotProps={{ root: rootProps, content: contentProps, surface: surfaceProps }}
       >
-        {children ?? placeholder}
+        {children ?? placeholder ?? reservedSpace}
       </Overlay>
     );
   },

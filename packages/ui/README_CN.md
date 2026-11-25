@@ -61,6 +61,18 @@ const tenantIcon: IconName = "blocks";
 
 业务应用不应覆盖内部组件选择器。品牌定制应使用公开 CSS 变量和运行时外观设置。
 
+`@miaixz/ui/theme` 的 `controlSlotClasses`、`typographySlotClasses`、
+`paginationSlotClasses` 和 `iconSlotClasses` 可绑定到公开 Theme slot。
+`@miaixz/ui/view` 的 `viewLayoutClasses.section` 提供分区间距和窄屏标题布局。
+表格可用 `Table layout="readable"`、`TableContainer verticalOverscroll="auto"`
+以及 `Datagrid pinStateToViewport` 选择可读性和滚动行为。
+
+`RowActions` 支持按描述顺序显示的 `overflow="menu"`（`maxVisible` 为 2 或 3）
+和 `overflow="wrap"`。 `StageLoading` 可按 `placeholderLayout` 和
+`placeholderRows` 预留加载空间。 `Drawer contentPadding="none"` 适用于自行布局的内容。
+`@miaixz/ui/radio` 暴露受控的 `ChoiceCards`，`Avatar singleInitial` 选择单字素回退。
+`NavigationRail selection="inset"` 可选择内缩的当前项指示样式。
+
 ## 主题、颜色和密度
 
 独立的 SDK Appearance manager 负责外观状态，所有者显式配置同步，`Theme` 是校验并应用这些设置到 DOM 的唯一运行时所有者：
@@ -263,3 +275,52 @@ npm run check
 - 漏洞报告与受支持版本见仓库[安全策略](../../SECURITY.md)。
 - 包归属声明见 [NOTICE](./NOTICE)。
 - 许可证：Apache-2.0。
+
+## Steps 与 Wizard
+
+`Steps` 独立负责有序步骤展示和导航；`Wizard` 通过独立的 `@miaixz/ui/wizard` 入口组合 Steps、内容面板、提示及底部操作。两者在同一组件包中交付，Steps 不依赖 Wizard。
+
+按需加载时使用 `@miaixz/ui/wizard/styles.css`；完整的 `@miaixz/ui/styles.css` 已包含向导样式。公共入口及顺序与 `package.json` 的 exports 映射一致，见[公共入口表](./README.md#public-entries)。
+
+```tsx
+import { useState } from "react";
+import { Wizard, WizardPanel } from "@miaixz/ui/wizard";
+
+const items = [
+  { id: "connection", label: "连接配置" },
+  { id: "review", label: "确认配置" },
+];
+
+function Setup() {
+  const [step, setStep] = useState("connection");
+  return (
+    <Wizard label="配置步骤" items={items} currentStep={step} onStepChange={setStep}>
+      <WizardPanel stepId="connection" keepMounted>
+        <input aria-label="连接名称" />
+      </WizardPanel>
+      <WizardPanel stepId="review">确认当前配置。</WizardPanel>
+    </Wizard>
+  );
+}
+```
+
+应用负责校验导航请求，再更新受控的 `currentStep`。步骤 ID 必须唯一且包含当前 ID；顺序变化不会改变步骤身份。整体或单项 `disabled` 禁用导航，但保留当前、完成和错误状态。
+
+WizardPanel 默认在离开步骤时卸载；`keepMounted` 只保留已访问的面板，并对隐藏内容设置 `hidden` 和 `inert`，未访问的面板不会提前挂载。`feedback`、`footer` 和 `slotProps` 提供公开区域扩展；组件根据实际容器宽度切换导航方向。
+
+`Field` 新增 `layout="horizontal"` 和以像素为单位的 `labelWidth`，默认仍为纵向布局。`Drawer contentScroll="contained"` 允许子组件管理内容滚动，默认仍为 `"auto"`。
+
+## 已解析操作的通用适配
+
+`@miaixz/ui/action` 导出 `adaptCommand`、`adaptNavigation`、`adaptButton`、`adaptMenu`、`adaptFormCancel` 和 `adaptFormSubmit`。调用方提供已解析的展示信息和原有行为；适配层不维护业务操作清单，不获取资源，不判断授权，也不从操作编码推断文案。
+
+展示名称必须非空。命令适配不会提前执行回调；表单提交保留原生表单关联，不添加第二个提交处理器。
+
+```tsx
+const action = adaptCommand(
+  { label: resource.title, icon: resource.icon, tone: "brand" },
+  { id: resource.id, kind: "command", onAction: save },
+);
+```
+
+不可用的操作描述和菜单项可设置 `hidden: true`，操作区域会在计数、校验、测量及溢出分配前过滤。独立按钮由应用在渲染前判断可用性。

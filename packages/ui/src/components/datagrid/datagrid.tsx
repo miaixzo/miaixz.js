@@ -173,6 +173,7 @@ function DatagridImplementation<Row>(
   const {
     rows,
     columns,
+    pinStateToViewport = false,
     getRowId,
     sort,
     onSortChange,
@@ -435,6 +436,7 @@ function DatagridImplementation<Row>(
       aria-busy={(loadState === undefined && loading) || undefined}
       data-state={state}
       data-gutter={gutter}
+      data-pin-state={pinStateToViewport || undefined}
       data-layout={layout}
       data-body-layout={bodyLayout}
       data-caption-visibility={captionVisibility}

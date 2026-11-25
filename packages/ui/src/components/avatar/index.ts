@@ -22,7 +22,7 @@
  * Exposes the avatar public module.
  */
 
-export { Avatar } from "./avatar.js";
+export { Avatar, avatarInitial } from "./avatar.js";
 export { AvatarGroup } from "./avatar-group.js";
 export { AvatarPicker } from "./avatar-picker.js";
 export type {

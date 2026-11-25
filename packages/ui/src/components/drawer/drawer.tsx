@@ -135,6 +135,7 @@ function getDrawerNativeProps(props: DrawerProps): Partial<DrawerRootAttributes>
     children: _children,
     footer: _footer,
     density: _density,
+    contentPadding: _contentPadding,
     headingLevel: _headingLevel,
     closeLabel: _closeLabel,
     showClose: _showClose,
@@ -186,6 +187,8 @@ export const Drawer = withMiaixzThemeComponent(
       closeOnBackdrop = false,
       closeOnEscape = false,
       closeDisabled = false,
+      contentScroll = "auto",
+      contentPadding = "default",
       slots,
       slotProps,
     } = props;
@@ -287,6 +290,7 @@ export const Drawer = withMiaixzThemeComponent(
       floating,
       positioned,
       showClose,
+      contentScroll,
     };
 
     /**
@@ -448,6 +452,8 @@ export const Drawer = withMiaixzThemeComponent(
               )}
             </header>
             <div
+              data-scroll={contentScroll}
+              data-padding={contentPadding === "none" ? "none" : undefined}
               {...mergeMiaixzSlotProps({
                 ownerState,
                 defaultProps: { className: "miaixz-drawer-body" },

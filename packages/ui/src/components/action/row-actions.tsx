@@ -29,34 +29,48 @@ import { assertUniqueActionIds } from "../../shared/responsive/action-capacity.j
 import { useMiaixzCompactActions } from "../../shared/responsive/compact-actions.js";
 import { useMergedSlotProps } from "../../shared/slots.js";
 import { ActionText } from "./action-text.js";
-import type { RowActionsOwnerState, RowActionsProps } from "./action.types.js";
-import { MoreActionsView } from "./more-actions.js";
+import type { ActionDescriptor, RowActionsOwnerState, RowActionsProps } from "./action.types.js";
+import { MoreActions, MoreActionsView } from "./more-actions.js";
 import { withMiaixzThemeComponent } from "../../theme/binding.js";
 
 /**
- * Keeps row actions readable using the shared measured-capacity algorithm.
+ * Presents row actions with responsive, fixed-menu, or wrapping placement.
  *
  * @param properties - Row action properties.
  * @returns The responsive row action group.
  * @public
  */
 function RowActions(properties: RowActionsProps) {
-  const { actions, overflowLabel, slotProps } = properties;
+  const { overflow: placement, overflowLabel, maxVisible = 2, slotProps } = properties;
+  const actions = properties.actions.filter(
+    (action) =>
+      !action.hidden &&
+      (placement === undefined ||
+        !(action.kind === "navigation" ? action.anchorProps?.hidden : action.buttonProps?.hidden)),
+  );
   const { t } = useMiaixzLocale();
   assertUniqueActionIds(actions);
-  const compact = useMiaixzCompactActions();
-  const safeActions = actions.filter((action) => action.tone !== "danger");
-  const visible = actions.length === 1 ? actions : compact ? [] : safeActions.slice(0, 2);
+  const compact = useMiaixzCompactActions(placement === undefined);
+  let visible: readonly ActionDescriptor[];
+  if (placement === "wrap" || actions.length === 1) {
+    visible = actions;
+  } else if (placement === "menu") {
+    visible = actions.slice(0, maxVisible);
+  } else {
+    visible = compact ? [] : actions.filter((action) => action.tone !== "danger").slice(0, 2);
+  }
   const visibleIds = new Set(visible.map((action) => action.id));
   const overflow = actions.filter((action) => !visibleIds.has(action.id));
+  const menuLabel = overflowLabel ?? (compact ? t("ui.action.actions") : undefined);
   const ownerState: RowActionsOwnerState = { overflow: overflow.length > 0 };
   const rootProps = useMergedSlotProps<
     RowActionsOwnerState,
-    HTMLAttributes<HTMLDivElement>,
+    HTMLAttributes<HTMLDivElement> & { "data-overflow"?: RowActionsProps["overflow"] },
     HTMLDivElement
   >({
     ownerState,
     defaultProps: { className: "miaixz-row-actions" },
+    ...(placement === undefined ? {} : { internalProps: { "data-overflow": placement } }),
     slotProps: slotProps?.root,
   });
 
@@ -65,15 +79,15 @@ function RowActions(properties: RowActionsProps) {
       {visible.map((action) => (
         <ActionText key={action.id} action={action} />
       ))}
-      <MoreActionsView
-        actions={overflow}
-        triggerSize="medium"
-        {...(overflowLabel === undefined
-          ? compact
-            ? { label: t("ui.action.actions") }
-            : {}
-          : { label: overflowLabel })}
-      />
+      {placement === "menu" && menuLabel === undefined ? (
+        <MoreActions actions={overflow} />
+      ) : (
+        <MoreActionsView
+          actions={overflow}
+          triggerSize={placement === undefined ? "medium" : "small"}
+          {...(menuLabel === undefined ? {} : { label: menuLabel })}
+        />
+      )}
     </div>
   );
 }

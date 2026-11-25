@@ -74,6 +74,7 @@ export type NavigationRailRootAttributes = HTMLAttributes<HTMLDivElement> &
     readonly "data-variant"?: NavigationRailVariant;
     readonly "data-density"?: NavigationRailDensity;
     readonly "data-measured"?: boolean;
+    readonly "data-selection"?: "inset";
   };
 /**
  * Attributes accepted by the Navigation Rail Overflow slot.
@@ -107,6 +108,10 @@ export interface MiaixzNavigationRailOwnProps {
   readonly defaultIcon?: NonNullable<NavigationEntry["icon"]>;
   readonly overflowLabel?: string;
   readonly overflowBehavior?: "menu" | "scroll";
+  /**
+   * Insets the current-item highlight and marker inside the rail.
+   */
+  readonly selection?: "inset";
   readonly expanded?: boolean;
   readonly variant?: NavigationRailVariant;
   readonly density?: NavigationRailDensity;

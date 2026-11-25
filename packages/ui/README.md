@@ -341,6 +341,8 @@ This table is checked directly against the package export map.
 | `./file/styles.css`          | CSS        |
 | `./exception`                | JavaScript |
 | `./exception/styles.css`     | CSS        |
+| `./wizard`                   | JavaScript |
+| `./wizard/styles.css`        | CSS        |
 
 The package manifest publishes its machine-readable UI contract under `miaixz`, covering public components, audited
 properties and values, stable selectors, and runtime attributes. Removed APIs are not published as package metadata.
@@ -860,4 +862,47 @@ caller before opening the Picker. The default option renderer uses native radios
     <ResourceCatalog selected={state.value} onSelect={state.onValueChange} />
   )}
 />
+```
+
+## Steps and Wizard
+
+`Steps` is an independent ordered progress/navigation component. `Wizard` composes it through a separate `@miaixz/ui/wizard` entry. Both ship in the same package; Steps never imports Wizard.
+
+```tsx
+import { useState } from "react";
+import { Wizard, WizardPanel } from "@miaixz/ui/wizard";
+
+const items = [
+  { id: "connection", label: "Connection" },
+  { id: "review", label: "Review" },
+];
+
+function Setup() {
+  const [step, setStep] = useState("connection");
+  return (
+    <Wizard label="Setup" items={items} currentStep={step} onStepChange={setStep}>
+      <WizardPanel stepId="connection" keepMounted>
+        <input aria-label="Name" />
+      </WizardPanel>
+      <WizardPanel stepId="review">Review the configuration.</WizardPanel>
+    </Wizard>
+  );
+}
+```
+
+The application validates navigation requests before updating `currentStep`. IDs must be unique and include the controlled selection. `disabled` affects navigation without removing current status. Inactive panels unmount by default; `keepMounted` lazily retains visited panels as hidden, inert content. Use `feedback`, `footer` and public `slotProps` to customize regions. The actual container width controls navigation orientation.
+
+`Field` supports `layout="horizontal"` and numeric `labelWidth`; vertical layout remains the default. `Drawer contentScroll="contained"` delegates scrolling to a child composition; the default remains `"auto"`.
+
+## Resolved action adapters
+
+`@miaixz/ui/action` exports `adaptCommand`, `adaptNavigation`, `adaptButton`, `adaptMenu`, `adaptFormCancel` and `adaptFormSubmit`. They accept explicit presentation and caller-owned behavior, without any business IDs, resource fetching or authorization policy. Labels must be nonempty. Command adaptation never invokes the callback; form submission retains native form ownership and never adds another submit handler.
+
+Unavailable action descriptors and menu entries may use `hidden: true`; action regions omit them before counting, validation, measurement and overflow allocation. Applications must resolve availability before rendering standalone buttons.
+
+```tsx
+const action = adaptCommand(
+  { label: resource.title, icon: resource.icon, tone: "brand" },
+  { id: resource.id, kind: "command", onAction: save },
+);
 ```

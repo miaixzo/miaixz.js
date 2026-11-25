@@ -164,6 +164,9 @@ type BranchContractsAreExact = [
       | "label"
       | "children"
       | "placeholder"
+      | "placeholderLayout"
+      | "placeholderRows"
+      | "placeholderMinBlockSize"
       | "slotProps"
     >
   >,

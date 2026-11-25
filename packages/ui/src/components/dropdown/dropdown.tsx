@@ -57,7 +57,7 @@ export const Dropdown = withMiaixzThemeComponent(
   forwardRef<HTMLButtonElement, DropdownProps>(function Dropdown(
     {
       label,
-      items,
+      items: suppliedItems,
       trigger,
       surface = "framed",
       density = "standard",
@@ -68,6 +68,7 @@ export const Dropdown = withMiaixzThemeComponent(
     },
     ref,
   ) {
+    const items = visibleDropdownEntries(suppliedItems);
     validateDropdownEntries(items);
     const initialFocusRef = useRef<"first" | "last">("first");
     const originalKeyDown = trigger.props.onKeyDown;
@@ -547,4 +548,22 @@ function validateDropdownEntries(entries: readonly DropdownEntry[]): void {
  */
 function validateDropdownSubmenuItems(entries: readonly DropdownSubmenuItem[]): void {
   validateDropdownEntries(entries);
+}
+
+/**
+ * Removes unavailable declarations before menu validation and navigation.
+ *
+ * @param entries - Caller-supplied menu declarations.
+ * @returns Available entries and nonempty submenus in their original order.
+ */
+function visibleDropdownEntries(entries: readonly DropdownEntry[]): DropdownEntry[] {
+  return entries.flatMap((entry): DropdownEntry[] => {
+    if ("hidden" in entry && entry.hidden) return [];
+    if ("items" in entry && entry.items) {
+      const items = entry.items.filter((item) => !("hidden" in item && item.hidden));
+      if (!items.length) return [];
+      return [{ ...entry, items } as DropdownEntry];
+    }
+    return [entry];
+  });
 }

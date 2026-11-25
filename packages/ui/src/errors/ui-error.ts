@@ -93,6 +93,8 @@ export const miaixzUiErrorMessageKeys = Object.freeze({
   UI_TREE_VISIBLE_LIMIT: "ui.error.tree.visibleLimit",
   UI_TREE_TEXT_VALUE_INVALID: "ui.error.tree.textValueInvalid",
   UI_TREE_CONFIG_INVALID: "ui.error.tree.configInvalid",
+  UI_WIZARD_STEPS_INVALID: "ui.error.wizard.stepsInvalid",
+  UI_WIZARD_PANEL_INVALID: "ui.error.wizard.panelInvalid",
   UI_STEPS_DUPLICATE_ID: "ui.error.steps.duplicateId",
   UI_TIMELINE_DUPLICATE_ID: "ui.error.timeline.duplicateId",
   UI_GRAPH_DUPLICATE_NODE_ID: "ui.error.graph.duplicateNodeId",

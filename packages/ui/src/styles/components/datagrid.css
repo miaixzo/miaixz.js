@@ -47,6 +47,28 @@
   border-radius: 0;
 }
 
+@media screen {
+  .miaixz-datagrid[data-pin-state] .miaixz-datagrid-container {
+    container-type: inline-size;
+  }
+
+  .miaixz-datagrid[data-pin-state]
+    .miaixz-datagrid-container
+    :is([data-table-state-row="empty"], [data-table-state-row="error"])
+    > td
+    > * {
+    position: sticky;
+    inset-inline-start: var(--miaixz-table-cell-padding-inline);
+    inline-size: max(0px, calc(100cqi - 2 * var(--miaixz-table-cell-padding-inline)));
+  }
+
+  .miaixz-datagrid[data-pin-state] .miaixz-datagrid-container .miaixz-datagrid-state-cell > * {
+    position: sticky;
+    inset-inline-start: 0;
+    inline-size: 100cqi;
+  }
+}
+
 .miaixz-datagrid-cell-ellipsis {
   min-inline-size: 0;
   overflow: hidden;

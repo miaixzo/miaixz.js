@@ -1,0 +1,198 @@
+/*
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+ ~                                                                           ~
+ ~ Copyright (c) 2015-2026 miaixz.org and other contributors.                ~
+ ~                                                                           ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");           ~
+ ~ you may not use this file except in compliance with the License.          ~
+ ~ You may obtain a copy of the License at                                   ~
+ ~                                                                           ~
+ ~      https://www.apache.org/licenses/LICENSE-2.0                          ~
+ ~                                                                           ~
+ ~ Unless required by applicable law or agreed to in writing, software       ~
+ ~ distributed under the License is distributed on an "AS IS" BASIS,         ~
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ~
+ ~ See the License for the specific language governing permissions and       ~
+ ~ limitations under the License.                                            ~
+ ~                                                                           ~
+ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+*/
+
+/**
+ * Defines reusable Theme slot styles for typography, control geometry, and icons.
+ */
+
+[data-miaixz-theme] {
+  --miaixz-action-icon-size: var(--miaixz-space-16);
+  --miaixz-action-icon-optical-size: 16;
+}
+
+.miaixz-type-page-title {
+  margin: 0;
+  font-size: var(--miaixz-text-page-title-size);
+  font-weight: var(--miaixz-font-weight-bold);
+  line-height: var(--miaixz-text-page-title-line-height);
+}
+
+.miaixz-type-section-title,
+.miaixz-editor-section-heading > div > :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: var(--miaixz-text-section-title-size);
+  font-weight: var(--miaixz-font-weight-bold);
+  line-height: var(--miaixz-text-section-title-line-height);
+}
+
+/**
+ * Page subtitles and supporting descriptions share the same secondary text recipe.
+ */
+.miaixz-type-supporting {
+  font-size: var(--miaixz-text-caption-size);
+  font-weight: var(--miaixz-font-weight-regular);
+  line-height: var(--miaixz-text-caption-line-height);
+  color: var(--miaixz-color-text-secondary);
+}
+
+.miaixz-control-height-standard,
+.miaixz-segmented-frame-standard {
+  --miaixz-standard-control-target: var(--miaixz-control-height-medium);
+
+  box-sizing: border-box;
+  block-size: var(--miaixz-standard-control-target);
+  min-block-size: var(--miaixz-standard-control-target);
+}
+
+.miaixz-control-height-standard[hidden] {
+  display: none !important;
+}
+
+.miaixz-control-square {
+  inline-size: var(--miaixz-standard-control-target);
+  min-inline-size: var(--miaixz-standard-control-target);
+}
+
+/**
+ * Text pagination uses a short marker for the current page.
+ * The active page is identified by theme color, type scale and a short indicator instead of a tile.
+ */
+.miaixz-pagination-text-summary {
+  white-space: nowrap;
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-list {
+  margin-inline-start: auto;
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-item {
+  position: relative;
+  padding-inline: 0;
+  font-size: var(--miaixz-text-body-size);
+  font-weight: var(--miaixz-font-weight-regular);
+  color: var(--miaixz-color-text-secondary);
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-item:hover:not(:disabled, [aria-disabled="true"]) {
+  color: var(--miaixz-color-brand);
+  background: transparent;
+  border-color: transparent;
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-item:focus-visible {
+  outline: var(--miaixz-border-width-strong) solid var(--miaixz-color-focus);
+  outline-offset: calc(-1 * var(--miaixz-space-4));
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-item[aria-current="page"] {
+  font-size: var(--miaixz-text-section-title-size);
+  font-weight: var(--miaixz-font-weight-medium);
+  color: var(--miaixz-color-brand);
+  background: transparent;
+  border-color: transparent;
+  border-radius: 0;
+}
+
+.miaixz-pagination-text .miaixz-pagination-text-item[aria-current="page"]::after {
+  position: absolute;
+  inset-block-end: var(--miaixz-space-4);
+  inset-inline-start: 50%;
+  inline-size: var(--miaixz-space-16);
+  block-size: var(--miaixz-border-width-strong);
+  content: "";
+  background: currentcolor;
+  border-radius: var(--miaixz-radius-round);
+  transform: translateX(-50%);
+}
+
+/**
+ * Segmented padding and borders belong to its outer 40px frame, not to every inner item.
+ */
+.miaixz-segmented-frame-item {
+  block-size: calc(
+    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 *
+      var(--miaixz-border-width-default)
+  );
+  min-block-size: calc(
+    var(--miaixz-standard-control-target) - 2 * var(--miaixz-space-2) - 2 *
+      var(--miaixz-border-width-default)
+  );
+}
+
+/**
+ * Control slots prefer their action size when defined, with a standard default.
+ */
+.miaixz-icon-slot-control,
+.miaixz-icon-scope-control,
+.miaixz-icon-scope-action-measure {
+  --miaixz-icon-slot-size: var(--miaixz-action-icon-size);
+  --miaixz-icon-slot-opsz: var(--miaixz-action-icon-optical-size);
+}
+
+.miaixz-icon-slot-feature {
+  --miaixz-icon-slot-size: var(--miaixz-space-24);
+  --miaixz-icon-slot-opsz: 24;
+}
+
+.miaixz-icon-slot-feature.miaixz-icon-slot-command {
+  --miaixz-icon-slot-size: var(--miaixz-space-20);
+  --miaixz-icon-slot-opsz: 20;
+}
+
+.miaixz-icon-slot-indicator {
+  --miaixz-icon-slot-size: var(--miaixz-space-12);
+  --miaixz-icon-slot-opsz: 12;
+}
+
+.miaixz-icon-slot-control.miaixz-icon-slot-navigation {
+  --miaixz-icon-slot-size: var(--miaixz-space-16);
+  --miaixz-icon-slot-opsz: var(--miaixz-action-icon-optical-size);
+}
+
+.miaixz-icon-slot-empty {
+  --miaixz-icon-slot-size: var(--miaixz-space-32);
+  --miaixz-icon-slot-opsz: 32;
+}
+
+:is(.miaixz-icon-slot-control, .miaixz-icon-slot-feature, .miaixz-icon-slot-empty)
+  > [data-motion]:not([data-size="indicator"]),
+.miaixz-icon-scope-control [data-motion]:not([data-size="indicator"]),
+.miaixz-icon-scope-action-measure [inert] [data-motion]:not([data-size="indicator"]) {
+  --miaixz-icon-size-override: var(--miaixz-icon-slot-size);
+  --miaixz-icon-opsz-override: var(--miaixz-icon-slot-opsz);
+}
+
+/**
+ * Public prefix and metric slots reserve their actual font-icon width.
+ */
+:is(.miaixz-icon-slot-control, .miaixz-icon-slot-feature):has(> [data-motion]) {
+  min-inline-size: var(--miaixz-icon-slot-size);
+  min-block-size: var(--miaixz-icon-slot-size);
+}
+
+@media (pointer: coarse) {
+  .miaixz-control-height-standard,
+  .miaixz-segmented-frame-standard {
+    --miaixz-standard-control-target: var(--miaixz-control-min-target-size);
+  }
+}

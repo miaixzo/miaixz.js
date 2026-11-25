@@ -315,6 +315,25 @@
   flex: none;
 }
 
+.miaixz-row-actions[data-overflow] {
+  position: static;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.miaixz-row-actions[data-overflow] > * {
+  flex: none;
+}
+
+.miaixz-row-actions[data-overflow="wrap"] {
+  flex-wrap: wrap;
+  column-gap: 0;
+  justify-content: space-between;
+  min-inline-size: 0;
+}
+
 .miaixz-action-bar > .miaixz-button {
   flex: none;
 }

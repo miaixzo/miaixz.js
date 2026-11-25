@@ -357,6 +357,8 @@ export const miaixzUiMessages: MiaixzMessageCatalog = Object.freeze({
     "ui.error.tree.textValueInvalid": "Tree nodes require a text value",
     "ui.error.tree.configInvalid": "The tree configuration is invalid",
     "ui.error.steps.duplicateId": "Step identifiers must be unique",
+    "ui.error.wizard.stepsInvalid": "Wizard steps must be unique and include the selected step",
+    "ui.error.wizard.panelInvalid": "Wizard panels must reference an existing Wizard step",
     "ui.error.timeline.duplicateId": "Timeline item identifiers must be unique",
     "ui.error.graph.duplicateNodeId": "Graph node identifiers must be unique",
     "ui.error.graph.nodePositionInvalid":
@@ -636,6 +638,8 @@ export const miaixzUiMessages: MiaixzMessageCatalog = Object.freeze({
     "ui.error.tree.textValueInvalid": "树节点必须提供文本值",
     "ui.error.tree.configInvalid": "树形结构配置无效",
     "ui.error.steps.duplicateId": "步骤标识必须唯一",
+    "ui.error.wizard.stepsInvalid": "向导步骤必须唯一且包含当前步骤",
+    "ui.error.wizard.panelInvalid": "向导面板必须关联所属向导中的步骤",
     "ui.error.timeline.duplicateId": "时间线项目标识必须唯一",
     "ui.error.graph.duplicateNodeId": "关系图节点标识必须唯一",
     "ui.error.graph.nodePositionInvalid": "关系图节点位置必须在零到一百之间",

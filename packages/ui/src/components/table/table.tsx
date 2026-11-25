@@ -79,6 +79,7 @@ export const TableContainer = withMiaixzThemeComponent(
       gutter = "inset",
       surface = "default",
       minimumWidth = "default",
+      verticalOverscroll = "contain",
       tabIndex = 0,
       loadState,
       ...props
@@ -99,6 +100,7 @@ export const TableContainer = withMiaixzThemeComponent(
         )}
         data-gutter={gutter}
         data-minimum-width={minimumWidth}
+        data-vertical-overscroll={verticalOverscroll === "auto" ? verticalOverscroll : undefined}
       />
     );
     return loadState === undefined ? (
@@ -119,6 +121,7 @@ export const Table = withMiaixzThemeComponent(
   forwardRef<HTMLTableElement, TableProps>(function Table(
     {
       stickyHeader = false,
+      layout,
       rowHeight,
       slotProps,
       trackCurrentRow = true,
@@ -146,8 +149,9 @@ export const Table = withMiaixzThemeComponent(
           internalProps: {
             ...(rowHeightStyle === undefined ? {} : { style: rowHeightStyle }),
             ...(stickyHeader ? { "data-sticky-header": true } : {}),
+            ...(layout ? { "data-layout": layout } : {}),
           },
-          ownedProps: ["data-sticky-header"],
+          ownedProps: ["data-sticky-header", "data-layout"],
         })}
       />
     );

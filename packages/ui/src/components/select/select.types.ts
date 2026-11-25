@@ -101,6 +101,7 @@ export interface SelectRootAttributes
   readonly "data-filled"?: boolean;
   readonly "data-invalid"?: boolean;
   readonly "data-readonly"?: boolean;
+  readonly "data-ui"?: "select";
   readonly "data-size"?: SelectSize;
   readonly "data-state"?: "open" | "closed";
 }

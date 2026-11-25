@@ -100,6 +100,11 @@ export interface MiaixzAvatarOwnProps {
   readonly name?: string;
 
   /**
+   * Restricts string fallback content to one visible Unicode grapheme.
+   */
+  readonly singleInitial?: boolean;
+
+  /**
    * Supplies explicit text or icon fallback content.
    */
   readonly children?: ReactNode;

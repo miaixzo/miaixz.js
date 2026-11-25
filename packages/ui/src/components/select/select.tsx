@@ -291,6 +291,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
     slotProps: props.slotProps?.root,
     internalRef: setRootRef,
     internalProps: {
+      "data-ui": "select",
       "data-size": size,
       "data-state": open ? "open" : "closed",
       ...(effectiveInvalid ? { "data-invalid": true } : {}),
@@ -299,6 +300,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
       ...(valueState.value !== "" ? { "data-filled": true } : {}),
     },
     ownedProps: [
+      "data-ui",
       "data-size",
       "data-state",
       "data-invalid",

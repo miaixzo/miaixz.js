@@ -29,8 +29,8 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    width: var(--miaixz-icon-size);
-    height: var(--miaixz-icon-size);
+    width: var(--miaixz-icon-size-override, var(--miaixz-icon-size));
+    height: var(--miaixz-icon-size-override, var(--miaixz-icon-size));
     line-height: 1;
     vertical-align: -0.125em;
     color: currentcolor;
@@ -45,10 +45,10 @@
 
   .miaixz-icon-glyph {
     font-family: var(--miaixz-icon-font-family), sans-serif;
-    font-size: var(--miaixz-icon-size);
+    font-size: var(--miaixz-icon-size-override, var(--miaixz-icon-size));
     font-variation-settings:
       "FILL" var(--miaixz-icon-fill),
-      "opsz" var(--miaixz-icon-opsz);
+      "opsz" var(--miaixz-icon-opsz-override, var(--miaixz-icon-opsz));
     font-style: normal;
     font-weight: 400;
     font-optical-sizing: none;

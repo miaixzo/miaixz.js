@@ -210,3 +210,29 @@
     --miaixz-control-block-size: var(--miaixz-control-min-target-size);
   }
 }
+
+.miaixz-field[data-layout="horizontal"] {
+  --miaixz-field-label-width: 96px;
+
+  display: grid;
+  grid-template-columns: var(--miaixz-field-label-width) minmax(0, 1fr);
+  column-gap: var(--miaixz-space-16);
+  align-items: center;
+  container-type: normal;
+}
+
+.miaixz-field[data-layout="horizontal"] > .miaixz-field-helper,
+.miaixz-field[data-layout="horizontal"] > .miaixz-field-error {
+  grid-column: 2;
+}
+
+@media (width <= 740px) {
+  .miaixz-field[data-layout="horizontal"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .miaixz-field[data-layout="horizontal"] > .miaixz-field-helper,
+  .miaixz-field[data-layout="horizontal"] > .miaixz-field-error {
+    grid-column: 1;
+  }
+}

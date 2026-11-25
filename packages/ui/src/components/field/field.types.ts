@@ -43,6 +43,7 @@ export interface FieldOwnerState {
    * Reports whether the control is required.
    */
   readonly required: boolean;
+  readonly layout: "vertical" | "horizontal";
   /**
    * Reports whether the control is invalid.
    */
@@ -57,6 +58,7 @@ export interface FieldOwnerState {
  * Describes Field root data attributes derived from owner state.
  */
 export interface FieldRootSlotProps extends HTMLAttributes<HTMLDivElement> {
+  "data-layout"?: "vertical" | "horizontal";
   /**
    * Mirrors the effective invalid state.
    */
@@ -106,6 +108,14 @@ export interface FieldProps extends Omit<
    * Supplies the visible control label.
    */
   label: ReactNode;
+  /**
+   * Field geometry; defaults to vertical.
+   */
+  layout?: "vertical" | "horizontal";
+  /**
+   * Horizontal label width in pixels.
+   */
+  labelWidth?: number;
   /**
    * Supplies the single form control enhanced by the wrapper.
    */

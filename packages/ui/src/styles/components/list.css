@@ -73,6 +73,10 @@
   --miaixz-list-row-gap: var(--miaixz-space-20);
 }
 
+.miaixz-list[data-row-padding="tight"] {
+  --miaixz-list-row-padding-block: var(--miaixz-space-4);
+}
+
 .miaixz-list[data-dividers] > .miaixz-list-item + .miaixz-list-item {
   border-block-start: var(--miaixz-border-width-default) solid var(--miaixz-color-border);
 }

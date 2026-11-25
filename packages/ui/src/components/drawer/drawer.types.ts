@@ -73,6 +73,7 @@ export interface DrawerOwnerState {
   readonly floating: boolean;
   readonly positioned: boolean;
   readonly showClose: boolean;
+  readonly contentScroll: "auto" | "contained";
 }
 
 /**
@@ -113,6 +114,14 @@ export interface DrawerSlotProps {
  * Component-specific Drawer properties composed with the permitted native attributes.
  */
 interface DrawerSharedProps {
+  /**
+   * Lets a child composition manage its own content scrolling.
+   */
+  readonly contentScroll?: "auto" | "contained";
+  /**
+   * Removes the built-in content padding for full-bleed child layouts.
+   */
+  readonly contentPadding?: "default" | "none";
   readonly boundary?: HTMLElement | null;
   readonly inset?: number | DrawerInset;
   readonly floating?: boolean;

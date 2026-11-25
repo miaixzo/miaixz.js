@@ -51,6 +51,12 @@ export type DropdownAnchorProps = Omit<
  * Common visible label, icon, and descriptive content of a dropdown entry.
  */
 export interface DropdownPresentation {
+  /**
+   * Omits an unavailable item before validation, keyboard traversal and rendering.
+   *
+   * @defaultValue `false`
+   */
+  readonly hidden?: boolean;
   readonly id: string;
   readonly label: ReactNode;
   readonly textValue: string;

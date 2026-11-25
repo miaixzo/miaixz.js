@@ -70,6 +70,7 @@ function TreeImplementation<Value = unknown, View extends TreeViewMode = TreeVie
     connectors = false,
     dividerStyle = "none",
     density = "standard",
+    rowLayout,
     showSelectionIndicator = true,
     creatable = true,
     movable = true,
@@ -134,6 +135,7 @@ function TreeImplementation<Value = unknown, View extends TreeViewMode = TreeVie
       data-connectors={connectors || undefined}
       data-divider-style={dividerStyle}
       data-density={density}
+      data-row-layout={rowLayout}
       data-view={effectiveView}
       data-indent={nestedIndent}
       data-compression={compactCompression}

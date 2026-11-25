@@ -271,6 +271,10 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
   color: var(--miaixz-color-brand);
 }
 
+.miaixz-drawer-close:not(:disabled, [aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .miaixz-drawer-close:disabled {
   color: var(--miaixz-color-text-disabled);
   cursor: not-allowed;
@@ -289,6 +293,10 @@ dialog.miaixz-drawer[data-placement="bottom"]:not([open]) {
   overscroll-behavior: contain;
 }
 
+.miaixz-drawer-body[data-padding="none"] {
+  padding: 0;
+}
+
 .miaixz-drawer-footer {
   display: flex;
   flex: none;
@@ -305,4 +313,11 @@ dialog.miaixz-drawer[data-positioned="true"]::backdrop {
     var(--miaixz-drawer-backdrop-top) var(--miaixz-drawer-backdrop-right)
       var(--miaixz-drawer-backdrop-bottom) var(--miaixz-drawer-backdrop-left)
   );
+}
+
+.miaixz-drawer-body[data-scroll="contained"] {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
 }

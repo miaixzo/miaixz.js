@@ -30,14 +30,28 @@ import type { AvatarOwnerState, AvatarProps, AvatarRootAttributes } from "./avat
 import { withMiaixzThemeComponent } from "../../theme/binding.js";
 
 /**
+ * Finds the first visible grapheme, uppercasing it when the result fits in one grapheme.
+ *
+ * @param name - Display name or explicit initials.
+ * @returns A single grapheme or an empty string.
+ * @public
+ */
+export function avatarInitial(name?: string): string {
+  const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+  const first = graphemes.segment(name?.trim() ?? "").containing(0)?.segment ?? "";
+  const upper = first.toLocaleUpperCase();
+  return graphemes.segment(upper).containing(0)?.segment === upper ? upper : first;
+}
+
+/**
  * Derives the first two visible Unicode graphemes from a display name.
  *
  * @param name - Display name used to generate the fallback.
  * @returns Uppercase graphemes or a question mark when the name is empty.
  */
 function createAvatarFallback(name: string): string {
-  const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-  const fallback = Array.from(segmenter.segment(name.trim()), ({ segment }) => segment)
+  const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+  const fallback = Array.from(graphemes.segment(name.trim()), ({ segment }) => segment)
     .filter((segment) => segment.trim().length > 0)
     .slice(0, 2)
     .join("")
@@ -53,9 +67,9 @@ function createAvatarFallback(name: string): string {
  * @returns One uppercase grapheme, or an empty string.
  */
 function createAltFallback(alt: string): string {
-  const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+  const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
   return (
-    Array.from(segmenter.segment(alt.trim()), ({ segment }) => segment)
+    Array.from(graphemes.segment(alt.trim()), ({ segment }) => segment)
       .find((segment) => segment.trim().length > 0)
       ?.toLocaleUpperCase() ?? ""
   );
@@ -84,6 +98,7 @@ export const Avatar = withMiaixzThemeComponent(
       sizes,
       alt = "",
       name,
+      singleInitial = false,
       children,
       indicator,
       indicatorLabel,
@@ -136,11 +151,17 @@ export const Avatar = withMiaixzThemeComponent(
       },
       ownedProps: ["src", "srcSet", "sizes", "alt"],
     });
-    const fallbackContent =
-      children ??
-      (name !== undefined && name.trim().length > 0
-        ? createAvatarFallback(name)
-        : createAltFallback(alt) || createGenericAvatarFallback());
+    let fallbackContent = children;
+    if (singleInitial && typeof children === "string") {
+      fallbackContent = avatarInitial(children);
+    } else if (children == null) {
+      const fallbackText = singleInitial
+        ? avatarInitial(name) || avatarInitial(alt)
+        : name !== undefined && name.trim().length > 0
+          ? createAvatarFallback(name)
+          : createAltFallback(alt);
+      fallbackContent = fallbackText || createGenericAvatarFallback();
+    }
     const fallbackProps = mergeMiaixzSlotProps({
       ownerState,
       defaultProps: { className: "miaixz-avatar-fallback" },
